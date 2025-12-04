@@ -1,5 +1,34 @@
 # Project Etna
 
+A modern AI chat application built with Next.js, Prisma, and multiple AI providers.
+
+## 🚀 Quick Start
+
+See [QUICK_START.md](./QUICK_START.md) for setup instructions.
+
+## 📋 Next Steps
+
+See [NEXT_STEPS.md](./NEXT_STEPS.md) for the development roadmap.
+
+## 📚 Documentation
+
+- [SETUP.md](./SETUP.md) - Complete setup guide
+- [DATABASE_SETUP.md](./DATABASE_SETUP.md) - Database configuration
+- [DEPENDENCIES.md](./DEPENDENCIES.md) - Installed dependencies
+- [NEXT_STEPS.md](./NEXT_STEPS.md) - Development roadmap
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 15.5.7
+- **Database:** PostgreSQL with Prisma ORM
+- **Authentication:** Auth.js v5 (NextAuth.js beta)
+- **AI Models:** OpenAI, Google Gemini, DeepSeek, Llama
+- **UI:** Shadcn UI + Tailwind CSS
+- **Vector Search:** pgvector
+- **Storage:** Vercel Blob
+
+## 📦 Project Etna
+
 A modern AI-powered chat application built with Next.js, React, TypeScript, and shadcn/ui.
 
 ## Features
