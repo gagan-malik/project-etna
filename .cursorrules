@@ -1,0 +1,6 @@
+# Shadcn UI MCP Server Configuration
+# The Shadcn UI MCP server is configured in .cursor/mcp.json
+# You can use prompts like:
+# - "Add the button component from Shadcn UI"
+# - "Show me all available Shadcn components"
+# - "Add a dialog component with a form"
