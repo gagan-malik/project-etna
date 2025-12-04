@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Activity, Settings, Home, Sparkles } from "lucide-react";
+import { 
+  MessageSquare, 
+  History, 
+  Settings, 
+  Home, 
+  Sparkles,
+  User,
+  CreditCard,
+  HelpCircle
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,36 +23,61 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 
-const sidebarItems = [
+interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navigation: NavSection[] = [
   {
     title: "Main",
     items: [
       {
-        label: "Home",
-        href: "/",
+        title: "Home",
+        url: "/",
         icon: Home,
       },
       {
-        label: "Chat",
-        href: "/chat",
+        title: "Chat",
+        url: "/chat",
         icon: MessageSquare,
       },
       {
-        label: "History",
-        href: "/activity",
-        icon: Activity,
+        title: "History",
+        url: "/activity",
+        icon: History,
       },
     ],
   },
   {
-    title: "Tools",
+    title: "Account",
     items: [
       {
-        label: "Settings",
-        href: "/settings",
+        title: "Settings",
+        url: "/settings",
         icon: Settings,
+      },
+      {
+        title: "Billing",
+        url: "/billing",
+        icon: CreditCard,
+      },
+      {
+        title: "Profile",
+        url: "/profile",
+        icon: User,
       },
     ],
   },
@@ -53,43 +87,54 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border bg-background">
-      <SidebarHeader className="h-[72px] border-b border-border flex items-center px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-foreground" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-              AI Chat
-            </span>
-          </div>
-        </div>
+    <Sidebar collapsible="icon" className="border-r">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <Sparkles className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">AI Chat</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Project Etna
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
-        {sidebarItems.map((section) => (
+        {navigation.map((section) => (
           <SidebarGroup key={section.title}>
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {section.title}
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href));
+                  const isActive = 
+                    pathname === item.url || 
+                    (item.url !== "/" && pathname?.startsWith(item.url));
                   
                   return (
-                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton 
-                        asChild
+                        asChild 
                         isActive={isActive}
-                        tooltip={item.label}
-                        className="data-[active=true]:bg-accent data-[active=true]:text-accent-foreground text-muted-foreground hover:bg-muted hover:text-foreground"
+                        tooltip={item.title}
                       >
-                        <Link href={item.href}>
-                          <Icon className="h-5 w-5" />
-                          <span>{item.label}</span>
+                        <Link href={item.url}>
+                          <Icon />
+                          <span>{item.title}</span>
+                          {item.badge && (
+                            <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                              {item.badge}
+                            </span>
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -101,19 +146,40 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0"></div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">
-              Workspace Name
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              Free Plan
-            </p>
-          </div>
-        </div>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/help">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <HelpCircle className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Help & Support</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Get assistance
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+                <AvatarFallback className="rounded-lg">JD</AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">John Doe</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  john@example.com
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
