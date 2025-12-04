@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 interface NavItem {
   title: string;
@@ -85,9 +87,11 @@ const navigation: NavSection[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <>
+      <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -119,6 +123,27 @@ export function AppSidebar() {
                   const isActive = 
                     pathname === item.url || 
                     (item.url !== "/" && pathname?.startsWith(item.url));
+                  
+                  // Handle Settings as a dialog instead of navigation
+                  if (item.title === "Settings") {
+                    return (
+                      <SidebarMenuItem key={item.url}>
+                        <SidebarMenuButton 
+                          onClick={() => setSettingsOpen(true)}
+                          isActive={settingsOpen}
+                          tooltip={item.title}
+                        >
+                          <Icon />
+                          <span>{item.title}</span>
+                          {item.badge && (
+                            <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                              {item.badge}
+                            </span>
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
                   
                   return (
                     <SidebarMenuItem key={item.url}>
@@ -181,6 +206,8 @@ export function AppSidebar() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
   );
 }
 
