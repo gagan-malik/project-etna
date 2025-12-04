@@ -80,7 +80,7 @@ const sidebarNav = [
 
 function SettingsSidebar({ activeTab, setActiveTab }: { activeTab: string; setActiveTab: (tab: string) => void }) {
   return (
-    <Sidebar collapsible="none" className="hidden md:flex border-r border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)]">
+    <Sidebar collapsible="none" className="hidden md:flex border-r border-border bg-background">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
@@ -123,12 +123,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--colours-background-bg-page-primary)]">
+    <div className="min-h-screen bg-background">
       <SidebarProvider defaultOpen={true}>
         <SettingsSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         <SidebarInset className="flex flex-col">
         <main className="flex h-[calc(100vh-72px)] flex-1 flex-col overflow-hidden">
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-[var(--colours-border-border-primary)]">
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border">
             <div className="flex items-center gap-2 px-4">
               <Breadcrumb>
                 <BreadcrumbList>
@@ -145,17 +145,17 @@ export default function SettingsPage() {
           </header>
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
             {activeTab === "Messages & media" && (
-              <div className="flex flex-col gap-[var(--spacing-3xl)]">
+              <div className="flex flex-col gap-12">
                 <div>
-                  <h2 className="text-[20px] font-semibold leading-[30px] text-[var(--colours-text-text-primary-900)] mb-[var(--spacing-xs)]">
+                  <h2 className="text-xl font-semibold leading-8 text-foreground mb-1">
                     Messages & media settings
                   </h2>
-                  <p className="text-[14px] font-normal leading-[20px] text-[var(--colours-text-text-tertiary-600)]">
+                  <p className="text-sm font-normal leading-5 text-muted-foreground">
                     Configure your messages and media preferences
                   </p>
                 </div>
-                <Card className="bg-[var(--colours-background-bg-page-primary)] border border-[var(--colours-border-border-primary)] rounded-[var(--radius-2xl)] p-[var(--spacing-3xl)]">
-                  <div className="flex flex-col gap-[var(--spacing-xl)]">
+                <Card className="bg-background border border-border rounded-2xl p-12">
+                  <div className="flex flex-col gap-4">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <div key={i} className="aspect-video max-w-3xl rounded-xl bg-muted/50" />
                     ))}
@@ -164,17 +164,17 @@ export default function SettingsPage() {
               </div>
             )}
             {activeTab !== "Messages & media" && (
-              <div className="flex flex-col gap-[var(--spacing-3xl)]">
+              <div className="flex flex-col gap-12">
                 <div>
-                  <h2 className="text-[20px] font-semibold leading-[30px] text-[var(--colours-text-text-primary-900)] mb-[var(--spacing-xs)]">
+                  <h2 className="text-xl font-semibold leading-8 text-foreground mb-1">
                     {activeTab} settings
                   </h2>
-                  <p className="text-[14px] font-normal leading-[20px] text-[var(--colours-text-text-tertiary-600)]">
+                  <p className="text-sm font-normal leading-5 text-muted-foreground">
                     Configure your {activeTab.toLowerCase()} preferences
                   </p>
                 </div>
-                <Card className="bg-[var(--colours-background-bg-page-primary)] border border-[var(--colours-border-border-primary)] rounded-[var(--radius-2xl)] p-[var(--spacing-3xl)]">
-                  <div className="flex flex-col gap-[var(--spacing-xl)]">
+                <Card className="bg-background border border-border rounded-2xl p-12">
+                  <div className="flex flex-col gap-4">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="aspect-video max-w-3xl rounded-xl bg-muted/50" />
                     ))}

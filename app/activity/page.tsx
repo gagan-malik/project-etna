@@ -84,11 +84,11 @@ export default function ActivityPage() {
   const getStatusIcon = (status: ActivityItem["status"]) => {
     switch (status) {
       case "done":
-        return <CheckCircle2 className="h-4 w-4 text-[var(--component-colors-utility-success-utility-success-700)]" />;
+        return <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case "preparing":
-        return <Clock className="h-4 w-4 text-[var(--component-colors-utility-warning-utility-warning-700)]" />;
+        return <Clock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
       case "failed":
-        return <XCircle className="h-4 w-4 text-[var(--component-colors-utility-error-utility-error-700)]" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
 
@@ -96,19 +96,19 @@ export default function ActivityPage() {
     switch (status) {
       case "done":
         return (
-          <Badge className="bg-[var(--component-colors-utility-success-utility-success-50)] text-[var(--component-colors-utility-success-utility-success-700)]">
+          <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
             Done
           </Badge>
         );
       case "preparing":
         return (
-          <Badge className="bg-[var(--component-colors-utility-warning-utility-warning-50)] text-[var(--component-colors-utility-warning-utility-warning-700)]">
+          <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300">
             Preparing
           </Badge>
         );
       case "failed":
         return (
-          <Badge className="bg-[var(--component-colors-utility-error-utility-error-50)] text-[var(--component-colors-utility-error-utility-error-700)]">
+          <Badge variant="destructive">
             Failed
           </Badge>
         );
@@ -116,20 +116,20 @@ export default function ActivityPage() {
   };
 
   return (
-    <main className="flex-1 max-w-[var(--width-2xl)] mx-auto w-full px-[var(--container-padding-desktop)] py-[var(--spacing-4xl)]">
+    <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-16">
         {/* Page Header */}
-        <div className="mb-[var(--spacing-3xl)]">
-          <h1 className="text-[24px] font-semibold leading-[32px] text-[var(--colours-text-text-primary-900)] mb-[var(--spacing-xs)]">
+        <div className="mb-12">
+          <h1 className="text-2xl font-semibold leading-8 text-foreground mb-1">
             History
           </h1>
-          <p className="text-[14px] font-normal leading-[20px] text-[var(--colours-text-text-tertiary-600)]">
+          <p className="text-sm font-normal leading-5 text-muted-foreground">
             View and manage your recent activity
           </p>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col gap-[var(--spacing-xl)] mb-[var(--spacing-3xl)]">
-          <div className="flex items-center gap-[var(--spacing-xl)] flex-wrap">
+        <div className="flex flex-col gap-4 mb-12">
+          <div className="flex items-center gap-4 flex-wrap">
             <Tabs value={filterType} onValueChange={(v) => setFilterType(v as typeof filterType)}>
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
@@ -183,33 +183,33 @@ export default function ActivityPage() {
 
         {/* Activity List */}
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="flex flex-col gap-[var(--spacing-md)]">
+          <div className="flex flex-col gap-2">
             {filteredActivities.map((activity) => (
               <Card
                 key={activity.id}
-                className="p-[var(--spacing-xl)] hover:bg-[var(--colours-background-bg-primary_hover)] transition-colors cursor-pointer"
+                className="p-4 hover:bg-accent transition-colors cursor-pointer"
               >
-                <div className="flex items-start gap-[var(--spacing-xl)]">
-                  <div className="w-10 h-10 rounded-[var(--radius-full)] bg-[var(--component-colors-utility-gray-utility-gray-200)] flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     {getStatusIcon(activity.status)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-[var(--spacing-md)] mb-[var(--spacing-xs)]">
-                      <h3 className="text-[16px] font-semibold text-[var(--colours-text-text-primary-900)]">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-base font-semibold text-foreground">
                         {activity.name}
                       </h3>
                       {getStatusBadge(activity.status)}
                     </div>
-                    <p className="text-[14px] text-[var(--colours-text-text-tertiary-600)] mb-[var(--spacing-md)]">
+                    <p className="text-sm text-muted-foreground mb-2">
                       {activity.description}
                     </p>
                     {activity.status === "preparing" && activity.progress !== undefined && (
-                      <div className="mb-[var(--spacing-md)]">
+                      <div className="mb-2">
                         <Progress value={activity.progress} className="h-1" />
                       </div>
                     )}
-                    <div className="flex items-center gap-[var(--spacing-xl)] text-[12px] text-[var(--colours-text-text-tertiary-600)]">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{activity.agent}</span>
                       <span>•</span>
                       <span>{activity.timestamp}</span>
@@ -218,12 +218,12 @@ export default function ActivityPage() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-[var(--spacing-md)] flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => toggleFavorite(activity.id)}
-                      className={activity.favorite ? "text-[var(--component-colors-components-buttons-primary-button-primary-bg)]" : ""}
+                      className={activity.favorite ? "text-primary" : ""}
                     >
                       <Heart className={`h-4 w-4 ${activity.favorite ? "fill-current" : ""}`} />
                     </Button>

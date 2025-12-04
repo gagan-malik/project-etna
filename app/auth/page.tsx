@@ -36,43 +36,43 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--colours-background-bg-page-primary)] px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-[var(--radius-full)] bg-[var(--colours-background-bg-quaternary)] flex items-center justify-center mb-4">
-            <Sparkles className="h-6 w-6 text-[var(--colours-text-text-secondary-700)]" />
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Sparkles className="h-6 w-6 text-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold text-[var(--colours-text-text-primary-900)] mb-2">
+          <h1 className="text-2xl font-semibold text-foreground mb-2">
             AI Chat
           </h1>
-          <p className="text-sm text-[var(--colours-text-text-tertiary-600)]">
+          <p className="text-sm text-muted-foreground">
             Welcome back! Please sign in to continue.
           </p>
         </div>
 
         {/* Auth Card */}
-        <Card className="bg-[var(--component-colors-utility-gray-utility-gray-100)] border-[var(--colours-border-border-primary)]">
+        <Card className="bg-muted border-border">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-semibold text-[var(--colours-text-text-primary-900)] text-center">
+            <CardTitle className="text-2xl font-semibold text-foreground text-center">
               Authentication
             </CardTitle>
-            <CardDescription className="text-center text-[var(--colours-text-text-tertiary-600)]">
+            <CardDescription className="text-center text-muted-foreground">
               Choose your preferred authentication method
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-[var(--colours-background-bg-page-primary)]">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-background">
                 <TabsTrigger 
                   value="login"
-                  className="data-[state=active]:bg-[var(--colours-background-bg-active)] data-[state=active]:text-[var(--colours-text-text-primary-900)]"
+                  className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup"
-                  className="data-[state=active]:bg-[var(--colours-background-bg-active)] data-[state=active]:text-[var(--colours-text-text-primary-900)]"
+                  className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
                 >
                   Sign Up
                 </TabsTrigger>
@@ -84,36 +84,36 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <Label 
                       htmlFor="login-email" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Email
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="login-email"
                         type="email"
                         placeholder="name@example.com"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label 
                       htmlFor="login-password" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="login-password"
                         type="password"
                         placeholder="Enter your password"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
@@ -121,16 +121,16 @@ export default function AuthPage() {
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="rounded border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)]"
+                        className="rounded border-border bg-background"
                       />
-                      <span className="text-sm text-[var(--colours-text-text-tertiary-600)]">
+                      <span className="text-sm text-muted-foreground">
                         Remember me
                       </span>
                     </label>
                     <Button
                       type="button"
                       variant="ghost"
-                      className="text-sm text-[var(--component-colors-components-buttons-tertiary-color-button-tertiary-color-fg)] hover:text-[var(--colours-text-text-secondary-700)] p-0 h-auto"
+                      className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto"
                     >
                       Forgot password?
                     </Button>
@@ -138,7 +138,7 @@ export default function AuthPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[var(--component-colors-components-buttons-primary-button-primary-bg)] text-[var(--component-colors-components-buttons-primary-button-primary-fg)] hover:bg-[var(--component-colors-components-buttons-primary-button-primary-bg_hover)]"
+                    className="w-full"
                   >
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
@@ -151,72 +151,72 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <Label 
                       htmlFor="signup-name" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Full Name
                     </Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="signup-name"
                         type="text"
                         placeholder="John Doe"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label 
                       htmlFor="signup-email" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Email
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="signup-email"
                         type="email"
                         placeholder="name@example.com"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label 
                       htmlFor="signup-password" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="signup-password"
                         type="password"
                         placeholder="Create a password"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label 
                       htmlFor="signup-confirm-password" 
-                      className="text-[var(--colours-text-text-secondary-700)]"
+                      className="text-foreground"
                     >
                       Confirm Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--colours-text-text-tertiary-600)]" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="signup-confirm-password"
                         type="password"
                         placeholder="Confirm your password"
                         required
-                        className="pl-10 bg-[var(--colours-background-bg-page-primary)] border-[var(--colours-border-border-primary)] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)]"
+                        className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
@@ -225,17 +225,17 @@ export default function AuthPage() {
                       type="checkbox"
                       id="terms"
                       required
-                      className="mt-1 rounded border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)]"
+                      className="mt-1 rounded border-border bg-background"
                     />
                     <label 
                       htmlFor="terms" 
-                      className="text-sm text-[var(--colours-text-text-tertiary-600)] cursor-pointer"
+                      className="text-sm text-muted-foreground cursor-pointer"
                     >
                       I agree to the{" "}
                       <Button
                         type="button"
                         variant="ghost"
-                        className="text-sm text-[var(--component-colors-components-buttons-tertiary-color-button-tertiary-color-fg)] hover:text-[var(--colours-text-text-secondary-700)] p-0 h-auto underline"
+                        className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto underline"
                       >
                         Terms of Service
                       </Button>{" "}
@@ -243,7 +243,7 @@ export default function AuthPage() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="text-sm text-[var(--component-colors-components-buttons-tertiary-color-button-tertiary-color-fg)] hover:text-[var(--colours-text-text-secondary-700)] p-0 h-auto underline"
+                        className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto underline"
                       >
                         Privacy Policy
                       </Button>
@@ -252,7 +252,7 @@ export default function AuthPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[var(--component-colors-components-buttons-primary-button-primary-bg)] text-[var(--component-colors-components-buttons-primary-button-primary-fg)] hover:bg-[var(--component-colors-components-buttons-primary-button-primary-bg_hover)]"
+                    className="w-full"
                   >
                     {isLoading ? "Creating account..." : "Sign Up"}
                   </Button>
@@ -264,19 +264,19 @@ export default function AuthPage() {
 
         {/* Additional Options */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-[var(--colours-text-text-tertiary-600)]">
+          <p className="text-sm text-muted-foreground">
             Or continue with
           </p>
           <div className="mt-4 flex gap-3 justify-center">
             <Button
               variant="outline"
-              className="flex-1 max-w-[140px] border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)] hover:bg-[var(--component-colors-utility-gray-utility-gray-100)]"
+              className="flex-1 max-w-[140px] border-border bg-background hover:bg-muted"
             >
               Google
             </Button>
             <Button
               variant="outline"
-              className="flex-1 max-w-[140px] border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)] hover:bg-[var(--component-colors-utility-gray-utility-gray-100)]"
+              className="flex-1 max-w-[140px] border-border bg-background hover:bg-muted"
             >
               GitHub
             </Button>

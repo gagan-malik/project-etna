@@ -148,27 +148,27 @@ The selected model provides specialized capabilities for verification tasks.`;
   };
 
   return (
-    <main className="flex-1 flex flex-col items-center w-full max-w-[var(--width-xl)] mx-auto px-[var(--spacing-xl)] py-[var(--spacing-4xl)] overflow-hidden">
+    <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-16 overflow-hidden">
         {/* Welcome Section */}
         {messages.length === 0 && !isTyping && (
-          <div className="flex flex-col items-center gap-[var(--spacing-3xl)] text-center mb-[var(--spacing-7xl)] flex-shrink-0">
-            <div className="flex flex-col gap-[var(--spacing-xl)] items-center">
-              <h1 className="text-[24px] font-semibold leading-[32px] text-[var(--colours-text-text-primary-900)]">
+          <div className="flex flex-col items-center gap-12 text-center mb-28 flex-shrink-0">
+            <div className="flex flex-col gap-4 items-center">
+              <h1 className="text-2xl font-semibold leading-8 text-foreground">
                 👋🏽 Hello! How can I help you today?
               </h1>
-              <p className="text-[18px] font-medium leading-[28px] text-[var(--colours-text-text-secondary-700)]">
+              <p className="text-lg font-medium leading-7 text-foreground">
                 Ask me anything, and I'll search the web to give you the best answer.
               </p>
             </div>
             
             {/* Quick Suggestions */}
-            <div className="flex flex-wrap gap-[var(--spacing-lg)] justify-center max-w-[600px]">
+            <div className="flex flex-wrap gap-3 justify-center max-w-[600px]">
               {SUGGESTIONS.map((suggestion, idx) => (
                 <Button
                   key={idx}
                   variant="outline"
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-[var(--spacing-xl)] py-[var(--spacing-lg)] rounded-[var(--radius-5xl)] bg-[var(--component-colors-utility-gray-utility-gray-100)] text-[14px] font-medium text-[var(--colours-text-text-secondary-700)] hover:bg-[var(--component-colors-utility-gray-utility-gray-200)]"
+                  className="px-4 py-2 rounded-full bg-muted text-sm font-medium text-foreground hover:bg-muted/80"
                 >
                   {suggestion}
                 </Button>
@@ -179,17 +179,17 @@ The selected model provides specialized capabilities for verification tasks.`;
 
         {/* Chat Messages */}
         {messages.length > 0 && (
-          <ScrollArea className="flex-1 w-full mb-[var(--spacing-4xl)] min-h-0">
-            <div className="flex flex-col gap-[var(--spacing-4xl)]">
+          <ScrollArea className="flex-1 w-full mb-16 min-h-0">
+            <div className="flex flex-col gap-16">
               {messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}
               {isTyping && (
-                <div className="flex gap-[var(--spacing-lg)]">
-                  <div className="w-8 h-8 rounded-[var(--radius-full)] bg-[var(--component-colors-utility-gray-utility-gray-200)] flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-[var(--colours-text-text-secondary-700)]" />
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-4 w-4 text-foreground" />
                   </div>
-                  <Card className="flex-1 bg-[var(--component-colors-utility-gray-utility-gray-100)] rounded-[var(--radius-2xl)] px-[var(--spacing-xl)] py-[var(--spacing-lg)]">
+                  <Card className="flex-1 bg-muted rounded-xl px-4 py-2">
                     <div className="flex gap-1">
                       <span className="typing-indicator">●</span>
                       <span className="typing-indicator">●</span>
@@ -204,16 +204,16 @@ The selected model provides specialized capabilities for verification tasks.`;
         )}
 
         {/* Input Container */}
-        <div className="w-full flex-shrink-0 pt-[var(--spacing-xl)]">
-          <Card className="bg-[var(--component-colors-utility-gray-utility-gray-100)] border border-[var(--colours-border-border-primary)] rounded-[var(--radius-5xl)] p-[var(--spacing-xl)]">
-            <div className="flex flex-col gap-[var(--spacing-md)]">
+        <div className="w-full flex-shrink-0 pt-4">
+          <Card className="bg-muted border border-border rounded-full p-4">
+            <div className="flex flex-col gap-2">
               {/* File Preview */}
               {selectedFiles.length > 0 && (
                 <FilePreview files={selectedFiles} onRemove={removeFile} />
               )}
 
               {/* Text Input */}
-              <div className="flex items-center gap-[var(--spacing-md)]">
+              <div className="flex items-center gap-2">
                 <Textarea
                   ref={textareaRef}
                   value={inputValue}
@@ -228,14 +228,14 @@ The selected model provides specialized capabilities for verification tasks.`;
                     }
                   }}
                   placeholder="Ask anything..."
-                  className="flex-1 bg-transparent border-none resize-none text-[16px] leading-[24px] text-[var(--colours-text-text-primary-900)] placeholder:text-[var(--colours-text-text-tertiary-600)] min-h-[24px] max-h-[200px]"
+                  className="flex-1 bg-transparent border-none resize-none text-base leading-6 text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
                   rows={1}
                 />
               </div>
 
               {/* Bottom Bar */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-[var(--spacing-md)]">
+                <div className="flex items-center gap-2">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -248,7 +248,7 @@ The selected model provides specialized capabilities for verification tasks.`;
                     variant="ghost"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-[var(--spacing-xs)] text-[14px] font-semibold text-[var(--component-colors-components-buttons-tertiary-button-tertiary-fg)]"
+                    className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
                   >
                     <Plus className="h-5 w-5" />
                     Attach
@@ -269,16 +269,16 @@ The selected model provides specialized capabilities for verification tasks.`;
                   />
                 </div>
                 
-                <div className="flex items-center gap-[var(--spacing-lg)]">
+                <div className="flex items-center gap-3">
                   {charCount > 0 && (
-                    <span className="text-[14px] text-[var(--colours-text-text-tertiary-600)]">
+                    <span className="text-sm text-muted-foreground">
                       {charCount}/1000
                     </span>
                   )}
                   <Button
                     onClick={handleSend}
                     disabled={!inputValue.trim() && selectedFiles.length === 0}
-                    className="bg-[var(--component-colors-components-buttons-primary-button-primary-bg)] hover:bg-[var(--component-colors-components-buttons-primary-button-primary-bg_hover)] rounded-[var(--radius-full)]"
+                    className="rounded-full"
                   >
                     <Send className="h-5 w-5" />
                   </Button>

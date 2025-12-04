@@ -8,47 +8,47 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export function Navigation({ currentPage = "chat" }: { currentPage?: "chat" | "activity" | "settings" }) {
   return (
     <div className="flex flex-1 items-center justify-between">
-      <div className="flex items-center gap-[var(--spacing-xl)]">
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <div className="w-8 h-8 rounded-[var(--radius-full)] bg-[var(--colours-background-bg-quaternary)] flex items-center justify-center">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 4V12M4 8H12" stroke="var(--colours-text-text-secondary-700)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M8 4V12M4 8H12" stroke="hsl(var(--foreground))" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
-          <span className="text-[14px] font-semibold text-[var(--colours-text-text-secondary-700)]">Workspace Name</span>
+          <span className="text-sm font-semibold text-foreground">Workspace Name</span>
         </div>
         <Link 
           href="/chat" 
-          className={`text-[14px] font-semibold transition-colors ${
+          className={`text-sm font-semibold transition-colors ${
             currentPage === "chat" 
-              ? "text-[var(--colours-text-text-secondary-700)]" 
-              : "text-[var(--colours-text-text-tertiary-600)] hover:text-[var(--colours-text-text-secondary-700)]"
+              ? "text-foreground" 
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Chat
         </Link>
         <Link 
           href="/activity" 
-          className={`text-[14px] font-semibold transition-colors ${
+          className={`text-sm font-semibold transition-colors ${
             currentPage === "activity" 
-              ? "text-[var(--colours-text-text-secondary-700)]" 
-              : "text-[var(--colours-text-text-tertiary-600)] hover:text-[var(--colours-text-text-secondary-700)]"
+              ? "text-foreground" 
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           History
         </Link>
         <Link 
           href="/settings" 
-          className={`text-[14px] font-semibold transition-colors ${
+          className={`text-sm font-semibold transition-colors ${
             currentPage === "settings" 
-              ? "text-[var(--colours-text-text-secondary-700)]" 
-              : "text-[var(--colours-text-text-tertiary-600)] hover:text-[var(--colours-text-text-secondary-700)]"
+              ? "text-foreground" 
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Settings
         </Link>
       </div>
-      <div className="flex items-center gap-[var(--spacing-lg)]">
+      <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="rounded-full">
           <Search className="h-5 w-5" />
         </Button>
@@ -59,7 +59,7 @@ export function Navigation({ currentPage = "chat" }: { currentPage?: "chat" | "a
           <History className="h-5 w-5" />
         </Button>
         <ThemeToggle />
-        <div className="w-10 h-10 rounded-[var(--radius-full)] bg-[var(--component-colors-utility-gray-utility-gray-200)]"></div>
+        <div className="w-10 h-10 rounded-full bg-muted"></div>
       </div>
     </div>
   );

@@ -53,14 +53,14 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-[var(--colours-border-border-primary)] bg-[var(--colours-background-bg-page-primary)]">
-      <SidebarHeader className="h-[72px] border-b border-[var(--colours-border-border-primary)] flex items-center px-[var(--spacing-xl)]">
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <div className="w-8 h-8 rounded-[var(--radius-full)] bg-[var(--colours-background-bg-quaternary)] flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-[var(--colours-text-text-secondary-700)]" />
+    <Sidebar collapsible="icon" className="border-r border-border bg-background">
+      <SidebarHeader className="h-[72px] border-b border-border flex items-center px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[14px] font-semibold text-[var(--colours-text-text-secondary-700)] whitespace-nowrap">
+            <span className="text-sm font-semibold text-foreground whitespace-nowrap">
               AI Chat
             </span>
           </div>
@@ -70,7 +70,7 @@ export function AppSidebar() {
       <SidebarContent>
         {sidebarItems.map((section) => (
           <SidebarGroup key={section.title}>
-            <SidebarGroupLabel className="text-[12px] font-semibold text-[var(--colours-text-text-tertiary-600)] uppercase tracking-wider">
+            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -85,7 +85,7 @@ export function AppSidebar() {
                         asChild
                         isActive={isActive}
                         tooltip={item.label}
-                        className="data-[active=true]:bg-[var(--colours-background-bg-active)] data-[active=true]:text-[var(--colours-text-text-primary-900)] text-[var(--colours-text-text-tertiary-600)] hover:bg-[var(--component-colors-utility-gray-utility-gray-100)] hover:text-[var(--colours-text-text-secondary-700)]"
+                        className="data-[active=true]:bg-accent data-[active=true]:text-accent-foreground text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <Link href={item.href}>
                           <Icon className="h-5 w-5" />
@@ -101,14 +101,14 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-[var(--colours-border-border-primary)] p-[var(--spacing-xl)]">
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <div className="w-8 h-8 rounded-[var(--radius-full)] bg-[var(--component-colors-utility-gray-utility-gray-200)] flex-shrink-0"></div>
+      <SidebarFooter className="border-t border-border p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0"></div>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--colours-text-text-primary-900)] truncate">
+            <p className="text-sm font-semibold text-foreground truncate">
               Workspace Name
             </p>
-            <p className="text-[12px] text-[var(--colours-text-text-tertiary-600)] truncate">
+            <p className="text-xs text-muted-foreground truncate">
               Free Plan
             </p>
           </div>
