@@ -15,15 +15,15 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const message = await prisma.message.findFirst({
+    const message = await prisma.messages.findFirst({
       where: {
         id,
-        conversation: {
+        conversations: {
           userId: session.user.id,
         },
       },
       include: {
-        conversation: {
+        conversations: {
           select: {
             id: true,
             title: true,
@@ -66,10 +66,10 @@ export async function PATCH(
     const { content, metadata } = body;
 
     // Verify ownership
-    const existing = await prisma.message.findFirst({
+    const existing = await prisma.messages.findFirst({
       where: {
         id,
-        conversation: {
+        conversations: {
           userId: session.user.id,
         },
       },
@@ -82,7 +82,7 @@ export async function PATCH(
       );
     }
 
-    const message = await prisma.message.update({
+    const message = await prisma.messages.update({
       where: { id },
       data: {
         ...(content && { content }),
@@ -114,10 +114,10 @@ export async function DELETE(
     }
 
     // Verify ownership
-    const existing = await prisma.message.findFirst({
+    const existing = await prisma.messages.findFirst({
       where: {
         id,
-        conversation: {
+        conversations: {
           userId: session.user.id,
         },
       },
@@ -130,7 +130,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.message.delete({
+    await prisma.messages.delete({
       where: { id },
     });
 

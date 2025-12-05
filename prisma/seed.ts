@@ -6,7 +6,7 @@ async function main() {
   console.log('🌱 Seeding database...')
 
   // Create a test user
-  const user = await prisma.user.upsert({
+  const user = await prisma.users.upsert({
     where: { email: 'test@example.com' },
     update: {},
     create: {
@@ -19,7 +19,7 @@ async function main() {
   console.log('✅ Created test user:', user.email)
 
   // Create a test space
-  const space = await prisma.space.upsert({
+  const space = await prisma.spaces.upsert({
     where: { slug: 'test-space' },
     update: {},
     create: {
@@ -33,7 +33,7 @@ async function main() {
   console.log('✅ Created test space:', space.name)
 
   // Create a test conversation
-  const conversation = await prisma.conversation.create({
+  const conversation = await prisma.conversations.create({
     data: {
       title: 'Welcome Conversation',
       userId: user.id,

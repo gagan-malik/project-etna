@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const space = await prisma.space.findFirst({
+    const space = await prisma.spaces.findFirst({
       where: {
         id,
         ownerId: session.user.id,
@@ -66,7 +66,7 @@ export async function PATCH(
     const { name, slug } = body;
 
     // Verify ownership
-    const existing = await prisma.space.findFirst({
+    const existing = await prisma.spaces.findFirst({
       where: {
         id,
         ownerId: session.user.id,
@@ -79,7 +79,7 @@ export async function PATCH(
 
     // Check slug uniqueness if provided
     if (slug && slug !== existing.slug) {
-      const slugExists = await prisma.space.findFirst({
+      const slugExists = await prisma.spaces.findFirst({
         where: {
           slug,
           ownerId: session.user.id,
@@ -95,7 +95,7 @@ export async function PATCH(
       }
     }
 
-    const space = await prisma.space.update({
+    const space = await prisma.spaces.update({
       where: { id },
       data: {
         ...(name && { name }),
@@ -127,7 +127,7 @@ export async function DELETE(
     }
 
     // Verify ownership
-    const existing = await prisma.space.findFirst({
+    const existing = await prisma.spaces.findFirst({
       where: {
         id,
         ownerId: session.user.id,
@@ -139,7 +139,7 @@ export async function DELETE(
     }
 
     // Delete space (conversations will be cascade deleted)
-    await prisma.space.delete({
+    await prisma.spaces.delete({
       where: { id },
     });
 

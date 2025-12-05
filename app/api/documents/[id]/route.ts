@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const document = await prisma.documentIndex.findFirst({
+    const document = await prisma.document_indexes.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -56,7 +56,7 @@ export async function PATCH(
     const { title, content, metadata } = body;
 
     // Verify ownership
-    const existing = await prisma.documentIndex.findFirst({
+    const existing = await prisma.document_indexes.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -70,7 +70,7 @@ export async function PATCH(
       );
     }
 
-    const document = await prisma.documentIndex.update({
+    const document = await prisma.document_indexes.update({
       where: { id },
       data: {
         ...(title && { title }),
@@ -103,7 +103,7 @@ export async function DELETE(
     }
 
     // Verify ownership
-    const existing = await prisma.documentIndex.findFirst({
+    const existing = await prisma.document_indexes.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -117,7 +117,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.documentIndex.delete({
+    await prisma.document_indexes.delete({
       where: { id },
     });
 

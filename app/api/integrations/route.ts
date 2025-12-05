@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const type = searchParams.get("type");
     const spaceId = searchParams.get("spaceId");
 
-    const integrations = await prisma.integration.findMany({
+    const integrations = await prisma.integrations.findMany({
       where: {
         userId: session.user.id,
         ...(type && { type }),
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     // Verify space ownership if spaceId provided
     if (spaceId) {
-      const space = await prisma.space.findFirst({
+      const space = await prisma.spaces.findFirst({
         where: {
           id: spaceId,
           ownerId: session.user.id,
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const integration = await prisma.integration.create({
+    const integration = await prisma.integrations.create({
       data: {
         type,
         name,

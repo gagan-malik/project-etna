@@ -57,14 +57,14 @@ export async function POST(req: Request) {
     // Get user's default space if no spaceId provided
     let space = null;
     if (spaceId) {
-      space = await prisma.space.findFirst({
+      space = await prisma.spaces.findFirst({
         where: {
           id: spaceId,
           ownerId: session.user.id,
         },
       });
     } else {
-      space = await prisma.space.findFirst({
+      space = await prisma.spaces.findFirst({
         where: {
           ownerId: session.user.id,
         },
@@ -150,11 +150,11 @@ export async function POST(req: Request) {
         }),
         embeddingString
       );
-      document = await prisma.documentIndex.findUnique({
+      document = await prisma.document_indexes.findUnique({
         where: { id: result[0].id },
       });
     } else {
-      document = await prisma.documentIndex.create({
+      document = await prisma.document_indexes.create({
         data: {
           title: file.name,
           content: textContent,

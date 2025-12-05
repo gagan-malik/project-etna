@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { email, password } = loginSchema.parse(credentials)
 
-          const user = await prisma.user.findUnique({
+          const user = await prisma.users.findUnique({
             where: { email },
           })
 
@@ -107,7 +107,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async createUser({ user }) {
       // Create a default space for new users
       if (user.email) {
-        await prisma.space.create({
+        await prisma.spaces.create({
           data: {
             name: `${user.name || user.email}'s Workspace`,
             slug: `workspace-${user.id}`,

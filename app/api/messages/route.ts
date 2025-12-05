@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     // Verify conversation ownership
-    const conversation = await prisma.conversation.findFirst({
+    const conversation = await prisma.conversations.findFirst({
       where: {
         id: conversationId,
         userId: session.user.id,
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     // Create message
-    const message = await prisma.message.create({
+    const message = await prisma.messages.create({
       data: {
         conversationId,
         role: role as "user" | "assistant" | "system",
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     // Update conversation's updatedAt timestamp
-    await prisma.conversation.update({
+    await prisma.conversations.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });

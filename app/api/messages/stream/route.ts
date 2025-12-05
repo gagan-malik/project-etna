@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     }
 
     // Verify conversation ownership
-    const conversation = await prisma.conversation.findFirst({
+    const conversation = await prisma.conversations.findFirst({
       where: {
         id: conversationId,
         userId: session.user.id,
@@ -88,14 +88,14 @@ export async function POST(req: Request) {
     }
 
     // Get conversation messages for context
-    const previousMessages = await prisma.message.findMany({
+    const previousMessages = await prisma.messages.findMany({
       where: { conversationId },
       orderBy: { createdAt: "asc" },
       take: 20, // Limit to last 20 messages for context
     });
 
     // Create user message
-    const userMessage = await prisma.message.create({
+    const userMessage = await prisma.messages.create({
       data: {
         conversationId,
         role: "user",
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
     });
 
     // Update conversation's updatedAt timestamp
-    await prisma.conversation.update({
+    await prisma.conversations.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
         // If both are selected, include all files (no source filter)
 
         // Filter by user ownership and source
-        const userDocs = await prisma.documentIndex.findMany({
+        const userDocs = await prisma.document_indexes.findMany({
           where: whereClause,
           take: 3,
         });
@@ -299,7 +299,7 @@ export async function POST(req: Request) {
             );
 
             // Create assistant message in database
-            await prisma.message.create({
+            await prisma.messages.create({
               data: {
                 conversationId,
                 role: "assistant",
@@ -347,7 +347,7 @@ export async function POST(req: Request) {
               );
 
               // Create assistant message in database
-              await prisma.message.create({
+              await prisma.messages.create({
                 data: {
                   conversationId,
                   role: "assistant",
@@ -380,7 +380,7 @@ export async function POST(req: Request) {
           );
 
           // Create error message in database
-          await prisma.message.create({
+          await prisma.messages.create({
             data: {
               conversationId,
               role: "assistant",

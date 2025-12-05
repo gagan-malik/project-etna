@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const { name, email, password } = signupSchema.parse(body)
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email },
     })
 
@@ -30,17 +30,17 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await hashPassword(password)
 
     // Create user
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        emailVerified: new Date(), // Auto-verify for now, can add email verification later
+        // emailVerified is optional, createdAt and updatedAt are auto-managed
       },
     })
 
     // Create default space for user
-    await prisma.space.create({
+    await prisma.spaces.create({
       data: {
         name: `${name}'s Workspace`,
         slug: `workspace-${user.id}`,

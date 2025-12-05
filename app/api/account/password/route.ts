@@ -53,7 +53,7 @@ export async function PATCH(req: Request) {
     }
 
     // Get user with password
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: session.user.id },
       select: { id: true, password: true },
     });
@@ -75,7 +75,7 @@ export async function PATCH(req: Request) {
     const hashedPassword = await hashPassword(validation.data.newPassword);
 
     // Update password
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: session.user.id },
       data: { password: hashedPassword },
     });

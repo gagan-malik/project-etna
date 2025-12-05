@@ -67,11 +67,11 @@ export async function checkDatabaseConnection() {
  */
 export async function getDatabaseStats() {
   const [userCount, spaceCount, conversationCount, messageCount, documentCount] = await Promise.all([
-    prisma.user.count(),
-    prisma.space.count(),
-    prisma.conversation.count(),
-    prisma.message.count(),
-    prisma.documentIndex.count(),
+    prisma.users.count(),
+    prisma.spaces.count(),
+    prisma.conversations.count(),
+    prisma.messages.count(),
+    prisma.document_indexes.count(),
   ])
 
   return {

@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     const conversations = await cached(
       cacheKeys.conversations(session.user.id),
       async () => {
-        return await prisma.conversation.findMany({
+        return await prisma.conversations.findMany({
           where: {
             userId: session.user.id,
           },
@@ -52,7 +52,7 @@ export async function GET(req: Request) {
                 createdAt: "desc",
               },
             },
-            space: {
+            spaces: {
               select: {
                 id: true,
                 name: true,
@@ -136,14 +136,14 @@ export async function POST(req: Request) {
     // Get user's default space if no spaceId provided
     let space = null;
     if (spaceId) {
-      space = await prisma.space.findFirst({
+      space = await prisma.spaces.findFirst({
         where: {
           id: spaceId,
           ownerId: session.user.id,
         },
       });
     } else {
-      space = await prisma.space.findFirst({
+      space = await prisma.spaces.findFirst({
         where: {
           ownerId: session.user.id,
         },
@@ -160,14 +160,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const conversation = await prisma.conversation.create({
+    const conversation = await prisma.conversations.create({
       data: {
         title: validation.data.title || "New Conversation",
         userId: session.user.id,
         spaceId: space.id,
       },
       include: {
-        space: {
+        spaces: {
           select: {
             id: true,
             name: true,

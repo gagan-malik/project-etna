@@ -34,7 +34,7 @@ export async function DELETE(req: Request) {
     }
 
     // Delete user (cascade will handle related records)
-    await prisma.user.delete({
+    await prisma.users.delete({
       where: { id: session.user.id },
     });
 

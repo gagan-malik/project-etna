@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const spaceId = searchParams.get("spaceId");
 
-    const documents = await prisma.documentIndex.findMany({
+    const documents = await prisma.document_indexes.findMany({
       where: {
         userId: session.user.id,
         ...(spaceId && { spaceId }),
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
     // Verify space ownership if spaceId provided
     if (spaceId) {
-      const space = await prisma.space.findFirst({
+      const space = await prisma.spaces.findFirst({
         where: {
           id: spaceId,
           ownerId: session.user.id,
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const document = await prisma.documentIndex.create({
+    const document = await prisma.document_indexes.create({
       data: {
         title,
         content,

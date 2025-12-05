@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       );
 
       // Filter by user ownership
-        const userDocs = await prisma.documentIndex.findMany({
+        const userDocs = await prisma.document_indexes.findMany({
           where: {
             id: { in: similarDocs.map((d: { id: string }) => d.id) },
             userId: session.user.id,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       console.error("Embedding error, falling back to text search:", embeddingError);
       
       // Fallback to text search if embedding fails
-      const documents = await prisma.documentIndex.findMany({
+      const documents = await prisma.document_indexes.findMany({
         where: {
           userId: session.user.id,
           ...(spaceId && { spaceId }),

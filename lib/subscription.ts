@@ -14,7 +14,7 @@ export type SubscriptionStatus = "active" | "canceled" | "expired" | null;
  */
 export async function hasPremiumAccess(userId: string): Promise<boolean> {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         plan: true,
@@ -42,7 +42,7 @@ export async function hasPremiumAccess(userId: string): Promise<boolean> {
     // Check if subscription hasn't expired
     if (user.subscriptionExpiresAt && user.subscriptionExpiresAt < new Date()) {
       // Update status to expired
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: userId },
         data: { subscriptionStatus: "expired" },
       });
@@ -61,7 +61,7 @@ export async function hasPremiumAccess(userId: string): Promise<boolean> {
  */
 export async function getUserPlan(userId: string): Promise<Plan> {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: { plan: true },
     });
@@ -80,7 +80,7 @@ export async function getUserSubscriptionStatus(
   userId: string
 ): Promise<SubscriptionStatus> {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: {
         subscriptionStatus: true,
@@ -99,7 +99,7 @@ export async function getUserSubscriptionStatus(
       user.subscriptionExpiresAt < new Date()
     ) {
       // Update status to expired
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: userId },
         data: { subscriptionStatus: "expired" },
       });

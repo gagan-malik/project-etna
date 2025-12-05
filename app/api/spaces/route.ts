@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const spaces = await prisma.space.findMany({
+    const spaces = await prisma.spaces.findMany({
       where: {
         ownerId: session.user.id,
       },
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
         .replace(/(^-|-$)/g, "");
 
     // Check if slug already exists
-    const existing = await prisma.space.findFirst({
+    const existing = await prisma.spaces.findFirst({
       where: {
         slug: spaceSlug,
         ownerId: session.user.id,
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const space = await prisma.space.create({
+    const space = await prisma.spaces.create({
       data: {
         name,
         slug: spaceSlug,

@@ -92,7 +92,7 @@ export async function indexDocument(
   const chunks = chunkText(text);
 
   // Get parent document info
-  const parentDoc = await prisma.documentIndex.findUnique({
+  const parentDoc = await prisma.document_indexes.findUnique({
     where: { id: documentId },
     select: { userId: true, spaceId: true },
   });
@@ -140,7 +140,7 @@ export async function reindexDocument(
   documentId: string,
   provider: "openai" | "gemini" = "openai"
 ): Promise<void> {
-  const document = await prisma.documentIndex.findUnique({
+  const document = await prisma.document_indexes.findUnique({
     where: { id: documentId },
   });
 
@@ -149,7 +149,7 @@ export async function reindexDocument(
   }
 
   // Delete existing chunks
-  await prisma.documentIndex.deleteMany({
+  await prisma.document_indexes.deleteMany({
     where: {
       source: "chunk",
       sourceId: documentId,

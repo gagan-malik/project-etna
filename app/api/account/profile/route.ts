@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     }
 
     // Get user profile with subscription info
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,
@@ -92,7 +92,7 @@ export async function PATCH(req: Request) {
     }
 
     // Update user profile
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.users.update({
       where: { id: session.user.id },
       data: {
         name: validation.data.name || undefined,

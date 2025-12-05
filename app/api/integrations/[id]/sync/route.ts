@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const integration = await prisma.integration.findFirst({
+    const integration = await prisma.integrations.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -45,7 +45,7 @@ export async function POST(
     }
 
     // Verify space ownership
-    const space = await prisma.space.findFirst({
+    const space = await prisma.spaces.findFirst({
       where: {
         id: targetSpaceId,
         ownerId: session.user.id,

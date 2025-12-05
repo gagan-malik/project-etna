@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const integration = await prisma.integration.findFirst({
+    const integration = await prisma.integrations.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -55,7 +55,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const integration = await prisma.integration.findFirst({
+    const integration = await prisma.integrations.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -72,7 +72,7 @@ export async function PATCH(
     const body = await req.json();
     const { name, config, credentials, enabled } = body;
 
-    const updated = await prisma.integration.update({
+    const updated = await prisma.integrations.update({
       where: { id },
       data: {
         ...(name && { name }),
@@ -108,7 +108,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const integration = await prisma.integration.findFirst({
+    const integration = await prisma.integrations.findFirst({
       where: {
         id,
         userId: session.user.id,
@@ -122,7 +122,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.integration.delete({
+    await prisma.integrations.delete({
       where: { id },
     });
 
