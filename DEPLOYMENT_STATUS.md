@@ -1,96 +1,88 @@
-# Deployment Status ✅
+# Deployment Status
 
-## GitHub Repository
-- **Repository**: `gagan-malik/project-etna`
-- **Latest Commit**: `40c22c8` - "chore: Add Vercel configuration"
-- **Branch**: `main`
-- **Status**: ✅ All changes pushed successfully
+## ✅ Database Migration - COMPLETE
 
-## Vercel Auto-Deployment Setup
+**Migration Applied**: `20251205174349_add_subscription_fields`
 
-### Current Status
-Your repository is ready for auto-deployment via Vercel. The code has been pushed to GitHub and includes:
-- ✅ `vercel.json` configuration file
-- ✅ Next.js build configuration
-- ✅ All Priority 1-3 features complete
-- ✅ Build passing locally
+The following fields have been added to the `users` table:
+- ✅ `plan` (TEXT, default: 'free')
+- ✅ `subscriptionStatus` (TEXT, nullable)
+- ✅ `subscriptionExpiresAt` (TIMESTAMP, nullable)
 
-### To Enable Auto-Deployment:
+All existing users have been set to `plan = 'free'` automatically.
 
-1. **Go to Vercel Dashboard**
-   - Visit: https://vercel.com/dashboard
-   - Sign in with your GitHub account
+## 🚀 Vercel Deployment
 
-2. **Import Repository**
-   - Click "Add New..." → "Project"
-   - Select "Import Git Repository"
-   - Find and select `gagan-malik/project-etna`
-   - Click "Import"
+**Status**: Code pushed to GitHub - Vercel will auto-deploy
 
-3. **Configure Project** (Vercel will auto-detect Next.js)
-   - **Framework Preset**: Next.js (auto-detected)
-   - **Root Directory**: `./` (default)
-   - **Build Command**: `npm run build` (auto-detected)
-   - **Output Directory**: `.next` (auto-detected)
-   - **Install Command**: `npm install` (auto-detected)
+**Latest Commit**: `29a0346` - fix: Add migration.sql to subscription fields migration
 
-4. **Environment Variables**
-   Add these in Vercel dashboard → Project Settings → Environment Variables:
-   - `DATABASE_URL` - Your PostgreSQL connection string
-   - `NEXTAUTH_SECRET` - Your NextAuth secret
-   - `NEXTAUTH_URL` - Your production URL (e.g., `https://your-app.vercel.app`)
-   - `OPENAI_API_KEY` - (Optional) For AI features
-   - `BLOB_READ_WRITE_TOKEN` - (Optional) For file uploads
-   - Any OAuth credentials (GitHub, Google) if using OAuth
+### To Verify Deployment:
 
-5. **Deploy**
-   - Click "Deploy"
-   - Vercel will automatically:
-     - Install dependencies
-     - Run `npm run build`
-     - Deploy to production
-     - Provide a production URL
+1. **Check Vercel Dashboard**:
+   - Go to https://vercel.com/dashboard
+   - Find your project "project-etna"
+   - Check the latest deployment status
+   - Verify build completed successfully
 
-### After Deployment
+2. **Or use Vercel CLI** (if logged in):
+   ```bash
+   vercel --prod
+   ```
 
-Once deployed, Vercel will:
-- ✅ Automatically deploy every push to `main` branch
-- ✅ Create preview deployments for pull requests
-- ✅ Provide production and preview URLs
-- ✅ Show build logs and deployment status
+3. **Check Deployment URL**:
+   - Your app should be available at your Vercel domain
+   - Test the model selector functionality
+   - Verify `/overview` page loads
 
-### Verify Deployment
+## ✅ What's Deployed
 
-1. Check Vercel dashboard for deployment status
-2. Visit your production URL (e.g., `https://project-etna.vercel.app`)
-3. Test the application:
-   - `/api/health` - Health check endpoint
-   - `/chat` - Chat interface
-   - `/integrations` - Integration management
-   - `/files` - File management
+- Enhanced ModelSelector component
+- Auto Mode (free feature)
+- MAX Mode (premium feature with upgrade button)
+- Use Multiple Models (premium feature with upgrade button)
+- Subscription system
+- Overview/Upgrade page
+- Model ranking utility
+- API updates for premium features
 
-### Next Steps After Deployment
+## 🧪 Testing Checklist
 
-1. **Set up Database**
-   - Ensure your `DATABASE_URL` is configured in Vercel
-   - Run migrations: `npx prisma migrate deploy` (or use Vercel's build command)
+After deployment, test:
 
-2. **Configure Domain** (Optional)
-   - Add custom domain in Vercel dashboard
-   - Update `NEXTAUTH_URL` to match your domain
+- [ ] Model selector opens and displays models
+- [ ] Auto Mode toggle works
+- [ ] Upgrade buttons appear for premium features (free users)
+- [ ] Overview page loads at `/overview`
+- [ ] API endpoints work correctly
+- [ ] Premium features validate access correctly
 
-3. **Monitor**
-   - Check Vercel dashboard for deployment logs
-   - Monitor `/api/health` endpoint
-   - Review error logs in Vercel dashboard
+## 📝 Next Steps
 
-## Current Build Status
-- ✅ TypeScript compilation: Passing
-- ✅ Next.js build: Passing
-- ✅ All features: Complete
-- ✅ Ready for production: Yes
+1. **Verify Vercel Deployment**: Check dashboard for build status
+2. **Test Features**: Test all new functionality
+3. **Monitor**: Watch for any errors in Vercel logs
+4. **Update Users**: Set test users to premium if needed for testing
 
----
+## 🔧 If Migration Needs to Run on Vercel
 
-**Note**: If your repository is already connected to Vercel, it should automatically deploy on the next push. Check your Vercel dashboard to see the deployment status.
+If Vercel needs to run migrations separately, you can:
 
+1. **Via Vercel Dashboard**:
+   - Go to your project settings
+   - Add `DATABASE_URL` environment variable if not set
+   - The build command already includes `prisma generate`
+
+2. **Via Vercel CLI** (after login):
+   ```bash
+   vercel env pull .env.local
+   npx prisma migrate deploy
+   ```
+
+3. **Or add to build command** (if needed):
+   Update `vercel.json` to include migration:
+   ```json
+   {
+     "buildCommand": "prisma generate && prisma migrate deploy && npm run build"
+   }
+   ```
