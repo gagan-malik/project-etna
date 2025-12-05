@@ -27,7 +27,18 @@ export async function GET(req: Request) {
     });
 
     // Don't return credentials in the response
-    const safeIntegrations = integrations.map((integration) => ({
+    const safeIntegrations = integrations.map((integration: {
+      id: string;
+      type: string;
+      name: string;
+      enabled: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      config: any;
+      credentials?: any;
+      spaceId?: string | null;
+      userId: string;
+    }) => ({
       ...integration,
       credentials: undefined,
     }));
