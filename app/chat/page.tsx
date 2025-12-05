@@ -24,6 +24,8 @@ import { SourceSelector, type SourceType } from "@/components/chat/source-select
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
 import { getBestModelForQuery, getHighestQualityModel } from "@/lib/ai/model-ranking";
+import type { ModelInfo } from "@/lib/ai/types";
+import { hasPremiumAccess as checkPremiumAccess } from "@/lib/subscription";
 import { useSession } from "next-auth/react";
 
 interface MessageDisplay {
@@ -156,15 +158,18 @@ function ChatPageContent() {
         });
         if (response.ok) {
           const data = await response.json();
-          const models = data.models.map((m: any) => ({
+          const models: ModelInfo[] = data.models.map((m: any) => ({
             id: m.id,
             name: m.name,
             provider: m.provider,
             category: m.category,
+            available: m.available ?? false, // Include available property
           }));
           setAvailableModels(models);
           if (models.length > 0 && !selectedModel) {
-            setSelectedModel(models[0]);
+            // Prefer selecting an available model, or just the first one
+            const availableModel = models.find(m => m.available) || models[0];
+            setSelectedModel(availableModel);
           }
         }
       } catch (error) {

@@ -105,41 +105,38 @@ export async function* streamAIResponse(
 
 /**
  * Get available models
+ * Always returns all models, but marks availability based on configured providers
  */
 export function getAvailableModels(): ModelInfo[] {
   const models: ModelInfo[] = [];
 
-  // OpenAI models
-  if (getProvider("openai")) {
-    models.push(
-      { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai", category: "General", available: true },
-      { id: "gpt-4", name: "GPT-4", provider: "openai", category: "General", available: true },
-      { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai", category: "General", available: true }
-    );
-  }
+  // Always include OpenAI models (mark availability based on provider)
+  const openaiAvailable = getProvider("openai")?.isAvailable() ?? false;
+  models.push(
+    { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai", category: "General", available: openaiAvailable },
+    { id: "gpt-4", name: "GPT-4", provider: "openai", category: "General", available: openaiAvailable },
+    { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai", category: "General", available: openaiAvailable }
+  );
 
-  // Gemini models
-  if (getProvider("google")) {
-    models.push(
-      { id: "gemini-pro", name: "Gemini Pro", provider: "google", category: "General", available: true }
-    );
-  }
+  // Always include Gemini models
+  const googleAvailable = getProvider("google")?.isAvailable() ?? false;
+  models.push(
+    { id: "gemini-pro", name: "Gemini Pro", provider: "google", category: "General", available: googleAvailable }
+  );
 
-  // DeepSeek models
-  if (getProvider("deepseek")) {
-    models.push(
-      { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", category: "General", available: true },
-      { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", category: "Code", available: true }
-    );
-  }
+  // Always include DeepSeek models
+  const deepseekAvailable = getProvider("deepseek")?.isAvailable() ?? false;
+  models.push(
+    { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", category: "General", available: deepseekAvailable },
+    { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", category: "Code", available: deepseekAvailable }
+  );
 
-  // Llama models
-  if (getProvider("llama")) {
-    models.push(
-      { id: "llama-3-70b", name: "Llama 3 70B", provider: "llama", category: "Open Source", available: true },
-      { id: "llama-3-8b", name: "Llama 3 8B", provider: "llama", category: "Open Source", available: true }
-    );
-  }
+  // Always include Llama models
+  const llamaAvailable = getProvider("llama")?.isAvailable() ?? false;
+  models.push(
+    { id: "llama-3-70b", name: "Llama 3 70B", provider: "llama", category: "Open Source", available: llamaAvailable },
+    { id: "llama-3-8b", name: "Llama 3 8B", provider: "llama", category: "Open Source", available: llamaAvailable }
+  );
 
   return models;
 }

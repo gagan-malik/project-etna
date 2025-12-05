@@ -21,6 +21,7 @@ interface Model {
   name: string;
   provider: string;
   category: string;
+  available?: boolean;
 }
 
 interface ModelSelectorProps {
@@ -217,15 +218,20 @@ export function ModelSelector({
                     <button
                       key={model.id}
                       onClick={() => {
-                        onSelect(model);
-                        if (!autoMode) {
-                          setOpen(false);
+                        if (model.available !== false) {
+                          onSelect(model);
+                          if (!autoMode) {
+                            setOpen(false);
+                          }
                         }
                       }}
+                      disabled={model.available === false}
                       className={`w-full text-left px-3 py-2.5 rounded-md transition-colors flex items-center justify-between ${
-                        selected?.id === model.id
+                        model.available === false
+                          ? "opacity-50 cursor-not-allowed"
+                          : selected?.id === model.id
                           ? "bg-accent"
-                          : "hover:bg-accent/50"
+                          : "hover:bg-accent/50 cursor-pointer"
                       }`}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
