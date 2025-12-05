@@ -1,30 +1,36 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X } from "lucide-react";
+import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
 import { GitHubRepoSelector } from "@/components/chat/github-repo-selector";
 import { LLMModelSelector } from "@/components/chat/llm-model-selector";
+import { useConversation, type Message } from "@/lib/hooks/use-conversation";
+import { useAIStream } from "@/lib/hooks/use-ai-stream";
 
-interface Message {
+interface MessageDisplay {
   id: string;
   role: "user" | "assistant";
   content: string;
   files?: File[];
   repository?: string | null;
   model?: { id: string; name: string; provider: string; category: string } | null;
+  createdAt?: string;
 }
 
 const SUGGESTIONS = [
@@ -33,45 +39,111 @@ const SUGGESTIONS = [
   "Best practices for React",
 ];
 
-const AVAILABLE_MODELS = [
-  { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "OpenAI", category: "General" },
-  { id: "gpt-4", name: "GPT-4", provider: "OpenAI", category: "General" },
-  { id: "claude-3-opus", name: "Claude 3 Opus", provider: "Anthropic", category: "General" },
-  { id: "claude-3-sonnet", name: "Claude 3 Sonnet", provider: "Anthropic", category: "General" },
-  { id: "gemini-pro", name: "Gemini Pro", provider: "Google", category: "General" },
-  { id: "llama-3-70b", name: "Llama 3 70B", provider: "Meta", category: "Open Source" },
-  { id: "llama-3-8b", name: "Llama 3 8B", provider: "Meta", category: "Open Source" },
-  { id: "mixtral-8x7b", name: "Mixtral 8x7B", provider: "Mistral AI", category: "Open Source" },
-  { id: "code-llama-70b", name: "Code Llama 70B", provider: "Meta", category: "Code" },
-  { id: "deepseek-coder", name: "DeepSeek Coder", provider: "DeepSeek", category: "Code" },
-  { id: "verilog-llm", name: "Verilog LLM", provider: "Specialized", category: "Verification" },
-  { id: "systemverilog-llm", name: "SystemVerilog LLM", provider: "Specialized", category: "Verification" },
-];
+function ChatPageContent() {
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const {
+    currentConversation,
+    messages: dbMessages,
+    loading: conversationLoading,
+    createConversation,
+    loadConversation,
+    setMessages,
+  } = useConversation();
+  const { streaming, streamMessage } = useAIStream();
 
-export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessagesDisplay] = useState<MessageDisplay[]>([]);
+  const [availableModels, setAvailableModels] = useState<
+    Array<{ id: string; name: string; provider: string; category: string }>
+  >([]);
   const [inputValue, setInputValue] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedRepository, setSelectedRepository] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0]);
-  const [isTyping, setIsTyping] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<{
+    id: string;
+    name: string;
+    provider: string;
+    category: string;
+  } | null>(null);
   const [charCount, setCharCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const streamingMessageRef = useRef<string>("");
 
-  // Load saved preferences
+  // Load available models from API
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const response = await fetch("/api/ai/models", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const models = data.models.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            provider: m.provider,
+            category: m.category,
+          }));
+          setAvailableModels(models);
+          if (models.length > 0 && !selectedModel) {
+            setSelectedModel(models[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load models:", error);
+      }
+    };
+    loadModels();
+  }, []);
+
+  // Load saved model preference
   useEffect(() => {
     const savedModel = localStorage.getItem("selected-llm-model");
-    if (savedModel) {
+    if (savedModel && availableModels.length > 0) {
       try {
         const model = JSON.parse(savedModel);
-        setSelectedModel(model);
+        const found = availableModels.find((m) => m.id === model.id);
+        if (found) {
+          setSelectedModel(found);
+        }
       } catch (e) {
         console.error("Error loading saved model:", e);
       }
     }
-  }, []);
+  }, [availableModels]);
+
+  // Load conversation from URL parameter
+  useEffect(() => {
+    const conversationId = searchParams.get("conversation");
+    if (conversationId && conversationId !== currentConversation?.id) {
+      loadConversation(conversationId);
+    }
+  }, [searchParams, currentConversation?.id, loadConversation]);
+
+  // Convert database messages to display format
+  useEffect(() => {
+    if (dbMessages && dbMessages.length > 0) {
+      const displayMessages: MessageDisplay[] = dbMessages.map((msg) => ({
+        id: msg.id,
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        createdAt: msg.createdAt,
+        model: msg.model
+          ? {
+              id: msg.model,
+              name: msg.model,
+              provider: msg.provider || "unknown",
+              category: "General",
+            }
+          : null,
+      }));
+      setMessagesDisplay(displayMessages);
+    } else if (!conversationLoading) {
+      setMessagesDisplay([]);
+    }
+  }, [dbMessages, conversationLoading]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -81,65 +153,200 @@ export default function ChatPage() {
     }
   }, [inputValue]);
 
-  // Scroll to bottom
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, streaming]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setSelectedFiles((prev) => [...prev, ...newFiles]);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<number>>(new Set());
+  const [uploadedFileUrls, setUploadedFileUrls] = useState<Map<number, string>>(new Map());
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+
+    const newFiles = Array.from(e.target.files);
+    const startIndex = selectedFiles.length;
+
+    // Add files to selected files immediately
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
+
+    // Upload each file
+    for (let i = 0; i < newFiles.length; i++) {
+      const file = newFiles[i];
+      const fileIndex = startIndex + i;
+      
+      setUploadingFiles((prev) => new Set(prev).add(fileIndex));
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        if (currentConversation?.spaceId) {
+          formData.append("spaceId", currentConversation.spaceId);
+        }
+
+        const response = await fetch("/api/files/upload", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to upload file");
+        }
+
+        const data = await response.json();
+        setUploadedFileUrls((prev) => new Map(prev).set(fileIndex, data.blob.url));
+        
+        toast({
+          title: "File uploaded",
+          description: `${file.name} uploaded successfully`,
+        });
+      } catch (error: any) {
+        toast({
+          title: "Upload failed",
+          description: error.message || `Failed to upload ${file.name}`,
+          variant: "destructive",
+        });
+        // Remove failed file
+        setSelectedFiles((prev) => prev.filter((_, idx) => idx !== fileIndex));
+      } finally {
+        setUploadingFiles((prev) => {
+          const next = new Set(prev);
+          next.delete(fileIndex);
+          return next;
+        });
+      }
     }
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setUploadedFileUrls((prev) => {
+      const next = new Map(prev);
+      next.delete(index);
+      return next;
+    });
+    setUploadingFiles((prev) => {
+      const next = new Set(prev);
+      next.delete(index);
+      return next;
+    });
   };
 
   const handleSend = async () => {
     if (!inputValue.trim() && selectedFiles.length === 0) return;
+    if (!selectedModel) {
+      toast({
+        title: "No model selected",
+        description: "Please select an AI model first",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const userMessage: Message = {
+    const content = inputValue.trim();
+    if (!content) return;
+
+    // Ensure we have a conversation
+    let conversationId = currentConversation?.id;
+    if (!conversationId) {
+      const newConv = await createConversation();
+      if (!newConv) {
+        toast({
+          title: "Error",
+          description: "Failed to create conversation",
+          variant: "destructive",
+        });
+        return;
+      }
+      conversationId = newConv.id;
+    }
+
+    // Add user message to UI immediately
+    const userMessage: MessageDisplay = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: inputValue,
-      files: [...selectedFiles],
+      content,
+      files: selectedFiles.length > 0 ? [...selectedFiles] : undefined,
       repository: selectedRepository,
       model: selectedModel,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessagesDisplay((prev) => [...prev, userMessage]);
     setInputValue("");
     setSelectedFiles([]);
     setCharCount(0);
-    setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: generateResponse(inputValue, selectedModel),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsTyping(false);
-    }, 1000);
-  };
+    // Create assistant message placeholder for streaming
+    const assistantMessageId = `assistant-${Date.now()}`;
+    const assistantMessage: MessageDisplay = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      model: selectedModel,
+    };
+    setMessagesDisplay((prev) => [...prev, assistantMessage]);
+    streamingMessageRef.current = "";
 
-  const generateResponse = (query: string, model: typeof AVAILABLE_MODELS[0] | null): string => {
-    const modelName = model?.name || "Default Model";
-    return `Based on your question "${query}", here's what I found using ${modelName}:
-
-This is a simulated response. In a real implementation, this would connect to the selected AI model service for silicon verification and code analysis.
-
-**Key Features:**
-• Model-specific silicon verification capabilities
-• Code analysis and hardware description language (HDL) support
-• Source code understanding from GitHub repositories
-• Context-aware responses based on selected model
-
-The selected model provides specialized capabilities for verification tasks.`;
+    try {
+      // Stream AI response
+      if (!conversationId) {
+        throw new Error("Conversation ID is missing");
+      }
+      await streamMessage(
+        conversationId,
+        content,
+        selectedModel.id,
+        selectedModel.provider,
+        (chunk: string) => {
+          // Update streaming message
+          streamingMessageRef.current += chunk;
+          setMessagesDisplay((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: streamingMessageRef.current }
+                : msg
+            )
+          );
+        },
+        async (fullContent: string) => {
+          // Reload messages from database to get the saved assistant message
+          if (currentConversation) {
+            const response = await fetch(
+              `/api/conversations/${conversationId}`,
+              { credentials: "include" }
+            );
+            if (response.ok) {
+              const data = await response.json();
+              setMessages(data.conversation.messages || []);
+            }
+          }
+        }
+      );
+    } catch (error: any) {
+      const errorMessage = error.message || "Failed to send message";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+        action: (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              // Retry sending the message
+              handleSend();
+            }}
+          >
+            Retry
+          </Button>
+        ),
+      });
+      // Remove failed assistant message
+      setMessagesDisplay((prev) =>
+        prev.filter((msg) => msg.id !== assistantMessageId)
+      );
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -148,9 +355,9 @@ The selected model provides specialized capabilities for verification tasks.`;
   };
 
   return (
-    <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-16 overflow-hidden">
+    <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-8 md:py-16 overflow-hidden">
         {/* Welcome Section */}
-        {messages.length === 0 && !isTyping && (
+        {messages.length === 0 && !streaming && !conversationLoading && (
           <div className="flex flex-col items-center gap-12 text-center mb-28 flex-shrink-0">
             <div className="flex flex-col gap-4 items-center">
               <h1 className="text-2xl font-semibold leading-8 text-foreground">
@@ -162,13 +369,13 @@ The selected model provides specialized capabilities for verification tasks.`;
             </div>
             
             {/* Quick Suggestions */}
-            <div className="flex flex-wrap gap-3 justify-center max-w-[600px]">
+            <div className="flex flex-wrap gap-2 md:gap-3 justify-center max-w-[600px] px-2">
               {SUGGESTIONS.map((suggestion, idx) => (
                 <Button
                   key={idx}
                   variant="outline"
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-4 py-2 rounded-full bg-muted text-sm font-medium text-foreground hover:bg-muted/80"
+                  className="px-3 md:px-4 py-2 rounded-full bg-muted text-xs md:text-sm font-medium text-foreground hover:bg-muted/80"
                 >
                   {suggestion}
                 </Button>
@@ -177,14 +384,143 @@ The selected model provides specialized capabilities for verification tasks.`;
           </div>
         )}
 
-        {/* Chat Messages */}
-        {messages.length > 0 && (
+        {/* Loading State */}
+        {conversationLoading && messages.length === 0 && (
           <ScrollArea className="flex-1 w-full mb-16 min-h-0">
             <div className="flex flex-col gap-16">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-20 w-full rounded-xl" />
+                  </div>
+                </div>
               ))}
-              {isTyping && (
+            </div>
+          </ScrollArea>
+        )}
+
+        {/* Chat Messages */}
+        {!conversationLoading && messages.length > 0 && (
+          <ScrollArea className="flex-1 w-full mb-8 md:mb-16 min-h-0">
+            <div className="flex flex-col gap-8 md:gap-16">
+              {messages.map((message) => (
+                <ChatMessage 
+                  key={message.id} 
+                  message={message}
+                  onEdit={async (id, newContent) => {
+                    try {
+                      const response = await fetch(`/api/messages/${id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ content: newContent }),
+                      });
+                      if (!response.ok) throw new Error("Failed to update message");
+                      // Reload conversation
+                      if (currentConversation) {
+                        await loadConversation(currentConversation.id);
+                      }
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to edit message",
+                        variant: "destructive",
+                      });
+                      throw error;
+                    }
+                  }}
+                  onRegenerate={async (id) => {
+                    // Find the message and regenerate from that point
+                    const messageIndex = messages.findIndex(m => m.id === id);
+                    if (messageIndex === -1) return;
+                    
+                    // Get all messages up to this point
+                    const messagesUpTo = messages.slice(0, messageIndex);
+                    const lastUserMessage = messagesUpTo.reverse().find(m => m.role === "user");
+                    
+                    if (!lastUserMessage || !selectedModel) {
+                      toast({
+                        title: "Error",
+                        description: "Cannot regenerate: no user message found",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    // Remove messages from this point forward
+                    setMessagesDisplay(prev => prev.slice(0, messageIndex));
+                    
+                    // Regenerate
+                    try {
+                      await streamMessage(
+                        currentConversation!.id,
+                        lastUserMessage.content,
+                        selectedModel.id,
+                        selectedModel.provider,
+                        (chunk: string) => {
+                          streamingMessageRef.current += chunk;
+                          const assistantMessageId = `assistant-${Date.now()}`;
+                          setMessagesDisplay(prev => {
+                            const existing = prev.find(m => m.id === assistantMessageId);
+                            if (existing) {
+                              return prev.map(m => 
+                                m.id === assistantMessageId 
+                                  ? { ...m, content: streamingMessageRef.current }
+                                  : m
+                              );
+                            }
+                            return [...prev, {
+                              id: assistantMessageId,
+                              role: "assistant" as const,
+                              content: streamingMessageRef.current,
+                              model: selectedModel,
+                            }];
+                          });
+                        },
+                        async () => {
+                          if (currentConversation) {
+                            const response = await fetch(
+                              `/api/conversations/${currentConversation.id}`,
+                              { credentials: "include" }
+                            );
+                            if (response.ok) {
+                              const data = await response.json();
+                              setMessages(data.conversation.messages || []);
+                            }
+                          }
+                        }
+                      );
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to regenerate",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  onDelete={async (id) => {
+                    try {
+                      const response = await fetch(`/api/messages/${id}`, {
+                        method: "DELETE",
+                        credentials: "include",
+                      });
+                      if (!response.ok) throw new Error("Failed to delete message");
+                      // Reload conversation
+                      if (currentConversation) {
+                        await loadConversation(currentConversation.id);
+                      }
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to delete message",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                />
+              ))}
+              {streaming && (
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     <Sparkles className="h-4 w-4 text-foreground" />
@@ -203,14 +539,19 @@ The selected model provides specialized capabilities for verification tasks.`;
           </ScrollArea>
         )}
 
-        {/* Input Container */}
-        <div className="w-full flex-shrink-0 pt-4">
-          <Card className="bg-muted border border-border rounded-full p-4">
+            {/* Input Container */}
+            <div className="w-full flex-shrink-0 pt-4">
+              <Card className="bg-muted border border-border rounded-full md:rounded-full rounded-2xl p-3 md:p-4">
             <div className="flex flex-col gap-2">
-              {/* File Preview */}
-              {selectedFiles.length > 0 && (
-                <FilePreview files={selectedFiles} onRemove={removeFile} />
-              )}
+                  {/* File Preview */}
+                  {selectedFiles.length > 0 && (
+                    <FilePreview 
+                      files={selectedFiles} 
+                      onRemove={removeFile}
+                      uploadingFiles={uploadingFiles}
+                      uploadedUrls={uploadedFileUrls}
+                    />
+                  )}
 
               {/* Text Input */}
               <div className="flex items-center gap-2">
@@ -239,7 +580,7 @@ The selected model provides specialized capabilities for verification tasks.`;
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,application/pdf,text/*,.doc,.docx"
                     multiple
                     onChange={handleFileSelect}
                     className="hidden"
@@ -249,6 +590,7 @@ The selected model provides specialized capabilities for verification tasks.`;
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
+                    disabled={uploadingFiles.size > 0}
                   >
                     <Plus className="h-5 w-5" />
                     Attach
@@ -259,14 +601,16 @@ The selected model provides specialized capabilities for verification tasks.`;
                     onSelect={setSelectedRepository}
                   />
                   
-                  <LLMModelSelector
-                    models={AVAILABLE_MODELS}
-                    selected={selectedModel}
-                    onSelect={(model) => {
-                      setSelectedModel(model);
-                      localStorage.setItem("selected-llm-model", JSON.stringify(model));
-                    }}
-                  />
+                  {availableModels.length > 0 && (
+                    <LLMModelSelector
+                      models={availableModels}
+                      selected={selectedModel}
+                      onSelect={(model) => {
+                        setSelectedModel(model);
+                        localStorage.setItem("selected-llm-model", JSON.stringify(model));
+                      }}
+                    />
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -277,7 +621,7 @@ The selected model provides specialized capabilities for verification tasks.`;
                   )}
                   <Button
                     onClick={handleSend}
-                    disabled={!inputValue.trim() && selectedFiles.length === 0}
+                    disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
                     className="rounded-full"
                   >
                     <Send className="h-5 w-5" />
@@ -288,5 +632,13 @@ The selected model provides specialized capabilities for verification tasks.`;
           </Card>
         </div>
       </main>
+    );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }

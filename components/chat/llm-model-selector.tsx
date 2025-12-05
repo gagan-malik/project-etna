@@ -21,7 +21,7 @@ interface Model {
 
 interface LLMModelSelectorProps {
   models: Model[];
-  selected: Model;
+  selected: Model | null;
   onSelect: (model: Model) => void;
 }
 
@@ -47,7 +47,7 @@ export function LLMModelSelector({ models, selected, onSelect }: LLMModelSelecto
           className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
         >
           <Sparkles className="h-5 w-5" />
-          <span>{selected.name}</span>
+          <span>{selected?.name || "Select Model"}</span>
           <ChevronDown className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
@@ -82,7 +82,7 @@ export function LLMModelSelector({ models, selected, onSelect }: LLMModelSelecto
                         setOpen(false);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                        selected.id === model.id
+                        selected?.id === model.id
                           ? "bg-accent"
                           : "hover:bg-accent"
                       }`}
@@ -96,7 +96,7 @@ export function LLMModelSelector({ models, selected, onSelect }: LLMModelSelecto
                             {model.provider}
                           </div>
                         </div>
-                        {selected.id === model.id && (
+                        {selected?.id === model.id && (
                           <Badge variant="secondary" className="text-xs">
                             Selected
                           </Badge>

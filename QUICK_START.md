@@ -1,104 +1,84 @@
-# Quick Start Guide
+# 🚀 Quick Start Guide - Get Running in 5 Minutes!
 
-## 1. Setup Environment Variables
+## Step 1: Get a Database (2 minutes)
 
-Run the setup script to create `.env.local`:
+### Option A: Vercel Postgres (Easiest!)
+1. Go to https://vercel.com → Your Project → **Storage** tab
+2. Click **"Create Database"** → Choose **"Postgres"**
+3. Copy the **Connection String** (looks like: `postgresql://...`)
 
-```bash
-npm run setup:env
+### Option B: Neon (Also Easy!)
+1. Go to https://neon.tech → Sign up with GitHub
+2. Click **"Create a project"**
+3. Copy the **Connection String**
+
+---
+
+## Step 2: Set Up Environment Variables (1 minute)
+
+1. Open `.env.local` in your project (create it if it doesn't exist)
+2. Add these lines:
+
+```env
+DATABASE_URL="paste-your-connection-string-here"
+NEXTAUTH_SECRET="run-this-command-below"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Or manually create `.env.local` and configure:
+3. Generate a secret key:
+   ```bash
+   openssl rand -base64 32
+   ```
+   Copy the output and paste it as `NEXTAUTH_SECRET` value
+
+---
+
+## Step 3: Run Setup Script (1 minute)
 
 ```bash
-# Copy template
-cp .env.example .env.local
-
-# Generate NEXTAUTH_SECRET
-openssl rand -base64 32
-# Add the output to NEXTAUTH_SECRET in .env.local
+./scripts/setup-database.sh
 ```
 
-## 2. Configure Database
+This script will:
+- ✅ Check your environment variables
+- ✅ Generate a secret key if needed
+- ✅ Create all database tables
 
-### Choose one option:
+**OR** do it manually:
 
-**Option A: Vercel Postgres (Recommended)**
-1. Create Postgres database in Vercel dashboard
-2. Copy connection string to `DATABASE_URL` in `.env.local`
-3. Enable pgvector in SQL Editor: `CREATE EXTENSION IF NOT EXISTS vector;`
-
-**Option B: Local PostgreSQL**
 ```bash
-# Install PostgreSQL
-brew install postgresql@15
-brew services start postgresql@15
-
-# Create database
-createdb project_etna
-psql project_etna -c "CREATE EXTENSION IF NOT EXISTS vector;"
-
-# Update .env.local
-DATABASE_URL="postgresql://$(whoami)@localhost:5432/project_etna?schema=public"
+npx prisma generate
+npx prisma migrate dev --name init
 ```
 
-**Option C: Neon (Free Cloud PostgreSQL)**
-1. Sign up at https://neon.tech
-2. Create project (pgvector included)
-3. Copy connection string to `DATABASE_URL` in `.env.local`
+---
 
-## 3. Run Migrations
-
-Once `DATABASE_URL` is configured:
+## Step 4: Start Your App! (1 minute)
 
 ```bash
-# Generate Prisma Client
-npm run db:generate
-
-# Run migrations
-npm run db:migrate
-```
-
-This creates all database tables and enables pgvector.
-
-## 4. (Optional) Seed Database
-
-```bash
-npm run db:seed
-```
-
-Creates test user, space, and conversation.
-
-## 5. Verify Setup
-
-```bash
-# Open Prisma Studio to view database
-npm run db:studio
-
-# Or start development server
 npm run dev
 ```
 
-## Common Issues
+Open http://localhost:3000/signup and create an account! 🎉
 
-### "Can't reach database server"
-- Check if PostgreSQL is running
-- Verify DATABASE_URL format
-- Test connection: `psql $DATABASE_URL`
+---
 
-### "Extension vector does not exist"
-- Run: `CREATE EXTENSION IF NOT EXISTS vector;`
-- Ensure you have database admin privileges
+## 🆘 Need Help?
 
-### "Prisma Client not found"
-- Run: `npm run db:generate`
+- **Detailed guide:** See `DATABASE_SETUP_SIMPLE.md`
+- **Troubleshooting:** Check the error message in your terminal
+- **Database issues:** Make sure your `DATABASE_URL` is correct
 
-## Next Steps
+---
 
-After database is ready:
-1. ✅ Environment configured
-2. ✅ Database migrated
-3. ⏭️ Configure Auth.js
-4. ⏭️ Set up API routes
-5. ⏭️ Implement features
+## ✅ Checklist
 
+- [ ] Database created (Vercel or Neon)
+- [ ] Connection string copied
+- [ ] `.env.local` file created with `DATABASE_URL`
+- [ ] `NEXTAUTH_SECRET` generated and added
+- [ ] Migrations run successfully
+- [ ] App starts without errors
+- [ ] Can sign up a new user
+
+**You're all set! 🎉**

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   MessageSquare, 
   History, 
@@ -11,7 +11,9 @@ import {
   Sparkles,
   User,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  Plus,
+  Loader2
 } from "lucide-react";
 import {
   Sidebar,
@@ -85,9 +87,75 @@ const navigation: NavSection[] = [
   },
 ];
 
+interface Conversation {
+  id: string;
+  title: string | null;
+  updatedAt: string;
+  messages?: Array<{ id: string }>;
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+
+  // Extract conversation ID from URL if on chat page
+  useEffect(() => {
+    if (pathname === "/chat") {
+      const params = new URLSearchParams(window.location.search);
+      const convId = params.get("conversation");
+      setCurrentConversationId(convId);
+    } else {
+      setCurrentConversationId(null);
+    }
+  }, [pathname]);
+
+  // Load conversations
+  useEffect(() => {
+    if (pathname === "/chat" || pathname === "/activity") {
+      const loadConversations = async () => {
+        try {
+          setLoadingConversations(true);
+          const response = await fetch("/api/conversations", {
+            credentials: "include",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setConversations(data.conversations || []);
+          }
+        } catch (error) {
+          console.error("Failed to load conversations:", error);
+        } finally {
+          setLoadingConversations(false);
+        }
+      };
+      loadConversations();
+    }
+  }, [pathname]);
+
+  const handleNewChat = () => {
+    router.push("/chat");
+  };
+
+  const handleConversationClick = (id: string) => {
+    router.push(`/chat?conversation=${id}`);
+  };
+
+  const formatTimestamp = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffHours < 1) return "Just now";
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <>
@@ -113,6 +181,67 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* New Chat Button - Show on chat page */}
+        {pathname === "/chat" && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={handleNewChat} tooltip="New Chat">
+                    <Plus className="h-4 w-4" />
+                    <span>New Chat</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Conversations List - Show on chat page */}
+        {pathname === "/chat" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Recent Conversations</SidebarGroupLabel>
+            <SidebarGroupContent>
+              {loadingConversations ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                  No conversations yet
+                </div>
+              ) : (
+                <SidebarMenu>
+                  {conversations.slice(0, 10).map((conv) => (
+                    <SidebarMenuItem key={conv.id}>
+                      <SidebarMenuButton
+                        onClick={() => handleConversationClick(conv.id)}
+                        isActive={currentConversationId === conv.id}
+                        tooltip={conv.title || "Untitled Conversation"}
+                        className="w-full"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="truncate text-sm">
+                            {conv.title || "Untitled Conversation"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatTimestamp(conv.updatedAt)}
+                            {conv.messages && conv.messages.length > 0 && (
+                              <> • {conv.messages.length} msg</>
+                            )}
+                          </div>
+                        </div>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              )}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Main Navigation */}
         {navigation.map((section) => (
           <SidebarGroup key={section.title}>
             <SidebarGroupLabel>{section.title}</SidebarGroupLabel>

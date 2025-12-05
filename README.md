@@ -4,7 +4,16 @@ A modern AI chat application built with Next.js, Prisma, and multiple AI provide
 
 ## 🚀 Quick Start
 
-See [QUICK_START.md](./QUICK_START.md) for setup instructions.
+**New to this? Start here! 👇**
+
+1. **📖 [STEP_BY_STEP.md](./STEP_BY_STEP.md)** - Super simple guide (like you're 10!)
+2. **⚡ [QUICK_START.md](./QUICK_START.md)** - Fast 5-minute setup
+3. **📚 [DATABASE_SETUP_SIMPLE.md](./DATABASE_SETUP_SIMPLE.md)** - Detailed database guide
+
+**Or use the automated script:**
+```bash
+./scripts/setup-database.sh
+```
 
 ## 📋 Next Steps
 
