@@ -3,22 +3,25 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Search, 
+  LayoutGrid, 
+  HelpCircle, 
+  Globe, 
+  Paperclip, 
+  Mic, 
+  Radio,
+  Send,
+  Sparkles,
+  X,
+  Loader2
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
-import { GitHubRepoSelector } from "@/components/chat/github-repo-selector";
 import { ModelSelector } from "@/components/chat/model-selector";
 import { SourceSelector, type SourceType } from "@/components/chat/source-selector";
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
@@ -38,12 +41,6 @@ interface MessageDisplay {
   createdAt?: string;
 }
 
-const SUGGESTIONS = [
-  "What's the latest news about AI?",
-  "Explain quantum computing",
-  "Best practices for React",
-];
-
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -59,20 +56,12 @@ function ChatPageContent() {
   const { streaming, streamMessage } = useAIStream();
 
   const [messages, setMessagesDisplay] = useState<MessageDisplay[]>([]);
-  const [availableModels, setAvailableModels] = useState<
-    Array<{ id: string; name: string; provider: string; category: string }>
-  >([]);
+  const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedRepository, setSelectedRepository] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<{
-    id: string;
-    name: string;
-    provider: string;
-    category: string;
-  } | null>(null);
+  const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null);
   const [selectedSources, setSelectedSources] = useState<SourceType[]>(() => {
-    // Load saved sources from localStorage, default to web and my_files
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("selected-sources");
       if (saved) {
@@ -88,66 +77,47 @@ function ChatPageContent() {
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [autoMode, setAutoMode] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("auto-mode");
-      return saved === "true";
+      return localStorage.getItem("auto-mode") === "true";
     }
     return false;
   });
   const [maxMode, setMaxMode] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("max-mode");
-      return saved === "true";
+      return localStorage.getItem("max-mode") === "true";
     }
     return false;
   });
   const [useMultipleModels, setUseMultipleModels] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("use-multiple-models");
-      return saved === "true";
+      return localStorage.getItem("use-multiple-models") === "true";
     }
     return false;
   });
-  const [charCount, setCharCount] = useState(0);
+  const [activeLeftIcon, setActiveLeftIcon] = useState<"search" | "layout" | "help">("help");
+  const [activeRightIcon, setActiveRightIcon] = useState<"globe" | "attach" | "mic" | "equalizer">("equalizer");
+  const [isRecording, setIsRecording] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingMessageRef = useRef<string>("");
 
-  // Load premium access status
+  // Fetch premium access status
   useEffect(() => {
-    const checkPremiumAccess = async () => {
-      if (!session?.user?.id) return;
+    const fetchPremiumStatus = async () => {
       try {
-        const response = await fetch("/api/account/profile", {
-          credentials: "include",
-        });
+        const response = await fetch("/api/account/profile", { credentials: "include" });
         if (response.ok) {
           const data = await response.json();
-          const plan = data.user?.plan || "free";
-          const subscriptionStatus = data.user?.subscriptionStatus;
-          const subscriptionExpiresAt = data.user?.subscriptionExpiresAt
-            ? new Date(data.user.subscriptionExpiresAt)
-            : null;
-
-          const isPremium =
-            (plan === "pro" || plan === "enterprise") &&
-            subscriptionStatus === "active" &&
-            (!subscriptionExpiresAt || subscriptionExpiresAt > new Date());
-
-          setHasPremiumAccess(isPremium);
-
-          // Disable premium features if access is lost
-          if (!isPremium) {
-            setMaxMode(false);
-            setUseMultipleModels(false);
-          }
+          setHasPremiumAccess(data.user.plan !== "free");
         }
       } catch (error) {
-        console.error("Failed to check premium access:", error);
+        console.error("Failed to fetch premium status:", error);
+        setHasPremiumAccess(false);
       }
     };
-    checkPremiumAccess();
-  }, [session]);
+    fetchPremiumStatus();
+  }, []);
 
   // Load available models from API
   useEffect(() => {
@@ -163,11 +133,10 @@ function ChatPageContent() {
             name: m.name,
             provider: m.provider,
             category: m.category,
-            available: m.available ?? false, // Include available property
+            available: m.available ?? false,
           }));
           setAvailableModels(models);
           if (models.length > 0 && !selectedModel) {
-            // Prefer selecting an available model, or just the first one
             const availableModel = models.find(m => m.available) || models[0];
             setSelectedModel(availableModel);
           }
@@ -195,29 +164,14 @@ function ChatPageContent() {
     }
   }, [availableModels]);
 
-  // Auto-select model based on query when Auto Mode is enabled
+  // Save selected sources to localStorage
   useEffect(() => {
-    if (autoMode && inputValue.trim() && availableModels.length > 0) {
-      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-      const bestModel = getBestModelForQuery(inputValue, modelsWithAvailable);
-      if (bestModel && bestModel.id !== selectedModel?.id) {
-        setSelectedModel(availableModels.find(m => m.id === bestModel.id) || selectedModel);
-      }
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selected-sources", JSON.stringify(selectedSources));
     }
-  }, [inputValue, autoMode, availableModels, selectedModel]);
+  }, [selectedSources]);
 
-  // Apply MAX Mode - override model selection with highest quality
-  useEffect(() => {
-    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
-      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
-      if (highestQualityModel && highestQualityModel.id !== selectedModel?.id) {
-        setSelectedModel(availableModels.find(m => m.id === highestQualityModel.id) || selectedModel);
-      }
-    }
-  }, [maxMode, hasPremiumAccess, availableModels, selectedModel]);
-
-  // Persist toggle states
+  // Save toggle states to localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("auto-mode", String(autoMode));
@@ -226,12 +180,22 @@ function ChatPageContent() {
     }
   }, [autoMode, maxMode, useMultipleModels]);
 
-  // Save selected sources to localStorage
+  // Auto-select model based on Auto Mode or MAX Mode
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selected-sources", JSON.stringify(selectedSources));
+    if (availableModels.length > 0) {
+      if (maxMode && hasPremiumAccess) {
+        const highestQuality = getHighestQualityModel(availableModels);
+        if (highestQuality) {
+          setSelectedModel(highestQuality);
+        }
+      } else if (autoMode && inputValue.trim()) {
+        const bestModel = getBestModelForQuery(inputValue, availableModels);
+        if (bestModel) {
+          setSelectedModel(bestModel);
+        }
+      }
     }
-  }, [selectedSources]);
+  }, [autoMode, maxMode, inputValue, availableModels, hasPremiumAccess]);
 
   // Load conversation from URL parameter
   useEffect(() => {
@@ -255,6 +219,7 @@ function ChatPageContent() {
               name: msg.model,
               provider: msg.provider || "unknown",
               category: "General",
+              available: true,
             }
           : null,
       }));
@@ -263,14 +228,6 @@ function ChatPageContent() {
       setMessagesDisplay([]);
     }
   }, [dbMessages, conversationLoading]);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [inputValue]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -286,10 +243,8 @@ function ChatPageContent() {
     const newFiles = Array.from(e.target.files);
     const startIndex = selectedFiles.length;
 
-    // Add files to selected files immediately
     setSelectedFiles((prev) => [...prev, ...newFiles]);
 
-    // Upload each file
     for (let i = 0; i < newFiles.length; i++) {
       const file = newFiles[i];
       const fileIndex = startIndex + i;
@@ -326,7 +281,6 @@ function ChatPageContent() {
           description: error.message || `Failed to upload ${file.name}`,
           variant: "destructive",
         });
-        // Remove failed file
         setSelectedFiles((prev) => prev.filter((_, idx) => idx !== fileIndex));
       } finally {
         setUploadingFiles((prev) => {
@@ -354,35 +308,7 @@ function ChatPageContent() {
 
   const handleSend = async () => {
     if (!inputValue.trim() && selectedFiles.length === 0) return;
-
-    // Determine which model(s) to use
-    let modelToUse = selectedModel;
-    
-    // Apply MAX Mode if enabled and user has premium access
-    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
-      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
-      if (highestQualityModel) {
-        const foundModel = availableModels.find(m => m.id === highestQualityModel.id);
-        if (foundModel) {
-          modelToUse = foundModel;
-        }
-      }
-    }
-    
-    // Apply Auto Mode if enabled and MAX Mode is not
-    if (autoMode && !maxMode && availableModels.length > 0) {
-      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-      const bestModel = getBestModelForQuery(inputValue.trim(), modelsWithAvailable);
-      if (bestModel) {
-        const foundModel = availableModels.find(m => m.id === bestModel.id);
-        if (foundModel) {
-          modelToUse = foundModel;
-        }
-      }
-    }
-
-    if (!modelToUse) {
+    if (!selectedModel) {
       toast({
         title: "No model selected",
         description: "Please select an AI model first",
@@ -394,7 +320,28 @@ function ChatPageContent() {
     const content = inputValue.trim();
     if (!content) return;
 
-    // Ensure we have a conversation
+    let modelToUse = selectedModel;
+    if (maxMode && hasPremiumAccess) {
+      const highestQuality = getHighestQualityModel(availableModels);
+      if (highestQuality) {
+        modelToUse = highestQuality;
+      }
+    } else if (autoMode) {
+      const bestModel = getBestModelForQuery(content, availableModels);
+      if (bestModel) {
+        modelToUse = bestModel;
+      }
+    }
+
+    if (!modelToUse) {
+      toast({
+        title: "Error",
+        description: "Could not determine AI model to use.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     let conversationId = currentConversation?.id;
     if (!conversationId) {
       const newConv = await createConversation();
@@ -409,7 +356,6 @@ function ChatPageContent() {
       conversationId = newConv.id;
     }
 
-    // Add user message to UI immediately
     const userMessage: MessageDisplay = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -422,9 +368,7 @@ function ChatPageContent() {
     setMessagesDisplay((prev) => [...prev, userMessage]);
     setInputValue("");
     setSelectedFiles([]);
-    setCharCount(0);
 
-    // Create assistant message placeholder for streaming
     const assistantMessageId = `assistant-${Date.now()}`;
     const assistantMessage: MessageDisplay = {
       id: assistantMessageId,
@@ -436,7 +380,6 @@ function ChatPageContent() {
     streamingMessageRef.current = "";
 
     try {
-      // Stream AI response
       if (!conversationId) {
         throw new Error("Conversation ID is missing");
       }
@@ -445,11 +388,10 @@ function ChatPageContent() {
         content,
         modelToUse.id,
         modelToUse.provider,
-        selectedSources, // Pass selected sources
-        maxMode && hasPremiumAccess, // Pass MAX Mode flag
-        useMultipleModels && hasPremiumAccess, // Pass Multiple Models flag
+        selectedSources,
+        maxMode && hasPremiumAccess,
+        useMultipleModels && hasPremiumAccess,
         (chunk: string) => {
-          // Update streaming message
           streamingMessageRef.current += chunk;
           setMessagesDisplay((prev) =>
             prev.map((msg) =>
@@ -460,7 +402,6 @@ function ChatPageContent() {
           );
         },
         async (fullContent: string) => {
-          // Reload messages from database to get the saved assistant message
           if (currentConversation) {
             const response = await fetch(
               `/api/conversations/${conversationId}`,
@@ -479,388 +420,328 @@ function ChatPageContent() {
         title: "Error",
         description: errorMessage,
         variant: "destructive",
-        action: (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              // Retry sending the message
-              handleSend();
-            }}
-          >
-            Retry
-          </Button>
-        ),
       });
-      // Remove failed assistant message
       setMessagesDisplay((prev) =>
         prev.filter((msg) => msg.id !== assistantMessageId)
       );
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputValue(suggestion);
-    textareaRef.current?.focus();
-  };
-
   return (
-    <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-8 md:py-16 overflow-hidden">
-        {/* Welcome Section */}
-        {messages.length === 0 && !streaming && !conversationLoading && (
-          <div className="flex flex-col items-center gap-12 text-center mb-28 flex-shrink-0">
-            <div className="flex flex-col gap-4 items-center">
-              <h1 className="text-2xl font-semibold leading-8 text-foreground">
-                👋🏽 Hello! How can I help you today?
-              </h1>
-              <p className="text-lg font-medium leading-7 text-foreground">
-                Ask me anything, and I'll search the web to give you the best answer.
-              </p>
-            </div>
-            
-            {/* Quick Suggestions */}
-            <div className="flex flex-wrap gap-2 md:gap-3 justify-center max-w-[600px] px-2">
-              {SUGGESTIONS.map((suggestion, idx) => (
-                <Button
-                  key={idx}
-                  variant="outline"
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 md:px-4 py-2 rounded-full bg-muted text-xs md:text-sm font-medium text-foreground hover:bg-muted/80"
-                >
-                  {suggestion}
-                </Button>
-              ))}
-            </div>
+    <main className="flex-1 flex flex-col min-h-screen bg-[#0a0a0a]">
+      {/* Header with Logo */}
+      <div className="flex justify-center pt-12 pb-8">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          <span className="text-white">Project Etna</span>{" "}
+          <span className="text-[#00d9ff]">Enterprise</span>
+        </h1>
+      </div>
+
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 px-4 pb-4">
+        {conversationLoading && messages.length === 0 && (
+          <div className="flex flex-col gap-8 max-w-4xl mx-auto py-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="w-10 h-10 rounded-full bg-[#1a1a1a]" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-24 w-full rounded-lg bg-[#1a1a1a]" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Loading State */}
-        {conversationLoading && messages.length === 0 && (
-          <ScrollArea className="flex-1 w-full mb-16 min-h-0">
-            <div className="flex flex-col gap-16">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-3">
-                  <Skeleton className="w-8 h-8 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-20 w-full rounded-xl" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        )}
-
-        {/* Chat Messages */}
         {!conversationLoading && messages.length > 0 && (
-          <ScrollArea className="flex-1 w-full mb-8 md:mb-16 min-h-0">
-            <div className="flex flex-col gap-8 md:gap-16">
-              {messages.map((message) => (
-                <ChatMessage 
-                  key={message.id} 
-                  message={message}
-                  onEdit={async (id, newContent) => {
-                    try {
-                      const response = await fetch(`/api/messages/${id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ content: newContent }),
-                      });
-                      if (!response.ok) throw new Error("Failed to update message");
-                      // Reload conversation
-                      if (currentConversation) {
-                        await loadConversation(currentConversation.id);
-                      }
-                    } catch (error: any) {
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to edit message",
-                        variant: "destructive",
-                      });
-                      throw error;
+          <div className="flex flex-col gap-8 max-w-4xl mx-auto py-8">
+            {messages.map((message) => (
+              <ChatMessage 
+                key={message.id} 
+                message={message}
+                onEdit={async (id, newContent) => {
+                  try {
+                    const response = await fetch(`/api/messages/${id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "include",
+                      body: JSON.stringify({ content: newContent }),
+                    });
+                    if (!response.ok) throw new Error("Failed to update message");
+                    if (currentConversation) {
+                      await loadConversation(currentConversation.id);
                     }
-                  }}
-                  onRegenerate={async (id) => {
-                    // Find the message and regenerate from that point
-                    const messageIndex = messages.findIndex(m => m.id === id);
-                    if (messageIndex === -1) return;
-                    
-                    // Get all messages up to this point
-                    const messagesUpTo = messages.slice(0, messageIndex);
-                    const lastUserMessage = messagesUpTo.reverse().find(m => m.role === "user");
-                    
-                    if (!lastUserMessage || !selectedModel) {
-                      toast({
-                        title: "Error",
-                        description: "Cannot regenerate: no user message found",
-                        variant: "destructive",
-                      });
-                      return;
+                  } catch (error: any) {
+                    toast({
+                      title: "Error",
+                      description: error.message || "Failed to edit message",
+                      variant: "destructive",
+                    });
+                    throw error;
+                  }
+                }}
+                onRegenerate={async () => {}}
+                onDelete={async (id) => {
+                  try {
+                    const response = await fetch(`/api/messages/${id}`, {
+                      method: "DELETE",
+                      credentials: "include",
+                    });
+                    if (!response.ok) throw new Error("Failed to delete message");
+                    if (currentConversation) {
+                      await loadConversation(currentConversation.id);
                     }
-                    
-                    // Remove messages from this point forward
-                    setMessagesDisplay(prev => prev.slice(0, messageIndex));
-                    
-                    // Determine model to use (respect MAX Mode and Auto Mode)
-                    let modelToUseForRegen = selectedModel;
-                    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
-                      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-                      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
-                      if (highestQualityModel) {
-                        const foundModel = availableModels.find(m => m.id === highestQualityModel.id);
-                        if (foundModel) {
-                          modelToUseForRegen = foundModel;
-                        }
-                      }
-                    } else if (autoMode && availableModels.length > 0) {
-                      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-                      const bestModel = getBestModelForQuery(lastUserMessage.content, modelsWithAvailable);
-                      if (bestModel) {
-                        const foundModel = availableModels.find(m => m.id === bestModel.id);
-                        if (foundModel) {
-                          modelToUseForRegen = foundModel;
-                        }
-                      }
-                    }
-
-                    // Regenerate
-                    try {
-                      await streamMessage(
-                        currentConversation!.id,
-                        lastUserMessage.content,
-                        modelToUseForRegen.id,
-                        modelToUseForRegen.provider,
-                        selectedSources, // Pass selected sources
-                        maxMode && hasPremiumAccess, // Pass MAX Mode flag
-                        useMultipleModels && hasPremiumAccess, // Pass Multiple Models flag
-                        (chunk: string) => {
-                          streamingMessageRef.current += chunk;
-                          const assistantMessageId = `assistant-${Date.now()}`;
-                          setMessagesDisplay(prev => {
-                            const existing = prev.find(m => m.id === assistantMessageId);
-                            if (existing) {
-                              return prev.map(m => 
-                                m.id === assistantMessageId 
-                                  ? { ...m, content: streamingMessageRef.current }
-                                  : m
-                              );
-                            }
-                            return [...prev, {
-                              id: assistantMessageId,
-                              role: "assistant" as const,
-                              content: streamingMessageRef.current,
-                              model: selectedModel,
-                            }];
-                          });
-                        },
-                        async () => {
-                          if (currentConversation) {
-                            const response = await fetch(
-                              `/api/conversations/${currentConversation.id}`,
-                              { credentials: "include" }
-                            );
-                            if (response.ok) {
-                              const data = await response.json();
-                              setMessages(data.conversation.messages || []);
-                            }
-                          }
-                        }
-                      );
-                    } catch (error: any) {
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to regenerate",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  onDelete={async (id) => {
-                    try {
-                      const response = await fetch(`/api/messages/${id}`, {
-                        method: "DELETE",
-                        credentials: "include",
-                      });
-                      if (!response.ok) throw new Error("Failed to delete message");
-                      // Reload conversation
-                      if (currentConversation) {
-                        await loadConversation(currentConversation.id);
-                      }
-                    } catch (error: any) {
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to delete message",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                />
-              ))}
-              {streaming && (
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-foreground" />
-                  </div>
-                  <Card className="flex-1 bg-muted rounded-xl px-4 py-2">
-                    <div className="flex gap-1">
-                      <span className="typing-indicator">●</span>
-                      <span className="typing-indicator">●</span>
-                      <span className="typing-indicator">●</span>
-                    </div>
-                  </Card>
+                  } catch (error: any) {
+                    toast({
+                      title: "Error",
+                      description: error.message || "Failed to delete message",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              />
+            ))}
+            {streaming && (
+              <div className="flex gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="h-5 w-5 text-[#00d9ff]" />
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+                <div className="flex-1 bg-[#1a1a1a] rounded-lg px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="typing-indicator">●</span>
+                    <span className="typing-indicator">●</span>
+                    <span className="typing-indicator">●</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         )}
 
-            {/* Input Container */}
-            <div className="w-full flex-shrink-0 pt-4">
-              <Card className="bg-muted border border-border rounded-full md:rounded-full rounded-2xl p-3 md:p-4">
-            <div className="flex flex-col gap-2">
-                  {/* File Preview */}
-                  {selectedFiles.length > 0 && (
-                    <FilePreview 
-                      files={selectedFiles} 
-                      onRemove={removeFile}
-                      uploadingFiles={uploadingFiles}
-                      uploadedUrls={uploadedFileUrls}
-                    />
-                  )}
-
-              {/* Text Input */}
-              <div className="flex items-center gap-2">
-                <Textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
-                    setCharCount(e.target.value.length);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder="Ask anything..."
-                  className="flex-1 bg-transparent border-none resize-none text-base leading-6 text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
-                  rows={1}
-                />
-              </div>
-
-              {/* Bottom Bar */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,application/pdf,text/*,.doc,.docx"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <SourceSelector
-                    selectedSources={selectedSources}
-                    onSourcesChange={setSelectedSources}
-                  />
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
-                    disabled={uploadingFiles.size > 0}
-                  >
-                    <Plus className="h-5 w-5" />
-                    Attach
-                  </Button>
-                  
-                  <GitHubRepoSelector
-                    selected={selectedRepository}
-                    onSelect={setSelectedRepository}
-                  />
-                  
-                  {availableModels.length > 0 && (
-                    <ModelSelector
-                      models={availableModels}
-                      selected={selectedModel}
-                      onSelect={(model) => {
-                        setSelectedModel(model);
-                        localStorage.setItem("selected-llm-model", JSON.stringify(model));
-                      }}
-                      hasPremiumAccess={hasPremiumAccess}
-                      autoMode={autoMode}
-                      maxMode={maxMode}
-                      useMultipleModels={useMultipleModels}
-                      onAutoModeChange={setAutoMode}
-                      onMaxModeChange={(enabled) => {
-                        if (enabled && !hasPremiumAccess) {
-                          toast({
-                            title: "Premium Feature",
-                            description: "MAX Mode requires a premium subscription. Please upgrade to access this feature.",
-                            action: (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => window.location.href = "/overview"}
-                              >
-                                Upgrade
-                              </Button>
-                            ),
-                          });
-                          return;
-                        }
-                        setMaxMode(enabled);
-                      }}
-                      onUseMultipleModelsChange={(enabled) => {
-                        if (enabled && !hasPremiumAccess) {
-                          toast({
-                            title: "Premium Feature",
-                            description: "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
-                            action: (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => window.location.href = "/overview"}
-                              >
-                                Upgrade
-                              </Button>
-                            ),
-                          });
-                          return;
-                        }
-                        setUseMultipleModels(enabled);
-                      }}
-                    />
-                  )}
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  {charCount > 0 && (
-                    <span className="text-sm text-muted-foreground">
-                      {charCount}/1000
-                    </span>
-                  )}
-                  <Button
-                    onClick={handleSend}
-                    disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
-                    className="rounded-full"
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
+        {messages.length === 0 && !streaming && !conversationLoading && (
+          <div className="flex items-center justify-center h-full min-h-[400px]">
+            <div className="text-center">
+              <p className="text-muted-foreground text-lg">
+                Start a conversation by typing below
+              </p>
             </div>
-          </Card>
+          </div>
+        )}
+      </ScrollArea>
+
+      {/* File Preview */}
+      {selectedFiles.length > 0 && (
+        <div className="px-4 pb-2">
+          <FilePreview 
+            files={selectedFiles} 
+            onRemove={removeFile}
+            uploadingFiles={uploadingFiles}
+            uploadedUrls={uploadedFileUrls}
+          />
         </div>
-      </main>
-    );
+      )}
+
+      {/* Input Bar - Perplexity Style */}
+      <div className="px-4 pb-8 pt-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] px-4 py-3 flex items-center gap-3">
+            {/* Left Icons */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeLeftIcon === "search" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => setActiveLeftIcon("search")}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeLeftIcon === "layout" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => setActiveLeftIcon("layout")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeLeftIcon === "help" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => setActiveLeftIcon("help")}
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Input Field */}
+            <Input
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask anything. Type @ for mentions."
+              className="flex-1 bg-transparent border-none text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+
+            {/* Right Icons */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeRightIcon === "globe" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => setActiveRightIcon("globe")}
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf,text/*,.doc,.docx"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeRightIcon === "attach" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => {
+                  fileInputRef.current?.click();
+                  setActiveRightIcon("attach");
+                }}
+                disabled={uploadingFiles.size > 0}
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeRightIcon === "mic" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => {
+                  setIsRecording(!isRecording);
+                  setActiveRightIcon("mic");
+                }}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 rounded-md ${
+                  activeRightIcon === "equalizer" 
+                    ? "bg-[#00d9ff]/20 text-[#00d9ff]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#2a2a2a]"
+                }`}
+                onClick={() => setActiveRightIcon("equalizer")}
+              >
+                <Radio className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Send Button */}
+            <Button
+              onClick={handleSend}
+              disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
+              className="h-8 w-8 rounded-md bg-[#00d9ff] hover:bg-[#00d9ff]/90 text-black"
+              size="icon"
+            >
+              {streaming ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          {/* Hidden Controls Row - Model Selector and Source Selector */}
+          <div className="flex items-center justify-center gap-2 mt-2">
+            {availableModels.length > 0 && (
+              <ModelSelector
+                models={availableModels}
+                selected={selectedModel}
+                onSelect={(model) => {
+                  const modelInfo: ModelInfo = {
+                    id: model.id,
+                    name: model.name,
+                    provider: model.provider,
+                    category: model.category,
+                    available: model.available ?? false,
+                  };
+                  setSelectedModel(modelInfo);
+                  localStorage.setItem("selected-llm-model", JSON.stringify(modelInfo));
+                }}
+                hasPremiumAccess={hasPremiumAccess}
+                autoMode={autoMode}
+                maxMode={maxMode}
+                useMultipleModels={useMultipleModels}
+                onAutoModeChange={setAutoMode}
+                onMaxModeChange={(enabled) => {
+                  if (enabled && !hasPremiumAccess) {
+                    toast({
+                      title: "Premium Feature",
+                      description: "MAX Mode requires a premium subscription.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  setMaxMode(enabled);
+                }}
+                onUseMultipleModelsChange={(enabled) => {
+                  if (enabled && !hasPremiumAccess) {
+                    toast({
+                      title: "Premium Feature",
+                      description: "Use Multiple Models requires a premium subscription.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  setUseMultipleModels(enabled);
+                }}
+              />
+            )}
+            <SourceSelector
+              selectedSources={selectedSources}
+              onSourcesChange={setSelectedSources}
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">Loading...</div>}>
       <ChatPageContent />
     </Suspense>
   );
