@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { streamAIResponse } from "@/lib/ai";
 import { generateEmbedding } from "@/lib/embeddings";
 import { findSimilarDocuments } from "@/lib/db";
+import { searchMultipleSources } from "@/lib/sources/search";
+import type { SourceType } from "@/components/chat/source-selector";
 
 // POST /api/messages/stream - Create a message and stream AI response
 export async function POST(req: Request) {
@@ -112,6 +114,38 @@ export async function POST(req: Request) {
       }
     }
 
+    // Search external sources (web, academic, news, finance)
+    let externalSearchContext = "";
+    const externalSources: SourceType[] = sources.filter((s: SourceType) => 
+      ["web", "academic", "news", "finance"].includes(s)
+    ) as SourceType[];
+
+    if (externalSources.length > 0) {
+      try {
+        const searchResults = await searchMultipleSources(content, externalSources);
+        
+        const contextParts: string[] = [];
+        searchResults.forEach((result) => {
+          if (result.results.length > 0) {
+            const sourceName = result.source.charAt(0).toUpperCase() + result.source.slice(1);
+            contextParts.push(`\n\n${sourceName} Search Results:`);
+            result.results.slice(0, 3).forEach((item, idx) => {
+              contextParts.push(
+                `[${idx + 1}] ${item.title}\n   URL: ${item.url}\n   ${item.snippet}`
+              );
+            });
+          }
+        });
+
+        if (contextParts.length > 0) {
+          externalSearchContext = "\n\nExternal Search Results:" + contextParts.join("\n");
+        }
+      } catch (searchError) {
+        console.error("External search error:", searchError);
+        // Continue without external search context if it fails
+      }
+    }
+
     // Add source context to system message
     const sourceContext = sources.length > 0
       ? `\n\nUser has selected the following data sources: ${sources.join(", ")}. When answering, prioritize information from these sources if available.`
@@ -119,20 +153,25 @@ export async function POST(req: Request) {
 
     // Build context from third-party integrations if selected
     let integrationContext = "";
-    if (sources.includes("github") || sources.includes("gmail") || sources.includes("google_drive") || 
-        sources.includes("slack") || sources.includes("confluence") || sources.includes("microsoft_graph")) {
+    const thirdPartySources: SourceType[] = sources.filter((s: SourceType) => 
+      ["github", "gmail", "google_drive", "slack", "confluence", "microsoft_graph"].includes(s)
+    ) as SourceType[];
+
+    if (thirdPartySources.length > 0) {
       // TODO: Fetch data from integrations based on selected sources
       // For now, add a note that integrations are enabled
-      const enabledIntegrations = sources.filter((s: string) => 
-        ["github", "gmail", "google_drive", "slack", "confluence", "microsoft_graph"].includes(s)
-      );
-      if (enabledIntegrations.length > 0) {
-        integrationContext = `\n\nUser has enabled the following integrations: ${enabledIntegrations.join(", ")}. Search these sources for relevant information.`;
-      }
+      integrationContext = `\n\nUser has enabled the following integrations: ${thirdPartySources.join(", ")}. Search these sources for relevant information.`;
     }
 
-    // Prepare messages for AI (include previous messages for context + RAG context + source context)
+    // Prepare messages for AI (include previous messages for context + RAG context + source context + external search)
     const systemMessage = `You are an AI assistant. Answer the user's question based on the provided context and conversation history.${sourceContext}${integrationContext}`;
+    
+    // Combine all context for the user message
+    const userMessageContent = [
+      content,
+      relevantContext,
+      externalSearchContext,
+    ].filter(Boolean).join("\n");
     
     const aiMessages = [
       {
@@ -145,7 +184,7 @@ export async function POST(req: Request) {
       })),
       {
         role: "user" as const,
-        content: relevantContext ? `${content}${relevantContext}` : content,
+        content: userMessageContent,
       },
     ];
 
