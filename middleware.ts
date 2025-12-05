@@ -3,8 +3,9 @@ import type { NextRequest } from "next/server"
 
 // Simplified middleware - proper auth checks happen in API routes
 // This prevents Edge Runtime errors with Prisma/Node.js modules
+// Rate limiting is handled in individual API routes (not in Edge Runtime)
 export function middleware(request: NextRequest) {
-  // For now, just pass through - auth is handled in API routes
+  // For now, just pass through - auth and rate limiting are handled in API routes
   // TODO: Re-enable proper middleware auth once we have a solution for Edge Runtime
   return NextResponse.next()
 }

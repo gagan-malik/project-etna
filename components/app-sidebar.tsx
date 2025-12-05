@@ -13,7 +13,9 @@ import {
   CreditCard,
   HelpCircle,
   Plus,
-  Loader2
+  Loader2,
+  Link as LinkIcon,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +64,16 @@ const navigation: NavSection[] = [
         title: "History",
         url: "/activity",
         icon: History,
+      },
+      {
+        title: "Integrations",
+        url: "/integrations",
+        icon: LinkIcon,
+      },
+      {
+        title: "Files",
+        url: "/files",
+        icon: FileText,
       },
     ],
   },
