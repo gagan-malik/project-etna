@@ -11,6 +11,44 @@ const profileSchema = z.object({
   bio: z.string().max(500).optional(),
 });
 
+// GET /api/account/profile - Get user profile
+export async function GET(req: Request) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user profile with subscription info
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        plan: true,
+        subscriptionStatus: true,
+        subscriptionExpiresAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ user });
+  } catch (error) {
+    const appError = handleApiError(error);
+    console.error("Error fetching profile:", error);
+    return NextResponse.json(
+      { error: getUserFriendlyError(appError) },
+      { status: appError.statusCode || 500 }
+    );
+  }
+}
+
 // PATCH /api/account/profile - Update user profile
 export async function PATCH(req: Request) {
   try {
@@ -65,6 +103,9 @@ export async function PATCH(req: Request) {
         name: true,
         email: true,
         image: true,
+        plan: true,
+        subscriptionStatus: true,
+        subscriptionExpiresAt: true,
       },
     });
 

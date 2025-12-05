@@ -11,14 +11,17 @@ datasource db {
 
 // User model for authentication and user management
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  name          String?
-  image         String?
-  password      String?   // Hashed password for credentials auth
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  emailVerified       DateTime?
+  name                String?
+  image               String?
+  password            String?   // Hashed password for credentials auth
+  plan                String?   @default("free") // "free", "pro", "enterprise"
+  subscriptionStatus  String?   // "active", "canceled", "expired", null
+  subscriptionExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   // Relations
   accounts      Account[]

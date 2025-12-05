@@ -16,6 +16,8 @@ export function useAIStream() {
       model: string,
       provider: string,
       sources: SourceType[],
+      maxMode: boolean,
+      useMultipleModels: boolean,
       onChunk: (chunk: string) => void,
       onComplete: (fullContent: string) => void
     ) => {
@@ -33,6 +35,8 @@ export function useAIStream() {
             model,
             provider,
             sources,
+            maxMode,
+            useMultipleModels,
           }),
         });
 

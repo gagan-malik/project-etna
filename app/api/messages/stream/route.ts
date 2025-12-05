@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { streamAIResponse } from "@/lib/ai";
+import { streamAIResponse, getAvailableModels } from "@/lib/ai";
 import { generateEmbedding } from "@/lib/embeddings";
 import { findSimilarDocuments } from "@/lib/db";
 import { searchMultipleSources } from "@/lib/sources/search";
+import { hasPremiumAccess } from "@/lib/subscription";
+import { getHighestQualityModel } from "@/lib/ai/model-ranking";
 import type { SourceType } from "@/components/chat/source-selector";
 
 // POST /api/messages/stream - Create a message and stream AI response
@@ -17,13 +19,57 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { conversationId, content, model, provider, sources = [] } = body;
+    const {
+      conversationId,
+      content,
+      model,
+      provider,
+      sources = [],
+      maxMode = false,
+      useMultipleModels = false,
+    } = body;
 
     if (!conversationId || !content) {
       return NextResponse.json(
         { error: "Missing required fields: conversationId, content" },
         { status: 400 }
       );
+    }
+
+    // Check premium access for premium features
+    const userHasPremium = await hasPremiumAccess(session.user.id);
+
+    if (maxMode && !userHasPremium) {
+      return NextResponse.json(
+        {
+          error: "Premium feature",
+          message: "MAX Mode requires a premium subscription. Please upgrade to access this feature.",
+        },
+        { status: 403 }
+      );
+    }
+
+    if (useMultipleModels && !userHasPremium) {
+      return NextResponse.json(
+        {
+          error: "Premium feature",
+          message:
+            "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Apply MAX Mode - override model with highest quality
+    let modelToUse = model;
+    let providerToUse = provider;
+    if (maxMode && userHasPremium) {
+      const availableModels = getAvailableModels();
+      const highestQualityModel = getHighestQualityModel(availableModels);
+      if (highestQualityModel) {
+        modelToUse = highestQualityModel.id;
+        providerToUse = highestQualityModel.provider;
+      }
     }
 
     // Verify conversation ownership
@@ -194,15 +240,93 @@ export async function POST(req: Request) {
         let fullResponse = "";
         
         try {
-          // Use real AI service
+          // Handle Multiple Models if enabled
+          if (useMultipleModels && userHasPremium) {
+            const availableModels = getAvailableModels();
+            const topModels = availableModels
+              .filter((m) => m.available)
+              .slice(0, 3); // Use top 3 models
+
+            // Stream from multiple models in parallel
+            const modelStreams = topModels.map((m) =>
+              streamAIResponse(
+                {
+                  messages: aiMessages,
+                  model: m.id,
+                  temperature: 0.7,
+                  maxTokens: 2000,
+                },
+                m.id
+              )
+            );
+
+            // Combine responses from all models
+            const responses: string[] = [];
+            const modelNames: string[] = [];
+
+            for (let i = 0; i < modelStreams.length; i++) {
+              let modelResponse = "";
+              for await (const chunk of modelStreams[i]) {
+                if (chunk.content) {
+                  modelResponse += chunk.content;
+                }
+                if (chunk.done) {
+                  responses.push(modelResponse);
+                  modelNames.push(topModels[i].name);
+                  break;
+                }
+              }
+            }
+
+            // Combine all responses
+            fullResponse = `Combined responses from ${modelNames.join(", ")}:\n\n`;
+            responses.forEach((resp, idx) => {
+              fullResponse += `[${modelNames[idx]}]:\n${resp}\n\n`;
+            });
+
+            // Stream the combined response
+            const chunks = fullResponse.split("");
+            for (const chunk of chunks) {
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `data: ${JSON.stringify({ content: chunk, done: false })}\n\n`
+                )
+              );
+            }
+
+            controller.enqueue(
+              new TextEncoder().encode(`data: ${JSON.stringify({ done: true })}\n\n`)
+            );
+
+            // Create assistant message in database
+            await prisma.message.create({
+              data: {
+                conversationId,
+                role: "assistant",
+                content: fullResponse,
+                model: modelToUse || null,
+                provider: providerToUse || null,
+                metadata: {
+                  streamed: true,
+                  multipleModels: true,
+                  modelsUsed: modelNames,
+                },
+              },
+            });
+
+            controller.close();
+            return;
+          }
+
+          // Single model streaming (default)
           const aiStream = streamAIResponse(
             {
               messages: aiMessages,
-              model: model || undefined,
+              model: modelToUse || undefined,
               temperature: 0.7,
               maxTokens: 2000,
             },
-            model
+            modelToUse
           );
 
           // Stream AI response
@@ -228,10 +352,11 @@ export async function POST(req: Request) {
                   conversationId,
                   role: "assistant",
                   content: fullResponse,
-                  model: model || null,
-                  provider: provider || null,
+                  model: modelToUse || null,
+                  provider: providerToUse || null,
                   metadata: {
                     streamed: true,
+                    maxMode: maxMode && userHasPremium,
                     ...chunk.metadata,
                   },
                 },

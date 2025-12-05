@@ -19,10 +19,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
 import { GitHubRepoSelector } from "@/components/chat/github-repo-selector";
-import { LLMModelSelector } from "@/components/chat/llm-model-selector";
+import { ModelSelector } from "@/components/chat/model-selector";
 import { SourceSelector, type SourceType } from "@/components/chat/source-selector";
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
+import { getBestModelForQuery, getHighestQualityModel } from "@/lib/ai/model-ranking";
+import { useSession } from "next-auth/react";
 
 interface MessageDisplay {
   id: string;
@@ -43,6 +45,7 @@ const SUGGESTIONS = [
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { data: session } = useSession();
   const {
     currentConversation,
     messages: dbMessages,
@@ -80,11 +83,69 @@ function ChatPageContent() {
     }
     return ["web", "my_files"];
   });
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
+  const [autoMode, setAutoMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("auto-mode");
+      return saved === "true";
+    }
+    return false;
+  });
+  const [maxMode, setMaxMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("max-mode");
+      return saved === "true";
+    }
+    return false;
+  });
+  const [useMultipleModels, setUseMultipleModels] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("use-multiple-models");
+      return saved === "true";
+    }
+    return false;
+  });
   const [charCount, setCharCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingMessageRef = useRef<string>("");
+
+  // Load premium access status
+  useEffect(() => {
+    const checkPremiumAccess = async () => {
+      if (!session?.user?.id) return;
+      try {
+        const response = await fetch("/api/account/profile", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const plan = data.user?.plan || "free";
+          const subscriptionStatus = data.user?.subscriptionStatus;
+          const subscriptionExpiresAt = data.user?.subscriptionExpiresAt
+            ? new Date(data.user.subscriptionExpiresAt)
+            : null;
+
+          const isPremium =
+            (plan === "pro" || plan === "enterprise") &&
+            subscriptionStatus === "active" &&
+            (!subscriptionExpiresAt || subscriptionExpiresAt > new Date());
+
+          setHasPremiumAccess(isPremium);
+
+          // Disable premium features if access is lost
+          if (!isPremium) {
+            setMaxMode(false);
+            setUseMultipleModels(false);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check premium access:", error);
+      }
+    };
+    checkPremiumAccess();
+  }, [session]);
 
   // Load available models from API
   useEffect(() => {
@@ -128,6 +189,37 @@ function ChatPageContent() {
       }
     }
   }, [availableModels]);
+
+  // Auto-select model based on query when Auto Mode is enabled
+  useEffect(() => {
+    if (autoMode && inputValue.trim() && availableModels.length > 0) {
+      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+      const bestModel = getBestModelForQuery(inputValue, modelsWithAvailable);
+      if (bestModel && bestModel.id !== selectedModel?.id) {
+        setSelectedModel(availableModels.find(m => m.id === bestModel.id) || selectedModel);
+      }
+    }
+  }, [inputValue, autoMode, availableModels, selectedModel]);
+
+  // Apply MAX Mode - override model selection with highest quality
+  useEffect(() => {
+    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
+      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
+      if (highestQualityModel && highestQualityModel.id !== selectedModel?.id) {
+        setSelectedModel(availableModels.find(m => m.id === highestQualityModel.id) || selectedModel);
+      }
+    }
+  }, [maxMode, hasPremiumAccess, availableModels, selectedModel]);
+
+  // Persist toggle states
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auto-mode", String(autoMode));
+      localStorage.setItem("max-mode", String(maxMode));
+      localStorage.setItem("use-multiple-models", String(useMultipleModels));
+    }
+  }, [autoMode, maxMode, useMultipleModels]);
 
   // Save selected sources to localStorage
   useEffect(() => {
@@ -257,7 +349,35 @@ function ChatPageContent() {
 
   const handleSend = async () => {
     if (!inputValue.trim() && selectedFiles.length === 0) return;
-    if (!selectedModel) {
+
+    // Determine which model(s) to use
+    let modelToUse = selectedModel;
+    
+    // Apply MAX Mode if enabled and user has premium access
+    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
+      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
+      if (highestQualityModel) {
+        const foundModel = availableModels.find(m => m.id === highestQualityModel.id);
+        if (foundModel) {
+          modelToUse = foundModel;
+        }
+      }
+    }
+    
+    // Apply Auto Mode if enabled and MAX Mode is not
+    if (autoMode && !maxMode && availableModels.length > 0) {
+      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+      const bestModel = getBestModelForQuery(inputValue.trim(), modelsWithAvailable);
+      if (bestModel) {
+        const foundModel = availableModels.find(m => m.id === bestModel.id);
+        if (foundModel) {
+          modelToUse = foundModel;
+        }
+      }
+    }
+
+    if (!modelToUse) {
       toast({
         title: "No model selected",
         description: "Please select an AI model first",
@@ -291,7 +411,7 @@ function ChatPageContent() {
       content,
       files: selectedFiles.length > 0 ? [...selectedFiles] : undefined,
       repository: selectedRepository,
-      model: selectedModel,
+      model: modelToUse,
     };
 
     setMessagesDisplay((prev) => [...prev, userMessage]);
@@ -305,7 +425,7 @@ function ChatPageContent() {
       id: assistantMessageId,
       role: "assistant",
       content: "",
-      model: selectedModel,
+      model: modelToUse,
     };
     setMessagesDisplay((prev) => [...prev, assistantMessage]);
     streamingMessageRef.current = "";
@@ -318,9 +438,11 @@ function ChatPageContent() {
       await streamMessage(
         conversationId,
         content,
-        selectedModel.id,
-        selectedModel.provider,
+        modelToUse.id,
+        modelToUse.provider,
         selectedSources, // Pass selected sources
+        maxMode && hasPremiumAccess, // Pass MAX Mode flag
+        useMultipleModels && hasPremiumAccess, // Pass Multiple Models flag
         (chunk: string) => {
           // Update streaming message
           streamingMessageRef.current += chunk;
@@ -474,14 +596,38 @@ function ChatPageContent() {
                     // Remove messages from this point forward
                     setMessagesDisplay(prev => prev.slice(0, messageIndex));
                     
+                    // Determine model to use (respect MAX Mode and Auto Mode)
+                    let modelToUseForRegen = selectedModel;
+                    if (maxMode && hasPremiumAccess && availableModels.length > 0) {
+                      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+                      const highestQualityModel = getHighestQualityModel(modelsWithAvailable);
+                      if (highestQualityModel) {
+                        const foundModel = availableModels.find(m => m.id === highestQualityModel.id);
+                        if (foundModel) {
+                          modelToUseForRegen = foundModel;
+                        }
+                      }
+                    } else if (autoMode && availableModels.length > 0) {
+                      const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
+                      const bestModel = getBestModelForQuery(lastUserMessage.content, modelsWithAvailable);
+                      if (bestModel) {
+                        const foundModel = availableModels.find(m => m.id === bestModel.id);
+                        if (foundModel) {
+                          modelToUseForRegen = foundModel;
+                        }
+                      }
+                    }
+
                     // Regenerate
                     try {
                       await streamMessage(
                         currentConversation!.id,
                         lastUserMessage.content,
-                        selectedModel.id,
-                        selectedModel.provider,
+                        modelToUseForRegen.id,
+                        modelToUseForRegen.provider,
                         selectedSources, // Pass selected sources
+                        maxMode && hasPremiumAccess, // Pass MAX Mode flag
+                        useMultipleModels && hasPremiumAccess, // Pass Multiple Models flag
                         (chunk: string) => {
                           streamingMessageRef.current += chunk;
                           const assistantMessageId = `assistant-${Date.now()}`;
@@ -631,12 +777,55 @@ function ChatPageContent() {
                   />
                   
                   {availableModels.length > 0 && (
-                    <LLMModelSelector
+                    <ModelSelector
                       models={availableModels}
                       selected={selectedModel}
                       onSelect={(model) => {
                         setSelectedModel(model);
                         localStorage.setItem("selected-llm-model", JSON.stringify(model));
+                      }}
+                      hasPremiumAccess={hasPremiumAccess}
+                      autoMode={autoMode}
+                      maxMode={maxMode}
+                      useMultipleModels={useMultipleModels}
+                      onAutoModeChange={setAutoMode}
+                      onMaxModeChange={(enabled) => {
+                        if (enabled && !hasPremiumAccess) {
+                          toast({
+                            title: "Premium Feature",
+                            description: "MAX Mode requires a premium subscription. Please upgrade to access this feature.",
+                            action: (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.location.href = "/overview"}
+                              >
+                                Upgrade
+                              </Button>
+                            ),
+                          });
+                          return;
+                        }
+                        setMaxMode(enabled);
+                      }}
+                      onUseMultipleModelsChange={(enabled) => {
+                        if (enabled && !hasPremiumAccess) {
+                          toast({
+                            title: "Premium Feature",
+                            description: "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
+                            action: (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.location.href = "/overview"}
+                              >
+                                Upgrade
+                              </Button>
+                            ),
+                          });
+                          return;
+                        }
+                        setUseMultipleModels(enabled);
                       }}
                     />
                   )}
