@@ -35,49 +35,6 @@ export function AppHeader() {
             </div>
           </div>
 
-          {/* Navigation links */}
-          <nav className="hidden md:flex items-center gap-6 ml-6">
-            <Link
-              href="/chat"
-              className={`text-sm font-medium transition-colors ${
-                pathname === "/chat"
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Chat
-            </Link>
-            <Link
-              href="/activity"
-              className={`text-sm font-medium transition-colors ${
-                pathname === "/activity"
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              History
-            </Link>
-            <Link
-              href="/integrations"
-              className={`text-sm font-medium transition-colors ${
-                pathname === "/integrations"
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Integrations
-            </Link>
-            <Link
-              href="/files"
-              className={`text-sm font-medium transition-colors ${
-                pathname === "/files"
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Files
-            </Link>
-          </nav>
         </div>
 
         {/* Right side - Actions */}
