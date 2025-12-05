@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       // Filter by user ownership
       const userDocs = await prisma.documentIndex.findMany({
         where: {
-          id: { in: similarDocs.map((d) => d.id) },
+          id: { in: similarDocs.map((d: { id: string }) => d.id) },
           userId: session.user.id,
         },
         take: 3,
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
 
       if (userDocs.length > 0) {
         relevantContext = "\n\nRelevant context from your documents:\n" +
-          userDocs.map((doc, idx) => 
+          userDocs.map((doc: any, idx: number) => 
             `[${idx + 1}] ${doc.title}\n${doc.content.substring(0, 500)}${doc.content.length > 500 ? "..." : ""}`
           ).join("\n\n");
       }
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
 
     // Prepare messages for AI (include previous messages for context + RAG context)
     const aiMessages = [
-      ...previousMessages.map((msg) => ({
+      ...previousMessages.map((msg: { role: string; content: string }) => ({
         role: msg.role as "user" | "assistant" | "system",
         content: msg.content,
       })),

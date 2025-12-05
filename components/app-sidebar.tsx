@@ -91,8 +91,8 @@ const navigation: NavSection[] = [
         icon: CreditCard,
       },
       {
-        title: "Profile",
-        url: "/profile",
+        title: "Account",
+        url: "/account",
         icon: User,
       },
     ],
