@@ -20,6 +20,7 @@ import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
 import { GitHubRepoSelector } from "@/components/chat/github-repo-selector";
 import { LLMModelSelector } from "@/components/chat/llm-model-selector";
+import { SourceSelector, type SourceType } from "@/components/chat/source-selector";
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
 
@@ -65,6 +66,20 @@ function ChatPageContent() {
     provider: string;
     category: string;
   } | null>(null);
+  const [selectedSources, setSelectedSources] = useState<SourceType[]>(() => {
+    // Load saved sources from localStorage, default to web and my_files
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("selected-sources");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return ["web", "my_files"];
+        }
+      }
+    }
+    return ["web", "my_files"];
+  });
   const [charCount, setCharCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -113,6 +128,13 @@ function ChatPageContent() {
       }
     }
   }, [availableModels]);
+
+  // Save selected sources to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selected-sources", JSON.stringify(selectedSources));
+    }
+  }, [selectedSources]);
 
   // Load conversation from URL parameter
   useEffect(() => {
@@ -298,6 +320,7 @@ function ChatPageContent() {
         content,
         selectedModel.id,
         selectedModel.provider,
+        selectedSources, // Pass selected sources
         (chunk: string) => {
           // Update streaming message
           streamingMessageRef.current += chunk;
@@ -458,6 +481,7 @@ function ChatPageContent() {
                         lastUserMessage.content,
                         selectedModel.id,
                         selectedModel.provider,
+                        selectedSources, // Pass selected sources
                         (chunk: string) => {
                           streamingMessageRef.current += chunk;
                           const assistantMessageId = `assistant-${Date.now()}`;
@@ -585,6 +609,11 @@ function ChatPageContent() {
                     onChange={handleFileSelect}
                     className="hidden"
                   />
+                  <SourceSelector
+                    selectedSources={selectedSources}
+                    onSourcesChange={setSelectedSources}
+                  />
+                  
                   <Button
                     variant="ghost"
                     size="sm"

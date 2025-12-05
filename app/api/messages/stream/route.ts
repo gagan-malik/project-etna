@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { conversationId, content, model, provider } = body;
+    const { conversationId, content, model, provider, sources = [] } = body;
 
     if (!conversationId || !content) {
       return NextResponse.json(
@@ -62,39 +62,83 @@ export async function POST(req: Request) {
       data: { updatedAt: new Date() },
     });
 
-    // RAG: Search for relevant documents
+    // RAG: Search for relevant documents based on selected sources
     let relevantContext = "";
-    try {
-      const embeddingResponse = await generateEmbedding(content, "openai");
-      const similarDocs = await findSimilarDocuments(
-        embeddingResponse.embedding,
-        3, // Get top 3 relevant documents
-        0.7,
-        conversation.spaceId || undefined
-      );
+    
+    // Only search documents if "my_files" or "org_files" sources are selected
+    const shouldSearchFiles = sources.includes("my_files") || sources.includes("org_files");
+    
+    if (shouldSearchFiles) {
+      try {
+        const embeddingResponse = await generateEmbedding(content, "openai");
+        const similarDocs = await findSimilarDocuments(
+          embeddingResponse.embedding,
+          3, // Get top 3 relevant documents
+          0.7,
+          conversation.spaceId || undefined
+        );
 
-      // Filter by user ownership
-      const userDocs = await prisma.documentIndex.findMany({
-        where: {
+        // Build where clause based on selected sources
+        const whereClause: any = {
           id: { in: similarDocs.map((d: { id: string }) => d.id) },
           userId: session.user.id,
-        },
-        take: 3,
-      });
+        };
 
-      if (userDocs.length > 0) {
-        relevantContext = "\n\nRelevant context from your documents:\n" +
-          userDocs.map((doc: any, idx: number) => 
-            `[${idx + 1}] ${doc.title}\n${doc.content.substring(0, 500)}${doc.content.length > 500 ? "..." : ""}`
-          ).join("\n\n");
+        // Filter by source type if specified
+        if (sources.includes("my_files") && !sources.includes("org_files")) {
+          // Only user's personal files (not org files)
+          whereClause.source = { not: "org" };
+        } else if (sources.includes("org_files") && !sources.includes("my_files")) {
+          // Only org files
+          whereClause.source = "org";
+        }
+        // If both are selected, include all files (no source filter)
+
+        // Filter by user ownership and source
+        const userDocs = await prisma.documentIndex.findMany({
+          where: whereClause,
+          take: 3,
+        });
+
+        if (userDocs.length > 0) {
+          relevantContext = "\n\nRelevant context from your documents:\n" +
+            userDocs.map((doc: any, idx: number) => 
+              `[${idx + 1}] ${doc.title}\n${doc.content.substring(0, 500)}${doc.content.length > 500 ? "..." : ""}`
+            ).join("\n\n");
+        }
+      } catch (ragError) {
+        console.error("RAG error (continuing without context):", ragError);
+        // Continue without RAG context if it fails
       }
-    } catch (ragError) {
-      console.error("RAG error (continuing without context):", ragError);
-      // Continue without RAG context if it fails
     }
 
-    // Prepare messages for AI (include previous messages for context + RAG context)
+    // Add source context to system message
+    const sourceContext = sources.length > 0
+      ? `\n\nUser has selected the following data sources: ${sources.join(", ")}. When answering, prioritize information from these sources if available.`
+      : "";
+
+    // Build context from third-party integrations if selected
+    let integrationContext = "";
+    if (sources.includes("github") || sources.includes("gmail") || sources.includes("google_drive") || 
+        sources.includes("slack") || sources.includes("confluence") || sources.includes("microsoft_graph")) {
+      // TODO: Fetch data from integrations based on selected sources
+      // For now, add a note that integrations are enabled
+      const enabledIntegrations = sources.filter((s: string) => 
+        ["github", "gmail", "google_drive", "slack", "confluence", "microsoft_graph"].includes(s)
+      );
+      if (enabledIntegrations.length > 0) {
+        integrationContext = `\n\nUser has enabled the following integrations: ${enabledIntegrations.join(", ")}. Search these sources for relevant information.`;
+      }
+    }
+
+    // Prepare messages for AI (include previous messages for context + RAG context + source context)
+    const systemMessage = `You are an AI assistant. Answer the user's question based on the provided context and conversation history.${sourceContext}${integrationContext}`;
+    
     const aiMessages = [
+      {
+        role: "system" as const,
+        content: systemMessage,
+      },
       ...previousMessages.map((msg: { role: string; content: string }) => ({
         role: msg.role as "user" | "assistant" | "system",
         content: msg.content,

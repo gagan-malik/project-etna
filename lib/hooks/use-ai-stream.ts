@@ -3,6 +3,7 @@
  */
 
 import { useState, useCallback } from "react";
+import type { SourceType } from "@/components/chat/source-selector";
 
 export function useAIStream() {
   const [streaming, setStreaming] = useState(false);
@@ -14,6 +15,7 @@ export function useAIStream() {
       content: string,
       model: string,
       provider: string,
+      sources: SourceType[],
       onChunk: (chunk: string) => void,
       onComplete: (fullContent: string) => void
     ) => {
@@ -30,6 +32,7 @@ export function useAIStream() {
             content,
             model,
             provider,
+            sources,
           }),
         });
 
