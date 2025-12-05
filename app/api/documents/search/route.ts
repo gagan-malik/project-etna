@@ -36,18 +36,18 @@ export async function POST(req: Request) {
       );
 
       // Filter by user ownership
-      const userDocs = await prisma.documentIndex.findMany({
-        where: {
-          id: { in: similarDocs.map((d) => d.id) },
-          userId: session.user.id,
-        },
-      });
+        const userDocs = await prisma.documentIndex.findMany({
+          where: {
+            id: { in: similarDocs.map((d: { id: string }) => d.id) },
+            userId: session.user.id,
+          },
+        });
 
       return NextResponse.json({
         documents: userDocs,
         query,
         method: "vector",
-        similarity: similarDocs.map((d) => ({
+        similarity: similarDocs.map((d: { id: string; similarity: number }) => ({
           id: d.id,
           similarity: d.similarity,
         })),
