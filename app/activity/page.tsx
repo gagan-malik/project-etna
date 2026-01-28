@@ -102,8 +102,8 @@ const statusConfig = {
   completed: {
     label: "Completed",
     icon: CheckCircle,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
   },
   failed: {
     label: "Failed",
@@ -356,11 +356,11 @@ export default function DebugSessionsPage() {
       {/* Page Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold leading-8 text-foreground mb-1 flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-foreground mb-1 flex items-center gap-2">
             <Bug className="h-6 w-6" />
             Debug Sessions
           </h1>
-          <p className="text-sm font-normal leading-5 text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             View and manage your silicon debugging sessions
           </p>
         </div>

@@ -236,10 +236,10 @@ export default function IntegrationsPage() {
       {/* Header */}
       <div className="mb-12 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold leading-8 text-foreground mb-1">
+          <h1 className="text-2xl font-semibold text-foreground mb-1">
             Integrations
           </h1>
-          <p className="text-sm font-normal leading-5 text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Connect external services to index and search content
           </p>
         </div>

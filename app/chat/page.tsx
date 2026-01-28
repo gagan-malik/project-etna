@@ -539,24 +539,24 @@ function ChatPageContent() {
             {debugMode ? (
               <div className="flex flex-col gap-4 items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Cpu className="h-6 w-6 text-primary" />
+                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                    <Cpu className="h-6 w-6 text-foreground" />
                   </div>
                 </div>
-                <h1 className="text-2xl font-semibold leading-8 text-foreground">
+                <h1 className="text-2xl font-semibold text-foreground">
                   Silicon Debug Assistant
                 </h1>
-                <p className="text-lg font-medium leading-7 text-muted-foreground max-w-lg">
+                <p className="text-muted-foreground max-w-lg">
                   I can help analyze Verilog, VHDL, and SystemVerilog code, identify bugs, 
                   check timing issues, and review your RTL designs.
                 </p>
               </div>
             ) : (
               <div className="flex flex-col gap-4 items-center">
-                <h1 className="text-2xl font-semibold leading-8 text-foreground">
+                <h1 className="text-2xl font-semibold text-foreground">
                   Hello! How can I help you today?
                 </h1>
-                <p className="text-lg font-medium leading-7 text-foreground">
+                <p className="text-muted-foreground max-w-lg">
                   Ask me anything, and I'll search the web to give you the best answer.
                 </p>
               </div>
@@ -601,7 +601,7 @@ function ChatPageContent() {
                   key={idx}
                   variant="outline"
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 md:px-4 py-2 rounded-full bg-muted text-xs md:text-sm font-medium text-foreground hover:bg-muted/80"
+                  className="px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium"
                 >
                   {suggestion}
                 </Button>
@@ -773,14 +773,14 @@ function ChatPageContent() {
               ))}
               {streaming && (
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-4 w-4 text-foreground" />
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary animate-pulse-subtle" />
                   </div>
-                  <Card className="flex-1 bg-muted rounded-xl px-4 py-2">
-                    <div className="flex gap-1">
-                      <span className="typing-indicator">●</span>
-                      <span className="typing-indicator">●</span>
-                      <span className="typing-indicator">●</span>
+                  <Card className="flex-1 bg-muted/50 border-border/50 rounded-lg px-4 py-3">
+                    <div className="flex gap-1.5 items-center">
+                      <span className="typing-indicator text-primary">●</span>
+                      <span className="typing-indicator text-primary">●</span>
+                      <span className="typing-indicator text-primary">●</span>
                     </div>
                   </Card>
                 </div>
@@ -792,8 +792,8 @@ function ChatPageContent() {
 
             {/* Input Container */}
             <div className="w-full flex-shrink-0 pt-4">
-              <Card className="bg-muted border border-border rounded-full md:rounded-full rounded-2xl p-3 md:p-4">
-            <div className="flex flex-col gap-2">
+              <Card className="bg-muted border border-border rounded-2xl p-3 md:p-4">
+                <div className="flex flex-col gap-2">
                   {/* File Preview */}
                   {selectedFiles.length > 0 && (
                     <FilePreview 
@@ -804,132 +804,133 @@ function ChatPageContent() {
                     />
                   )}
 
-              {/* Text Input */}
-              <div className="flex items-center gap-2">
-                <Textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
-                    setCharCount(e.target.value.length);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder="Ask anything..."
-                  className="flex-1 bg-transparent border-none resize-none text-base leading-6 text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
-                  rows={1}
-                />
-              </div>
-
-              {/* Bottom Bar */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,application/pdf,text/*,.doc,.docx"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <SourceSelector
-                    selectedSources={selectedSources}
-                    onSourcesChange={setSelectedSources}
-                  />
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
-                    disabled={uploadingFiles.size > 0}
-                  >
-                    <Plus className="h-5 w-5" />
-                    Attach
-                  </Button>
-                  
-                  <GitHubRepoSelector
-                    selected={selectedRepository}
-                    onSelect={setSelectedRepository}
-                  />
-                  
-                  {availableModels.length > 0 && (
-                    <ModelSelector
-                      models={availableModels}
-                      selected={selectedModel}
-                      onSelect={(model) => {
-                        setSelectedModel(model);
-                        localStorage.setItem("selected-llm-model", JSON.stringify(model));
+                  {/* Text Input */}
+                  <div className="flex items-center gap-2">
+                    <Textarea
+                      ref={textareaRef}
+                      value={inputValue}
+                      onChange={(e) => {
+                        setInputValue(e.target.value);
+                        setCharCount(e.target.value.length);
                       }}
-                      hasPremiumAccess={hasPremiumAccess}
-                      autoMode={autoMode}
-                      maxMode={maxMode}
-                      useMultipleModels={useMultipleModels}
-                      onAutoModeChange={setAutoMode}
-                      onMaxModeChange={(enabled) => {
-                        if (enabled && !hasPremiumAccess) {
-                          toast({
-                            title: "Premium Feature",
-                            description: "MAX Mode requires a premium subscription. Please upgrade to access this feature.",
-                            action: (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => window.location.href = "/overview"}
-                              >
-                                Upgrade
-                              </Button>
-                            ),
-                          });
-                          return;
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
                         }
-                        setMaxMode(enabled);
                       }}
-                      onUseMultipleModelsChange={(enabled) => {
-                        if (enabled && !hasPremiumAccess) {
-                          toast({
-                            title: "Premium Feature",
-                            description: "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
-                            action: (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => window.location.href = "/overview"}
-                              >
-                                Upgrade
-                              </Button>
-                            ),
-                          });
-                          return;
-                        }
-                        setUseMultipleModels(enabled);
-                      }}
+                      placeholder="Ask anything..."
+                      className="flex-1 bg-transparent border-none resize-none text-base leading-6 text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
+                      rows={1}
                     />
-                  )}
+                  </div>
+
+                  {/* Bottom Bar */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,application/pdf,text/*,.doc,.docx"
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        aria-label="Upload files"
+                      />
+                      <SourceSelector
+                        selectedSources={selectedSources}
+                        onSourcesChange={setSelectedSources}
+                      />
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
+                        disabled={uploadingFiles.size > 0}
+                      >
+                        <Plus className="h-5 w-5" />
+                        Attach
+                      </Button>
+                      
+                      <GitHubRepoSelector
+                        selected={selectedRepository}
+                        onSelect={setSelectedRepository}
+                      />
+                      
+                      {availableModels.length > 0 && (
+                        <ModelSelector
+                          models={availableModels}
+                          selected={selectedModel}
+                          onSelect={(model) => {
+                            setSelectedModel(model);
+                            localStorage.setItem("selected-llm-model", JSON.stringify(model));
+                          }}
+                          hasPremiumAccess={hasPremiumAccess}
+                          autoMode={autoMode}
+                          maxMode={maxMode}
+                          useMultipleModels={useMultipleModels}
+                          onAutoModeChange={setAutoMode}
+                          onMaxModeChange={(enabled) => {
+                            if (enabled && !hasPremiumAccess) {
+                              toast({
+                                title: "Premium Feature",
+                                description: "MAX Mode requires a premium subscription. Please upgrade to access this feature.",
+                                action: (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => window.location.href = "/overview"}
+                                  >
+                                    Upgrade
+                                  </Button>
+                                ),
+                              });
+                              return;
+                            }
+                            setMaxMode(enabled);
+                          }}
+                          onUseMultipleModelsChange={(enabled) => {
+                            if (enabled && !hasPremiumAccess) {
+                              toast({
+                                title: "Premium Feature",
+                                description: "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
+                                action: (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => window.location.href = "/overview"}
+                                  >
+                                    Upgrade
+                                  </Button>
+                                ),
+                              });
+                              return;
+                            }
+                            setUseMultipleModels(enabled);
+                          }}
+                        />
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {charCount > 0 && (
+                        <span className="text-sm text-muted-foreground">
+                          {charCount}/1000
+                        </span>
+                      )}
+                      <Button
+                        onClick={handleSend}
+                        disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
+                        className="rounded-full"
+                      >
+                        <Send className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  {charCount > 0 && (
-                    <span className="text-sm text-muted-foreground">
-                      {charCount}/1000
-                    </span>
-                  )}
-                  <Button
-                    onClick={handleSend}
-                    disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
-                    className="rounded-full"
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
+              </Card>
             </div>
-          </Card>
-        </div>
       </main>
     );
 }

@@ -139,7 +139,7 @@ export default function SettingsPage() {
           setActiveSection={setActiveSection} 
         />
         <SidebarInset className="flex flex-col">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <header className="flex h-14 shrink-0 items-center gap-2 border-b px-6">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
@@ -162,14 +162,11 @@ export default function SettingsPage() {
           </header>
 
           <main className="flex-1 overflow-y-auto">
-            <div className="container max-w-4xl py-8">
+            <div className="max-w-3xl mx-auto px-6 py-8">
               <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                  <ActiveIcon className="h-6 w-6 text-muted-foreground" />
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    {activeSectionData?.label || "Settings"}
-                  </h1>
-                </div>
+                <h1 className="text-2xl font-semibold">
+                  {activeSectionData?.label || "Settings"}
+                </h1>
                 <p className="text-muted-foreground">
                   Manage your {activeSectionData?.label.toLowerCase() || "settings"} preferences
                 </p>
@@ -187,7 +184,7 @@ export default function SettingsPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <Label htmlFor="email-notifications">Email Notifications</Label>
                           <p className="text-sm text-muted-foreground">
                             Receive notifications via email
@@ -203,7 +200,7 @@ export default function SettingsPage() {
                       </div>
                       <Separator />
                       <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <Label htmlFor="push-notifications">Push Notifications</Label>
                           <p className="text-sm text-muted-foreground">
                             Receive push notifications in your browser
@@ -219,7 +216,7 @@ export default function SettingsPage() {
                       </div>
                       <Separator />
                       <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <Label htmlFor="sms-notifications">SMS Notifications</Label>
                           <p className="text-sm text-muted-foreground">
                             Receive notifications via SMS
@@ -235,7 +232,7 @@ export default function SettingsPage() {
                       </div>
                       <Separator />
                       <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           <Label htmlFor="marketing-notifications">Marketing Emails</Label>
                           <p className="text-sm text-muted-foreground">
                             Receive emails about new features and updates
@@ -255,57 +252,60 @@ export default function SettingsPage() {
 
                 {/* Appearance Section */}
                 {activeSection === "appearance" && (
-                  <>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Theme</CardTitle>
-                        <CardDescription>
-                          Customize the appearance of the application
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="theme">Theme</Label>
-                          <Select
-                            value={appearance.theme}
-                            onValueChange={(value) =>
-                              setAppearance({ ...appearance, theme: value })
-                            }
-                          >
-                            <SelectTrigger id="theme">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="light">Light</SelectItem>
-                              <SelectItem value="dark">Dark</SelectItem>
-                              <SelectItem value="system">System</SelectItem>
-                            </SelectContent>
-                          </Select>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Theme</CardTitle>
+                      <CardDescription>
+                        Customize the appearance of the application
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid gap-2">
+                        <Label htmlFor="theme">Theme</Label>
+                        <Select
+                          value={appearance.theme}
+                          onValueChange={(value) =>
+                            setAppearance({ ...appearance, theme: value })
+                          }
+                        >
+                          <SelectTrigger id="theme" className="w-[180px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                            <SelectItem value="system">System</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Separator />
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <Label htmlFor="compact-mode">Compact Mode</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Use a more compact layout
+                          </p>
                         </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label htmlFor="compact-mode">Compact Mode</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Use a more compact layout
-                            </p>
-                          </div>
-                          <Switch
-                            id="compact-mode"
-                            checked={appearance.compact}
-                            onCheckedChange={(checked) =>
-                              setAppearance({ ...appearance, compact: checked })
-                            }
-                          />
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
+                        <Switch
+                          id="compact-mode"
+                          checked={appearance.compact}
+                          onCheckedChange={(checked) =>
+                            setAppearance({ ...appearance, compact: checked })
+                          }
+                        />
+                      </div>
+                      <Separator />
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
                           <Label>Theme Toggle</Label>
-                          <ThemeToggle />
+                          <p className="text-sm text-muted-foreground">
+                            Quick toggle between light and dark
+                          </p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </>
+                        <ThemeToggle />
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {/* Messages & Media Section */}

@@ -288,7 +288,7 @@ export function DesignFileViewer({
                           {module.ports.filter((p) => p.direction === "input").length} in
                         </span>
                         {" / "}
-                        <span className="text-blue-600 dark:text-blue-400">
+                        <span className="text-primary">
                           {module.ports.filter((p) => p.direction === "output").length} out
                         </span>
                       </div>

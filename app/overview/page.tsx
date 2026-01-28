@@ -117,7 +117,7 @@ export default function OverviewPage() {
     <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-16">
       {/* Header */}
       <div className="mb-12 text-center">
-        <h1 className="text-3xl font-semibold leading-8 text-foreground mb-2">
+        <h1 className="text-3xl font-semibold text-foreground mb-2">
           Choose Your Plan
         </h1>
         <p className="text-lg text-muted-foreground">
@@ -190,8 +190,8 @@ export default function OverviewPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Zap className="h-5 w-5 text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <Zap className="h-5 w-5 text-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground mb-1">MAX Mode</h3>
@@ -201,8 +201,8 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <Sparkles className="h-5 w-5 text-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground mb-1">Use Multiple Models</h3>

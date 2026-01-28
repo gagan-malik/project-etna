@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { 
   Bug, 
   History, 
@@ -15,7 +16,9 @@ import {
   Plus,
   Loader2,
   Wrench,
-  FileCode
+  FileCode,
+  Activity,
+  ChevronRight
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +78,11 @@ const navigation: NavSection[] = [
         url: "/files",
         icon: FileCode,
       },
+      {
+        title: "Waveforms",
+        url: "/waveforms",
+        icon: Activity,
+      },
     ],
   },
   {
@@ -109,10 +117,21 @@ interface Conversation {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+
+  // Get user initials
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name[0].toUpperCase();
+  };
 
   // Extract conversation ID from URL if on chat page
   useEffect(() => {
@@ -316,31 +335,23 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/help">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <HelpCircle className="size-4" />
-                </div>
+              <Link href="/account">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={session?.user?.image || undefined} alt={session?.user?.name || "User"} />
+                  <AvatarFallback className="rounded-lg">
+                    {getInitials(session?.user?.name)}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Help & Support</span>
+                  <span className="truncate font-semibold">
+                    {session?.user?.name || "User"}
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Get assistance
+                    {session?.user?.email || "No email"}
                   </span>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-                <AvatarFallback className="rounded-lg">JD</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">John Doe</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  john@example.com
-                </span>
-              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

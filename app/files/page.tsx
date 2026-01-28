@@ -66,8 +66,8 @@ const fileTypeConfig = {
   rtl: {
     label: "RTL",
     icon: Cpu,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
   },
   testbench: {
     label: "Testbench",
@@ -281,11 +281,11 @@ export default function DesignFilesPage() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold leading-8 text-foreground mb-1 flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-foreground mb-1 flex items-center gap-2">
             <FileCode className="h-6 w-6" />
             Design Files
           </h1>
-          <p className="text-sm font-normal leading-5 text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Manage your Verilog, VHDL, and SystemVerilog design files
           </p>
         </div>
@@ -297,6 +297,7 @@ export default function DesignFilesPage() {
             multiple
             onChange={handleFileUpload}
             className="hidden"
+            aria-label="Upload design files"
           />
           <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
             {uploading ? (

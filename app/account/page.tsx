@@ -182,11 +182,11 @@ export default function AccountPage() {
 
   return (
     <div className="flex-1 max-w-4xl mx-auto w-full px-8 py-16">
-      <div className="mb-12">
-        <h1 className="text-2xl font-semibold leading-8 text-foreground mb-1">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-foreground mb-2">
           Account Settings
         </h1>
-        <p className="text-sm font-normal leading-5 text-muted-foreground">
+        <p className="text-muted-foreground">
           Manage your account settings and preferences
         </p>
       </div>
@@ -216,7 +216,7 @@ export default function AccountPage() {
         </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-4">
+        <TabsContent value="profile" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
@@ -243,8 +243,10 @@ export default function AccountPage() {
                 </div>
               </div>
 
+              <Separator />
+
               <div className="space-y-4">
-                <div>
+                <div className="grid gap-2">
                   <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
@@ -254,7 +256,7 @@ export default function AccountPage() {
                   />
                 </div>
 
-                <div>
+                <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
@@ -262,12 +264,12 @@ export default function AccountPage() {
                     disabled
                     className="bg-muted"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground">
                     Email cannot be changed
                   </p>
                 </div>
 
-                <div>
+                <div className="grid gap-2">
                   <Label htmlFor="bio">Bio</Label>
                   <Input
                     id="bio"
@@ -287,7 +289,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Account Tab */}
-        <TabsContent value="account" className="space-y-4">
+        <TabsContent value="account" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
@@ -296,7 +298,7 @@ export default function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="grid gap-2">
                 <Label htmlFor="current-password">Current Password</Label>
                 <Input
                   id="current-password"
@@ -307,7 +309,7 @@ export default function AccountPage() {
                 />
               </div>
 
-              <div>
+              <div className="grid gap-2">
                 <Label htmlFor="new-password">New Password</Label>
                 <Input
                   id="new-password"
@@ -318,7 +320,7 @@ export default function AccountPage() {
                 />
               </div>
 
-              <div>
+              <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirm New Password</Label>
                 <Input
                   id="confirm-password"
@@ -356,7 +358,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Appearance Tab */}
-        <TabsContent value="appearance" className="space-y-4">
+        <TabsContent value="appearance" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Theme</CardTitle>
@@ -364,9 +366,9 @@ export default function AccountPage() {
                 Customize the appearance of the application
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <Label>Theme</Label>
                   <p className="text-sm text-muted-foreground">
                     Choose your preferred theme
@@ -379,7 +381,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Notifications Tab */}
-        <TabsContent value="notifications" className="space-y-4">
+        <TabsContent value="notifications" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
@@ -387,9 +389,9 @@ export default function AccountPage() {
                 Manage how you receive notifications
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <Label>Email Notifications</Label>
                   <p className="text-sm text-muted-foreground">
                     Receive notifications via email
@@ -404,7 +406,7 @@ export default function AccountPage() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <Label>Push Notifications</Label>
                   <p className="text-sm text-muted-foreground">
                     Receive push notifications in your browser
@@ -420,7 +422,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Security Tab */}
-        <TabsContent value="security" className="space-y-4">
+        <TabsContent value="security" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Active Sessions</CardTitle>

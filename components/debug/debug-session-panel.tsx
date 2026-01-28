@@ -69,8 +69,8 @@ const statusConfig = {
   completed: {
     label: "Completed",
     icon: CheckCircle,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
   },
   failed: {
     label: "Failed",
@@ -91,7 +91,7 @@ const findingTypeConfig = {
   },
   info: {
     icon: HelpCircle,
-    color: "text-blue-600 dark:text-blue-400",
+    color: "text-primary",
   },
 };
 
