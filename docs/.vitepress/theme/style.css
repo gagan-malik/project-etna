@@ -1,10 +1,12 @@
 /**
- * shadcn/ui inspired theme for Project Etna docs
- * Base: zinc, Accent: blue, Radius: large
+ * shadcn/ui docs–style theme for Project Etna
+ * Ref: https://ui.shadcn.com/docs/installation
+ * Zinc base, blue accent, Inter, large radius
  */
 
-/* Default to dark appearance */
-:root {
+/* ========== Base (light + dark) ========== */
+:root,
+.dark {
   --vp-c-bg: #09090b;
   --vp-c-bg-alt: #18181b;
   --vp-c-bg-elv: #27272a;
@@ -23,94 +25,273 @@
   --vp-c-gray-3: #52525b;
   --vp-c-gray-soft: rgba(113, 113, 122, 0.16);
 
-  /* Brand = blue (shadcn blue) */
   --vp-c-brand-1: #60a5fa;
   --vp-c-brand-2: #3b82f6;
   --vp-c-brand-3: #2563eb;
-  --vp-c-brand-soft: rgba(59, 130, 246, 0.16);
+  --vp-c-brand-soft: rgba(59, 130, 246, 0.12);
 
   --vp-c-default-1: #3f3f46;
   --vp-c-default-2: #27272a;
   --vp-c-default-3: #18181b;
-  --vp-c-default-soft: rgba(63, 63, 70, 0.5);
+  --vp-c-default-soft: rgba(63, 63, 70, 0.4);
 
   --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --vp-font-family-mono: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
-  /* Large radius (shadcn) */
   --vp-button-border-radius: 0.75rem;
   --vp-input-border-radius: 0.75rem;
-  --vp-code-block-border-radius: 0.75rem;
+  --vp-code-block-border-radius: 0.5rem;
+  --vp-nav-height: 56px;
+  --vp-sidebar-width: 280px;
 }
 
 .dark {
-  --vp-c-bg: #09090b;
-  --vp-c-bg-alt: #18181b;
-  --vp-c-bg-elv: #27272a;
-  --vp-c-bg-soft: #27272a;
-
   --vp-c-border: #3f3f46;
-  --vp-c-divider: #27272a;
   --vp-c-gutter: #09090b;
-
-  --vp-c-text-1: #fafafa;
-  --vp-c-text-2: #a1a1aa;
-  --vp-c-text-3: #71717a;
-
-  --vp-c-gray-1: #a1a1aa;
-  --vp-c-gray-2: #71717a;
-  --vp-c-gray-3: #52525b;
-  --vp-c-gray-soft: rgba(113, 113, 122, 0.16);
-
-  --vp-c-brand-1: #60a5fa;
-  --vp-c-brand-2: #3b82f6;
-  --vp-c-brand-3: #2563eb;
-  --vp-c-brand-soft: rgba(59, 130, 246, 0.16);
 }
 
-/* Hero title gradient */
+/* ========== Nav bar (shadcn-style: slim, clean) ========== */
+.VPNavBar {
+  border-bottom: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg) !important;
+  height: var(--vp-nav-height) !important;
+}
+
+.VPNavBar .container {
+  max-width: 1440px;
+}
+
+.VPNavBar .title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.VPNavBar .link {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.VPNavBar .link:hover,
+.VPNavBar .link.active {
+  color: var(--vp-c-brand-1);
+}
+
+/* ========== Sidebar (shadcn-style: bold section titles, left-accent active) ========== */
+.VPSidebar {
+  border-right: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-alt) !important;
+  width: var(--vp-sidebar-width) !important;
+}
+
+/* Section group title = "Introduction", "API Reference", "Guides" */
+.VPSidebar .group + .group {
+  margin-top: 1.5rem;
+}
+
+.VPSidebar .VPSidebarGroup .VPSidebarGroupTitle {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--vp-c-text-3);
+  padding: 0 1rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.VPSidebarItem .link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.375rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--vp-c-text-2);
+  transition: color 0.15s, background 0.15s;
+}
+
+.VPSidebarItem .link:hover {
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-default-soft);
+}
+
+.VPSidebarItem.is-link.is-active .link {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  font-weight: 600;
+  border-left: 2px solid var(--vp-c-brand-2);
+  margin-left: 0.5rem;
+  padding-left: calc(1rem - 2px);
+}
+
+.VPSidebarItem .link .link-text {
+  font-weight: inherit;
+}
+
+/* Nested / child items */
+.VPSidebarItem .items .VPSidebarItem .link {
+  font-size: 0.8125rem;
+  padding-left: 1.25rem;
+}
+
+.VPSidebarItem .items .VPSidebarItem.is-active .link {
+  padding-left: calc(1.25rem - 2px);
+}
+
+/* ========== Content area (shadcn-style: readable width, typography) ========== */
+.VPDoc .container {
+  max-width: 960px;
+}
+
+.vp-doc h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.vp-doc h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.vp-doc h4 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.vp-doc p {
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+}
+
+/* ========== Code (shadcn-style: rounded, subtle border) ========== */
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-default-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0.375rem;
+  padding: 0.2em 0.4em;
+  font-size: 0.875em;
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc div[class*='language-'] {
+  border-radius: var(--vp-code-block-border-radius);
+  border: 1px solid var(--vp-c-border);
+  background: var(--vp-c-bg-alt) !important;
+}
+
+.vp-doc div[class*='language-'] .lang {
+  color: var(--vp-c-text-3);
+  font-size: 0.75rem;
+}
+
+/* Copy button */
+.vp-doc div[class*='language-'] .copy-button {
+  border-radius: 0.375rem;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.vp-doc div[class*='language-'] .copy-button:hover {
+  background: var(--vp-c-default-soft);
+  color: var(--vp-c-text-1);
+}
+
+/* ========== Home / hero (shadcn-style: gradient title) ========== */
 .VPHome .name {
   background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
-/* Nav / sidebar polish */
-.VPSidebar {
-  border-right: 1px solid var(--vp-c-divider);
+.VPHome .text {
+  font-size: 1.25rem;
+  color: var(--vp-c-text-2);
 }
 
-.VPNavBar {
-  border-bottom: 1px solid var(--vp-c-divider);
+.VPHome .tagline {
+  font-size: 1rem;
+  color: var(--vp-c-text-3);
 }
 
-.VPSidebarItem.is-link.is-active .link {
-  background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
+.VPHome .actions .link {
+  border-radius: var(--vp-button-border-radius);
+  font-weight: 500;
+}
+
+.VPHome .actions .link.primary {
+  background: var(--vp-c-brand-3);
+  color: white;
+}
+
+.VPHome .actions .link.primary:hover {
+  background: var(--vp-c-brand-2);
+}
+
+/* ========== Right outline / TOC ========== */
+.VPDoc .aside .outline-title {
+  font-size: 0.6875rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--vp-c-text-3);
+}
+
+.VPDoc .aside .outline-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.VPDoc .aside .outline-link:hover,
+.VPDoc .aside .outline-link.active {
+  color: var(--vp-c-brand-1);
+}
+
+/* ========== Search ========== */
+.VPLocalSearchBox .result {
   border-radius: 0.5rem;
 }
 
-.VPSidebarItem .link:hover {
-  color: var(--vp-c-text-1);
-  border-radius: 0.5rem;
+.VPLocalSearchBox .result:hover,
+.VPLocalSearchBox .result.active {
+  background: var(--vp-c-default-soft);
 }
 
-/* Code blocks */
-.vp-doc div[class*='language-'] {
-  border-radius: 0.75rem;
-  border: 1px solid var(--vp-c-border);
-}
-
-.vp-doc :not(pre) > code {
-  border-radius: 0.375rem;
-  padding: 0.15em 0.4em;
-  font-size: 0.875em;
-}
-
-/* Scrollbar */
+/* ========== Scrollbar ========== */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -130,6 +311,6 @@
 }
 
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.25);
   color: var(--vp-c-text-1);
 }
