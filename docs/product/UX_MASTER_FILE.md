@@ -1,9 +1,9 @@
 # Project Etna - UX Master File
 
-> **Version:** 1.3  
+> **Version:** 1.4  
 > **Last Updated:** January 2026  
 > **Author:** Gagan Malik  
-> **Status:** Baseline Definition (Unauthenticated, Voice & Multi-Mode Experience)
+> **Status:** Baseline Definition (Unauthenticated, Voice & 4-Mode System)
 
 ---
 
@@ -898,7 +898,7 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │     ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
-│     │    ASK    │    │   AGENT   │    │   DEBUG   │    │   EDIT    │
+│     │    ASK    │    │   AGENT   │    │   DEBUG   │    │  MANUAL   │
 │     │    💬     │    │    🤖     │    │    🐛     │    │    ✏️     │
 │     │           │    │           │    │           │    │           │
 │     │  Learn &  │    │ Autonomous│    │ Systematic│    │  Precise  │
@@ -919,12 +919,12 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 | **"I have a question"** | 💬 Ask | Learn without changing anything |
 | **"Build this for me"** | 🤖 Agent | AI plans and executes autonomously |
 | **"Something's broken"** | 🐛 Debug | Systematic bug hunting + waveforms |
-| **"Change exactly this"** | ✏️ Edit | Precise, controlled modifications |
+| **"Change exactly this"** | ✏️ Manual | Precise, controlled modifications |
 
 ### Mode Comparison Matrix
 
-| Aspect | Ask 💬 | Agent 🤖 | Debug 🐛 | Edit ✏️ |
-|--------|--------|----------|----------|---------|
+| Aspect | Ask 💬 | Agent 🤖 | Debug 🐛 | Manual ✏️ |
+|--------|--------|----------|----------|-----------|
 | **Purpose** | Learn & understand | Build & implement | Fix bugs systematically | Precise modifications |
 | **Code Changes** | ❌ None | ✅ Multi-file | ✅ Targeted fixes | ✅ Explicit only |
 | **AI Autonomy** | Read-only | Full (with planning) | Guided | Minimal |
@@ -953,19 +953,16 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
     │  ├─────────────────────────────────────────────────────────┤   │
     │  │                                                         │   │
     │  │  💬 Ask                                              A  │   │
-    │  │     Learn about code, ask questions                     │   │
-    │  │                                                         │   │
-    │  │  📋 Plan                                             P  │   │
-    │  │     Create a plan before implementation                 │   │
-    │  │                                                         │   │
-    │  │  🐛 Debug                                            D  │   │
-    │  │     Systematic bug hunting with runtime analysis        │   │
+    │  │     Learn about code, ask questions (read-only)         │   │
     │  │                                                         │   │
     │  │  🤖 Agent                               ● Current    G  │   │
-    │  │     Autonomous task execution                           │   │
+    │  │     Autonomous planning & execution                     │   │
     │  │                                                         │   │
-    │  │  ✏️ Manual                                           M  │   │
-    │  │     Direct control, explicit instructions               │   │
+    │  │  🐛 Debug                                            D  │   │
+    │  │     Systematic bug hunting + waveform analysis          │   │
+    │  │                                                         │   │
+│  │  ✏️ Manual                                           M  │   │
+│  │     Precise, controlled modifications                   │   │
     │  │                                                         │   │
     │  └─────────────────────────────────────────────────────────┘   │
     │                                                                 │
@@ -1048,121 +1045,88 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 
 ---
 
-### Mode 2: Plan Mode 📋
+### Mode 2: Agent Mode 🤖
 
-**Purpose:** Create structured plans before implementation. Research first, build second.
+**Purpose:** Autonomous task execution with built-in planning. The default mode for building and implementing.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  📋 PLAN MODE                                                      │
+│  🤖 AGENT MODE (Default)                                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  WORKFLOW                                                          │
-│  ────────                                                          │
+│  CAPABILITIES (Full Autonomy)                                      │
+│  ────────────────────────────                                      │
+│  ✅ Explore codebase autonomously                                  │
+│  ✅ Create & modify files                                          │
+│  ✅ Generate testbenches & assertions                              │
+│  ✅ Multi-file refactoring                                         │
+│  ✅ Ask clarifying questions when needed                           │
+│  ✅ Built-in planning for complex tasks                            │
+│  ✅ Run background tasks                                           │
 │                                                                     │
-│  1. USER DESCRIBES TASK                                            │
-│     "Add AXI4-Lite slave interface to the register block"          │
+│  BUILT-IN PLANNING                                                 │
+│  ─────────────────                                                 │
+│  For complex tasks, Agent automatically:                           │
+│  1. Researches codebase                                            │
+│  2. Asks clarifying questions                                      │
+│  3. Shows plan before executing                                    │
+│  4. Lets you modify plan if needed                                 │
+│  5. Executes with diff previews                                    │
 │                                                                     │
-│  2. AI RESEARCHES & ASKS QUESTIONS                                 │
-│     • Explores existing code structure                             │
-│     • Identifies dependencies                                      │
-│     • Asks clarifying questions:                                   │
-│       - "What address width do you need?"                          │
-│       - "Should it support byte enables?"                          │
-│       - "Do you have existing bus infrastructure?"                 │
+│  GUARDRAILS                                                        │
+│  ──────────                                                        │
+│  • Shows changes before applying (diff view)                       │
+│  • Requires confirmation for destructive changes                   │
+│  • Can be interrupted at any point                                 │
+│  • Tracks all changes for easy revert                              │
 │                                                                     │
-│  3. AI CREATES PLAN                                                │
-│     • Structured Markdown document                                 │
-│     • File-by-file breakdown                                       │
-│     • Code snippets for key changes                                │
-│     • Estimated complexity                                         │
-│                                                                     │
-│  4. USER REVIEWS & EDITS PLAN                                      │
-│     • Modify steps before execution                                │
-│     • Add/remove requirements                                      │
-│     • Approve or request changes                                   │
-│                                                                     │
-│  5. TRANSITION TO AGENT MODE                                       │
-│     • "Execute this plan" → switches to Agent mode                 │
-│     • Plan serves as instruction set                               │
-│                                                                     │
-│  CAPABILITIES                           RESTRICTIONS               │
-│  ─────────────                          ────────────               │
-│  ✅ Research codebase                   ❌ No direct code changes  │
-│  ✅ Ask clarifying questions            ❌ Plan only, no execution │
-│  ✅ Create structured plans                                        │
-│  ✅ Estimate complexity                                            │
-│  ✅ Identify dependencies                                          │
+│  EXAMPLE QUERIES                                                   │
+│  ───────────────                                                   │
+│  • "Create a parameterized FIFO module"                           │
+│  • "Add AXI-Lite interface to this peripheral"                    │
+│  • "Refactor this FSM to use enum states"                         │
+│  • "Generate testbench for uart_tx"                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Plan Mode Example:**
+**Agent Mode Example (with built-in planning):**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  📋 Plan Mode                                                      │
+│  🤖 Agent Mode                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  You: Add reset synchronization to all async inputs                │
 │                                                                     │
-│  AI: I'll create a plan for this. First, let me ask a few         │
-│      questions:                                                    │
+│  AI: I'll help with this. Let me ask a few questions first:       │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 🤔 Clarifying Questions                                     │   │
+│  │ 🤔 Quick Questions                                          │   │
 │  │                                                             │   │
-│  │ 1. How many stages of synchronization? (typically 2-3)     │   │
-│  │    [2 stages]  [3 stages]  [Custom: ___]                   │   │
-│  │                                                             │   │
-│  │ 2. Should I use a standard synchronizer module or inline?  │   │
-│  │    [Create module]  [Inline]                               │   │
-│  │                                                             │   │
-│  │ 3. Are there any timing constraints I should know about?   │   │
-│  │    [No constraints]  [Let me specify: ___]                 │   │
-│  │                                                             │   │
+│  │ 1. Sync stages?  [2]  [3]                                  │   │
+│  │ 2. Create module or inline?  [Module]  [Inline]            │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  You: 2 stages, create a module, no special constraints            │
+│  You: 2 stages, create a module                                    │
 │                                                                     │
 │  AI: Here's my plan:                                               │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 📋 PLAN: Reset Synchronization                              │   │
-│  │ ─────────────────────────────────────────────────────────── │   │
+│  │ 📋 PLAN                                                     │   │
 │  │                                                             │   │
-│  │ **Summary:** Add 2-stage synchronizers to 4 async inputs   │   │
-│  │ **Complexity:** Medium (3-4 files, ~50 lines)              │   │
+│  │ 1. Create rtl/common/sync_2stage.sv                        │   │
+│  │ 2. Modify top_module.sv (add instances)                    │   │
+│  │ 3. Update testbench                                        │   │
 │  │                                                             │   │
-│  │ **Step 1: Create synchronizer module**                     │   │
-│  │ File: `rtl/common/sync_2stage.sv`                          │   │
-│  │ ```systemverilog                                           │   │
-│  │ module sync_2stage (                                       │   │
-│  │   input  logic clk,                                        │   │
-│  │   input  logic async_in,                                   │   │
-│  │   output logic sync_out                                    │   │
-│  │ );                                                         │   │
-│  │   logic [1:0] sync_ff;                                     │   │
-│  │   always_ff @(posedge clk) begin                          │   │
-│  │     sync_ff <= {sync_ff[0], async_in};                    │   │
-│  │   end                                                      │   │
-│  │   assign sync_out = sync_ff[1];                           │   │
-│  │ endmodule                                                  │   │
-│  │ ```                                                        │   │
-│  │                                                             │   │
-│  │ **Step 2: Modify top_module.sv**                           │   │
-│  │ - Instantiate sync_2stage for: rst_n, enable, mode_sel    │   │
-│  │ - Update port connections                                  │   │
-│  │                                                             │   │
-│  │ **Step 3: Update testbench**                               │   │
-│  │ - Add latency compensation for synchronized signals        │   │
-│  │                                                             │   │
-│  │ **Step 4: Add timing constraints** (optional)              │   │
-│  │ - set_false_path for async inputs                         │   │
-│  │                                                             │   │
+│  │ [Execute]  [Modify]  [Cancel]                              │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  [✏️ Edit Plan]  [🤖 Execute Plan]  [💬 Ask Questions]            │
+│  You: [Execute]                                                    │
+│                                                                     │
+│  AI: ✅ Created sync_2stage.sv                                     │
+│      ✅ Modified top_module.sv (+3 instances)                      │
+│      ✅ Updated testbench                                          │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1171,55 +1135,48 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 
 ### Mode 3: Debug Mode 🐛
 
-**Purpose:** Systematic bug hunting with hypothesis generation and runtime analysis.
+**Purpose:** Systematic bug hunting with waveform integration. Unique to Etna.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  🐛 DEBUG MODE                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  WORKFLOW (Inspired by Cursor Debug Mode)                          │
-│  ────────                                                          │
+│  SYSTEMATIC DEBUGGING WORKFLOW                                     │
+│  ─────────────────────────────                                     │
 │                                                                     │
 │  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐         │
-│  │DESCRIBE │───▶│HYPOTHE- │───▶│INSTRUMENT│───▶│REPRODUCE│         │
-│  │   BUG   │    │  SIZE   │    │  CODE   │    │   BUG   │         │
+│  │DESCRIBE │───▶│HYPOTHE- │───▶│INSTRUMENT│───▶│ VERIFY  │         │
+│  │   BUG   │    │  SIZE   │    │ & TEST  │    │   FIX   │         │
 │  └─────────┘    └─────────┘    └─────────┘    └─────────┘         │
-│       │                                             │              │
-│       │         ┌─────────┐    ┌─────────┐         │              │
-│       │         │ VERIFY  │◀───│ ANALYZE │◀────────┘              │
-│       │         │   FIX   │    │  & FIX  │                        │
-│       │         └─────────┘    └─────────┘                        │
-│       │              │                                             │
-│       └──────────────┴─── (iterate if needed) ───▶                │
 │                                                                     │
-│  PHASE 1: Describe the Bug                                         │
-│  • Provide error messages, failing test output                     │
-│  • Describe expected vs actual behavior                            │
-│  • Attach waveform if available                                    │
+│  CAPABILITIES                                                      │
+│  ────────────                                                      │
+│  ✅ Generate ranked hypotheses                                     │
+│  ✅ Add $display / assertions for testing                          │
+│  ✅ Analyze runtime output                                         │
+│  ✅ Targeted fixes with explanation                                │
 │                                                                     │
-│  PHASE 2: AI Generates Hypotheses                                  │
-│  • Multiple possible root causes                                   │
-│  • Ranked by likelihood                                            │
-│  • Reasoning for each hypothesis                                   │
+│  WAVEFORM INTEGRATION (Etna-Exclusive)                            │
+│  ─────────────────────────────────────                             │
+│  ✅ Navigate waveform via natural language                         │
+│  ✅ Correlate signals with RTL source                              │
+│  ✅ Identify anomalies in signal patterns                          │
+│  ✅ Detect protocol violations (AXI, APB, etc.)                    │
+│  ✅ Generate assertions from observed patterns                     │
 │                                                                     │
-│  PHASE 3: AI Instruments Code                                      │
-│  • Adds $display / $monitor statements                             │
-│  • Adds assertions to test hypotheses                              │
-│  • Suggests signals to observe in waveform                         │
+│  WAVEFORM COMMANDS                                                 │
+│  ─────────────────                                                 │
+│  • "Zoom to time 1500ns"                                          │
+│  • "Show me when data_valid first goes high"                      │
+│  • "Find the first AXI protocol violation"                        │
+│  • "Why is there a gap between ready and valid?"                  │
 │                                                                     │
-│  PHASE 4: User Reproduces Bug                                      │
-│  • Run simulation with instrumentation                             │
-│  • AI collects and analyzes output                                 │
-│                                                                     │
-│  PHASE 5: AI Analyzes & Fixes                                      │
-│  • Runtime data confirms/refutes hypotheses                        │
-│  • Generates targeted fix                                          │
-│  • Explains root cause                                             │
-│                                                                     │
-│  PHASE 6: Verify Fix                                               │
-│  • User confirms fix works                                         │
-│  • If not, iterate with new data                                   │
+│  EXAMPLE QUERIES                                                   │
+│  ───────────────                                                   │
+│  • "FIFO test failing with data mismatch"                         │
+│  • "FSM stuck in IDLE state"                                      │
+│  • "AXI handshake timing violation"                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1231,67 +1188,30 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 │  🐛 Debug Mode                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  You: FIFO test is failing. It reports "data mismatch at read 10" │
-│       Expected 0x0A, got 0x09. Waveform attached.                  │
+│  You: FIFO test failing. Expected 0x0A, got 0x09. [waveform]      │
 │                                                                     │
 │  AI: I'll investigate this systematically.                         │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 🔍 HYPOTHESES (ranked by likelihood)                        │   │
+│  │ 🔍 HYPOTHESES                                               │   │
 │  │                                                             │   │
-│  │ 1. 🎯 Off-by-one in write pointer (HIGH - 70%)             │   │
-│  │    The "expected 0x0A, got 0x09" suggests data is shifted  │   │
-│  │    by one position. Write pointer may wrap incorrectly.    │   │
-│  │                                                             │   │
-│  │ 2. ⚠️ Read pointer advancing early (MEDIUM - 20%)          │   │
-│  │    Read pointer might increment before data is valid.      │   │
-│  │                                                             │   │
-│  │ 3. 📝 Reset initialization issue (LOW - 10%)               │   │
-│  │    Pointers might not reset to same value.                 │   │
-│  │                                                             │   │
+│  │ 1. 🎯 Off-by-one in write pointer (70%)                    │   │
+│  │ 2. ⚠️ Read pointer advancing early (20%)                   │   │
+│  │ 3. 📝 Reset initialization issue (10%)                     │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  Let me add instrumentation to test hypothesis #1:                 │
+│  I see in the waveform at 1500ns the write pointer jumps           │
+│  from 9 → 10 instead of wrapping to 0.                            │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 📝 INSTRUMENTATION (added to fifo.sv)                      │   │
-│  │                                                             │   │
-│  │ ```systemverilog                                           │   │
-│  │ // Debug: Track write pointer behavior                     │   │
-│  │ always @(posedge clk) begin                                │   │
-│  │   if (wr_en) begin                                        │   │
-│  │     $display("[%0t] WRITE: ptr=%0d, data=%h, next_ptr=%0d",│   │
-│  │              $time, wr_ptr, wr_data,                       │   │
-│  │              (wr_ptr == DEPTH-1) ? 0 : wr_ptr + 1);       │   │
-│  │   end                                                      │   │
-│  │ end                                                        │   │
-│  │ ```                                                        │   │
-│  │                                                             │   │
-│  │ [Apply Instrumentation]  [Skip to Fix]  [Try Different]   │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  You: [Runs simulation, pastes output]                             │
-│                                                                     │
-│  AI: ✅ **Confirmed: Off-by-one error**                            │
-│                                                                     │
-│  From the logs, I see:                                             │
-│  - Write 9: ptr=9, next_ptr=10 ❌ (should wrap to 0, DEPTH=10)    │
-│  - Write 10: ptr=10, next_ptr=11 ❌ (out of bounds!)              │
-│                                                                     │
-│  **Root Cause:** Line 47 uses `DEPTH` instead of `DEPTH-1`        │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 🔧 FIX                                                     │   │
+│  │ 🔧 ROOT CAUSE: Line 47 uses DEPTH instead of DEPTH-1       │   │
 │  │                                                             │   │
 │  │ ```diff                                                    │   │
 │  │ - if (wr_ptr == DEPTH)                                    │   │
 │  │ + if (wr_ptr == DEPTH - 1)                                │   │
-│  │     wr_ptr <= 0;                                          │   │
 │  │ ```                                                        │   │
 │  │                                                             │   │
-│  │ [Apply Fix]  [Apply & Remove Debug]  [Explain More]       │   │
-│  │                                                             │   │
+│  │ [Apply Fix]  [Add Assertion]  [Explain More]              │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1299,143 +1219,13 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 
 ---
 
-### Mode 4: Agent Mode 🤖
-
-**Purpose:** Autonomous task execution with full capabilities.
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🤖 AGENT MODE                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  CAPABILITIES (Full Autonomy)                                      │
-│  ────────────────────────────                                      │
-│  ✅ Explore codebase autonomously                                  │
-│  ✅ Create new files                                               │
-│  ✅ Modify existing files                                          │
-│  ✅ Generate testbenches                                           │
-│  ✅ Generate assertions                                            │
-│  ✅ Multi-file changes                                             │
-│  ✅ Refactoring                                                    │
-│  ✅ Execute from plans                                             │
-│                                                                     │
-│  GUARDRAILS                                                        │
-│  ──────────                                                        │
-│  • Shows changes before applying (diff view)                       │
-│  • Requires confirmation for destructive changes                   │
-│  • Can be interrupted at any point                                 │
-│  • Tracks all changes for easy revert                              │
-│                                                                     │
-│  IDEAL FOR                                                         │
-│  ─────────                                                         │
-│  • "Create a parameterized FIFO module"                           │
-│  • "Add AXI-Lite interface to this peripheral"                    │
-│  • "Refactor this FSM to use enum states"                         │
-│  • "Generate comprehensive testbench for uart_tx"                 │
-│  • "Fix all linting warnings in this file"                        │
-│                                                                     │
-│  EXECUTION MODEL                                                   │
-│  ───────────────                                                   │
-│                                                                     │
-│  User Request                                                      │
-│       │                                                            │
-│       ▼                                                            │
-│  ┌─────────────┐                                                   │
-│  │   EXPLORE   │  AI searches codebase, understands context       │
-│  └──────┬──────┘                                                   │
-│         │                                                          │
-│         ▼                                                          │
-│  ┌─────────────┐                                                   │
-│  │    PLAN     │  AI creates internal execution plan               │
-│  └──────┬──────┘                                                   │
-│         │                                                          │
-│         ▼                                                          │
-│  ┌─────────────┐                                                   │
-│  │   EXECUTE   │  AI makes changes (with user confirmation)       │
-│  └──────┬──────┘                                                   │
-│         │                                                          │
-│         ▼                                                          │
-│  ┌─────────────┐                                                   │
-│  │   VERIFY    │  AI checks changes, offers to test               │
-│  └─────────────┘                                                   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Agent Mode Example:**
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🤖 Agent Mode                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  You: Create a parameterized async FIFO with configurable depth   │
-│       and width. Include gray code pointers for CDC.              │
-│                                                                     │
-│  AI: I'll create this for you. Let me explore your codebase       │
-│      first...                                                      │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 🔍 Exploring...                                             │   │
-│  │ • Found existing sync FIFO at rtl/fifo_sync.sv             │   │
-│  │ • Found coding conventions in rtl/common/                  │   │
-│  │ • No existing async FIFO found                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  I'll create the following files:                                  │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 📁 FILES TO CREATE                                          │   │
-│  │                                                             │   │
-│  │ 1. rtl/fifo_async.sv         (main module, ~120 lines)     │   │
-│  │ 2. rtl/common/gray_code.sv   (gray encoder/decoder)        │   │
-│  │ 3. tb/fifo_async_tb.sv       (testbench, ~200 lines)       │   │
-│  │                                                             │   │
-│  │ [Preview All]  [Create Files]  [Modify Plan]               │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  You: [Clicks "Create Files"]                                      │
-│                                                                     │
-│  AI: Creating files...                                             │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ ✅ Created: rtl/fifo_async.sv                              │   │
-│  │                                                             │   │
-│  │ ```systemverilog                                           │   │
-│  │ module fifo_async #(                                       │   │
-│  │   parameter WIDTH = 8,                                     │   │
-│  │   parameter DEPTH = 16,                                    │   │
-│  │   parameter ADDR_WIDTH = $clog2(DEPTH)                    │   │
-│  │ )(                                                         │   │
-│  │   // Write domain                                          │   │
-│  │   input  logic                 wr_clk,                     │   │
-│  │   input  logic                 wr_rst_n,                   │   │
-│  │   input  logic                 wr_en,                      │   │
-│  │   input  logic [WIDTH-1:0]     wr_data,                    │   │
-│  │   output logic                 full,                       │   │
-│  │   // ... (showing partial)                                 │   │
-│  │ ```                                                        │   │
-│  │                                                             │   │
-│  │ [View Full File]  [Edit]  [Undo]                          │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  ✅ All 3 files created successfully.                              │
-│                                                                     │
-│  Would you like me to run the testbench?                          │
-│  [Run Tests]  [I'll Run Later]                                    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-### Mode 5: Manual Mode ✏️
+### Mode 4: Manual Mode ✏️
 
 **Purpose:** Direct, explicit control for precise modifications.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  ✏️ MANUAL MODE                                                    │
+│  ✏️ EDIT MODE                                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  PHILOSOPHY                                                        │
@@ -1448,11 +1238,10 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 │  ✅ Edit specific files (user-named)    ❌ No autonomous search   │
 │  ✅ Make specific changes               ❌ No exploring codebase  │
 │  ✅ Apply user's exact instructions     ❌ No "helpful" additions │
-│  ✅ Targeted refactoring                ❌ No file creation       │
-│                                              (unless specified)    │
+│  ✅ Targeted refactoring                ❌ No clarifying questions│
 │                                                                     │
-│  IDEAL FOR                                                         │
-│  ─────────                                                         │
+│  EXAMPLE QUERIES                                                   │
+│  ───────────────                                                   │
 │  • "In fifo.sv line 45, change DEPTH to DEPTH-1"                  │
 │  • "Rename signal `valid` to `data_valid` in this file"           │
 │  • "Add `default: state <= IDLE;` to the case statement"          │
@@ -1463,7 +1252,6 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 │  • You know exactly what change you want                          │
 │  • Agent mode is making unwanted changes                          │
 │  • Precise surgical edits needed                                  │
-│  • Teaching the AI specific patterns                              │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1475,91 +1263,47 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 │  ✏️ Manual Mode                                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  You: In fifo.sv, change the parameter DEPTH from 16 to 32        │
+│  You: In fifo.sv, change parameter DEPTH from 16 to 32            │
 │                                                                     │
-│  AI: I'll make that specific change.                               │
+│  AI: Making that change:                                           │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 📝 CHANGE (fifo.sv)                                        │   │
-│  │                                                             │   │
 │  │ ```diff                                                    │   │
-│  │ @@ -1,5 +1,5 @@                                           │   │
-│  │  module fifo #(                                           │   │
-│  │ -  parameter DEPTH = 16,                                  │   │
-│  │ +  parameter DEPTH = 32,                                  │   │
-│  │    parameter WIDTH = 8                                    │   │
-│  │  )(                                                       │   │
+│  │ - parameter DEPTH = 16,                                   │   │
+│  │ + parameter DEPTH = 32,                                   │   │
 │  │ ```                                                        │   │
 │  │                                                             │   │
 │  │ [Apply]  [Cancel]                                         │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  Note: I only changed what you asked. No other modifications.     │
+│  (No other modifications made)                                     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Mode-Specific Features
+### Smart Mode Suggestions
 
-#### Background Agents (Agent Mode)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🤖 BACKGROUND AGENT                                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  Run complex tasks in the background while you continue working.   │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  🔄 Background: Generating testbench for uart_tx...         │   │
-│  │     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━░░░░░░ 75%                 │   │
-│  │     Estimated: 2 minutes remaining                          │   │
-│  │                                                              │   │
-│  │     [View Progress]  [Cancel]                               │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  When complete:                                                    │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  ✅ Background task complete                                 │   │
-│  │     Generated uart_tx_tb.sv (350 lines)                     │   │
-│  │                                                              │   │
-│  │     [View Result]  [Apply]  [Dismiss]                       │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-#### Mode Auto-Suggestion
+Etna detects query intent and suggests the optimal mode:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  💡 MODE AUTO-SUGGESTION                                           │
+│  💡 SMART MODE DETECTION                                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Etna detects query intent and suggests the optimal mode:          │
-│                                                                     │
-│  Query: "What does always_comb do?"                                │
-│  → Suggested: 💬 Ask Mode (educational question)                   │
-│                                                                     │
-│  Query: "Add error handling to this module"                        │
-│  → Suggested: 📋 Plan Mode (complex change, needs planning)        │
-│                                                                     │
-│  Query: "Test is failing with timeout error"                       │
-│  → Suggested: 🐛 Debug Mode (bug investigation)                    │
-│                                                                     │
-│  Query: "Create a testbench for this FIFO"                        │
-│  → Suggested: 🤖 Agent Mode (file generation)                      │
-│                                                                     │
-│  Query: "Change line 45 to use <= instead of ="                   │
-│  → Suggested: ✏️ Manual Mode (specific, targeted edit)             │
+│  Query                          → Suggested Mode                   │
+│  ─────                             ──────────────                  │
+│  "What does always_comb do?"    → 💬 Ask                          │
+│  "Create a testbench for FIFO"  → 🤖 Agent                        │
+│  "Test is failing with timeout" → 🐛 Debug                        │
+│  "Change line 45 to use <="     → ✏️ Manual                       │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
 │  │ 💡 This looks like a debugging task.                        │   │
-│  │    Switch to 🐛 Debug Mode for systematic bug hunting?      │   │
+│  │    Switch to 🐛 Debug Mode?                                 │   │
 │  │                                                             │   │
-│  │    [Switch to Debug]  [Stay in Agent]                      │   │
+│  │    [Switch]  [Stay in Agent]                               │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1567,69 +1311,28 @@ Etna uses a focused 4-mode system for optimal user experience. Each mode has a c
 
 ---
 
-### Mode Keyboard Shortcuts Summary
+### Mode Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
 | `⌘.` | Open mode switcher |
-| `⌘. A` | Switch to Ask mode |
-| `⌘. P` | Switch to Plan mode |
-| `⌘. D` | Switch to Debug mode |
-| `⌘. G` | Switch to Agent mode (Go) |
-| `⌘. M` | Switch to Manual mode |
-| `⇧Tab` | Quick toggle: Agent ↔ Plan |
+| `⌘. A` | Switch to Ask |
+| `⌘. G` | Switch to Agent (Go) |
+| `⌘. D` | Switch to Debug |
+| `⌘. E` | Switch to Edit |
 
 ---
 
-### Competitive Comparison: Modes
+### Competitive Advantage
 
-| Mode | Cursor | Etna | Etna Differentiation |
-|------|--------|------|---------------------|
-| **Ask** | ✅ Yes | ✅ Yes | + Silicon-specific knowledge |
-| **Plan** | ✅ Yes | ✅ Yes | + Testplan awareness, coverage planning |
-| **Debug** | ✅ Yes | ✅ Yes | + Waveform integration, hypothesis on signals |
-| **Agent** | ✅ Yes | ✅ Yes | + RTL generation, assertion generation |
-| **Manual** | ✅ Yes | ✅ Yes | Same |
-| **Waveform Mode** | ❌ No | 🎯 **Unique** | Signal analysis, protocol debugging |
+| Feature | Cursor | Etna |
+|---------|--------|------|
+| Ask mode | ✅ | ✅ + Silicon knowledge |
+| Agent mode | ✅ | ✅ + RTL generation, built-in planning |
+| Debug mode | ✅ | ✅ + **Waveform integration** |
+| Manual mode | ✅ | ✅ |
 
-### Etna-Specific Mode: Waveform Mode 📊 (Unique)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  📊 WAVEFORM MODE (Etna-Exclusive)                                 │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  PURPOSE                                                           │
-│  ───────                                                           │
-│  AI-assisted waveform analysis mode, unique to Etna.               │
-│  Correlates RTL code with waveform data for deep debugging.        │
-│                                                                     │
-│  CAPABILITIES                                                      │
-│  ────────────                                                      │
-│  ✅ Navigate waveform via natural language                         │
-│  ✅ Correlate signals with RTL source                              │
-│  ✅ Identify anomalies in signal patterns                          │
-│  ✅ Detect protocol violations (AXI, APB, etc.)                    │
-│  ✅ Compare expected vs actual behavior                            │
-│  ✅ Generate assertions from observed patterns                     │
-│                                                                     │
-│  COMMANDS                                                          │
-│  ────────                                                          │
-│  • "Zoom to time 1500ns"                                          │
-│  • "Show me when data_valid first goes high"                      │
-│  • "Find the first error in the AXI transaction"                  │
-│  • "Why is there a gap between ready and valid?"                  │
-│  • "Compare this signal to the expected waveform"                 │
-│  • "Generate an assertion for this handshake pattern"             │
-│                                                                     │
-│  INTEGRATION                                                       │
-│  ───────────                                                       │
-│  • Works with Surfer waveform viewer                              │
-│  • AI can control waveform zoom, pan, cursor                      │
-│  • Bidirectional linking: click signal → see RTL                  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+**Key differentiator:** Etna's Debug mode includes waveform analysis that no competitor offers - correlating runtime signal data with RTL code for hardware-specific debugging.
 
 ---
 
@@ -2056,12 +1759,9 @@ etna.dev
 | | `Esc` | Close modal / Cancel |
 | **Modes** | `⌘.` | Open mode switcher |
 | | `⌘. A` | Switch to Ask mode |
-| | `⌘. P` | Switch to Plan mode |
-| | `⌘. D` | Switch to Debug mode |
 | | `⌘. G` | Switch to Agent mode |
+| | `⌘. D` | Switch to Debug mode |
 | | `⌘. M` | Switch to Manual mode |
-| | `⌘. W` | Switch to Waveform mode |
-| | `⇧Tab` | Quick toggle: Agent ↔ Plan |
 | **Voice** | `⌘⇧V` | Start voice input (push-to-talk) |
 | | `V` (in chat) | Quick voice input |
 | | `Esc` | Cancel voice recording |
@@ -3228,7 +2928,8 @@ Result: 1.8x more signups, and they're QUALIFIED (already got value)
 | January 2026 | 1.0 | Initial UX Master File |
 | January 2026 | 1.1 | Added Unauthenticated Experience (GPT/Perplexity model) |
 | January 2026 | 1.2 | Added Voice Experience (first in EDA industry) |
-| January 2026 | 1.3 | Added Interaction Modes (Ask, Plan, Debug, Agent, Manual, Waveform) |
+| January 2026 | 1.3 | Added Interaction Modes |
+| January 2026 | 1.4 | Consolidated to 4 modes (Ask, Agent, Debug, Manual) - waveform integrated into Debug |
 
 ---
 
