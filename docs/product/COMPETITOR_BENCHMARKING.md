@@ -863,6 +863,51 @@ Let users build custom debug flows from primitives (Notion-inspired).
 
 ---
 
+### Feature Set 8: Multi-Mode Interaction System (Cursor-Inspired)
+
+Adopt Cursor's successful mode-switching paradigm, tailored for silicon debugging.
+
+**4-Mode System:**
+
+| Mode | Icon | Purpose | Key Capability |
+|------|------|---------|----------------|
+| **Ask** | 💬 | Learn & explore | Read-only questions, no code changes |
+| **Agent** | 🤖 | Build & implement | Full autonomy + built-in planning |
+| **Debug** | 🐛 | Fix bugs systematically | Waveform integration + hypothesis generation |
+| **Manual** | ✏️ | Precise modifications | User-controlled, explicit edits only |
+
+**Why This Matters:**
+
+| User Need | Mode | Benefit |
+|-----------|------|---------|
+| "I have a question" | Ask | Safe exploration without accidental changes |
+| "Build this for me" | Agent | AI handles complexity with planning |
+| "Something's broken" | Debug | Systematic investigation with waveforms |
+| "Change exactly this" | Manual | Surgical precision, no AI surprises |
+
+**Silicon-Specific Enhancements:**
+
+| Mode | Etna Enhancement vs Cursor |
+|------|---------------------------|
+| **Ask** | + RTL syntax knowledge, protocol expertise |
+| **Agent** | + Testbench generation, assertion generation |
+| **Debug** | + **Waveform integration** (unique), hypothesis on signals |
+| **Manual** | + Verilog/SystemVerilog aware edits |
+
+**Keyboard Shortcuts:**
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘.` | Open mode switcher |
+| `⌘. A` | Switch to Ask |
+| `⌘. G` | Switch to Agent (Go) |
+| `⌘. D` | Switch to Debug |
+| `⌘. M` | Switch to Manual |
+
+**Competitive Advantage:** Debug mode with integrated waveform analysis is **unique to Etna** - no EDA tool or AI coding assistant offers this.
+
+---
+
 ### Implementation Priority
 
 **Do First (High Impact, Low Effort):**
@@ -874,12 +919,16 @@ Let users build custom debug flows from primitives (Notion-inspired).
 | Share links with state | 1 week |
 | Skeleton loading states | 3 days |
 | Debug templates | 1 week |
+| Mode switcher UI (⌘.) | 1 week |
+| Ask mode (read-only) | 1 week |
 
 **Plan Carefully (High Impact, High Effort):**
 
 | Feature | Timeline |
 |---------|----------|
 | Agent architecture | 4-6 weeks |
+| Agent mode with planning | 3-4 weeks |
+| Debug mode with waveform integration | 4-6 weeks |
 | Real-time collaboration | 6-8 weeks |
 | Background agents | 3-4 weeks |
 | Composable blocks | 4-6 weeks |
@@ -897,6 +946,7 @@ Let users build custom debug flows from primitives (Notion-inspired).
 | Instant onboarding | Weeks of procurement |
 | Multi-model AI | Single locked-in provider |
 | Keyboard-first | Click-heavy interfaces |
+| 4-mode system (Ask/Agent/Debug/Manual) | Single monolithic interface |
 
 **vs. AI Startups (ChipAgents):**
 
@@ -906,6 +956,7 @@ Let users build custom debug flows from primitives (Notion-inspired).
 | Self-service free tier | Sales-required |
 | Consumer-grade UX | Enterprise B2B UX |
 | Transparent pricing | Opaque pricing |
+| Cursor-style interaction modes | No mode system |
 
 **vs. Open Source (GTKWave, Surfer):**
 
@@ -915,6 +966,16 @@ Let users build custom debug flows from primitives (Notion-inspired).
 | Zero setup | Installation required |
 | Collaboration | Single-user |
 | Managed hosting | Self-hosted |
+| Debug mode with waveform AI | Manual waveform analysis |
+
+**vs. Cursor (AI Code Editors):**
+
+| Etna Advantage | Cursor's Limitation |
+|----------------|---------------------|
+| Silicon/RTL domain expertise | General-purpose coding |
+| Waveform integration in Debug mode | No waveform support |
+| Protocol-aware (AXI, APB, etc.) | No hardware protocol knowledge |
+| Testbench & assertion generation | Software-focused generation |
 
 ---
 
@@ -936,6 +997,7 @@ Let users build custom debug flows from primitives (Notion-inspired).
 |------|---------|---------|
 | January 2026 | 1.0 | Initial competitor benchmarking |
 | January 2026 | 1.1 | Added differentiation strategy from disruptive SaaS leaders |
+| January 2026 | 1.2 | Added 4-mode interaction system (Ask, Agent, Debug, Manual) |
 
 ---
 
