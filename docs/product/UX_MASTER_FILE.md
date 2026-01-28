@@ -1573,8 +1573,15 @@ etna.dev
 │
 ├── ⚙️ Settings (/settings)
 │   ├── Profile
+│   ├── AI Models
+│   │   ├── Default Model Selection
+│   │   ├── BYOK (Bring Your Own Key) [Pro]
+│   │   │   ├── OpenRouter Key
+│   │   │   ├── OpenAI Key
+│   │   │   ├── Anthropic Key
+│   │   │   └── Google AI Key
+│   │   └── Model Recommendations per Mode
 │   ├── Preferences
-│   │   ├── AI Model Default
 │   │   ├── Theme (Light/Dark)
 │   │   ├── Keyboard Shortcuts
 │   │   └── Editor Settings

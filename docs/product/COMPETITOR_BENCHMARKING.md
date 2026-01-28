@@ -908,6 +908,54 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 
 ---
 
+### Feature Set 9: BYOK (Bring Your Own Key) & Multi-Model Support
+
+Let users bring their own API keys and choose from multiple AI models.
+
+**Why BYOK Matters:**
+
+| Benefit | For Users | For Etna |
+|---------|-----------|----------|
+| **Cost Control** | Use existing API budgets | Zero AI cost on BYOK users |
+| **Model Choice** | Pick best model per task | Higher margins |
+| **Privacy** | Own keys = own data policies | Enterprise appeal |
+| **No Lock-in** | Switch models anytime | Differentiation |
+| **Latest Models** | Day-1 access to new releases | No integration burden |
+
+**BYOK Providers (Priority Order):**
+
+| Provider | Why | Integration Effort |
+|----------|-----|-------------------|
+| **OpenRouter** | 400+ models, one API | Single integration |
+| **OpenAI** | Enterprise customers have keys | Separate integration |
+| **Anthropic** | Popular for coding | Separate integration |
+
+**Model Recommendations per Mode:**
+
+| Mode | Default (Free) | Recommended (BYOK) |
+|------|----------------|-------------------|
+| **Ask** | DeepSeek V3 | Any (cheap works fine) |
+| **Agent** | DeepSeek V3 | Claude 3.5, GPT-4o |
+| **Debug** | DeepSeek V3 | DeepSeek V3, Claude |
+| **Manual** | DeepSeek V3 | Any |
+
+**MVP Strategy:**
+- Use **OpenRouter** as unified gateway
+- Single API integration covers 400+ models
+- DeepSeek V3 as default (best price/performance)
+- BYOK as Pro feature upsell
+
+**Competitive Comparison:**
+
+| Feature | Etna | Cursor | EDA Tools | ChipAgents |
+|---------|------|--------|-----------|------------|
+| BYOK | ✅ Pro feature | ✅ | ❌ | ❌ |
+| Multi-model | ✅ 400+ via OpenRouter | ✅ | ❌ Single vendor | ❌ |
+| Model per mode | ✅ Recommendations | ❌ | ❌ | ❌ |
+| Open source models | ✅ Full support | ✅ | ❌ | ❌ |
+
+---
+
 ### Implementation Priority
 
 **Do First (High Impact, Low Effort):**
@@ -921,6 +969,8 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 | Debug templates | 1 week |
 | Mode switcher UI (⌘.) | 1 week |
 | Ask mode (read-only) | 1 week |
+| OpenRouter integration (MVP AI) | 1 week |
+| BYOK settings UI | 1 week |
 
 **Plan Carefully (High Impact, High Effort):**
 
@@ -929,6 +979,7 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 | Agent architecture | 4-6 weeks |
 | Agent mode with planning | 3-4 weeks |
 | Debug mode with waveform integration | 4-6 weeks |
+| Model recommendations per mode | 2-3 weeks |
 | Real-time collaboration | 6-8 weeks |
 | Background agents | 3-4 weeks |
 | Composable blocks | 4-6 weeks |
@@ -944,7 +995,7 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 | ⌘K command palette | Menu-driven, mouse-heavy |
 | Streaming AI chat | Batch responses |
 | Instant onboarding | Weeks of procurement |
-| Multi-model AI | Single locked-in provider |
+| Multi-model AI + BYOK | Single locked-in AI provider |
 | Keyboard-first | Click-heavy interfaces |
 | 4-mode system (Ask/Agent/Debug/Manual) | Single monolithic interface |
 
@@ -956,13 +1007,14 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 | Self-service free tier | Sales-required |
 | Consumer-grade UX | Enterprise B2B UX |
 | Transparent pricing | Opaque pricing |
+| BYOK (Bring Your Own Key) | Locked to their AI provider |
 | Cursor-style interaction modes | No mode system |
 
 **vs. Open Source (GTKWave, Surfer):**
 
 | Etna Advantage | Their Limitation |
 |----------------|------------------|
-| AI-native | No AI |
+| AI-native with model choice | No AI |
 | Zero setup | Installation required |
 | Collaboration | Single-user |
 | Managed hosting | Self-hosted |
@@ -998,6 +1050,7 @@ Adopt Cursor's successful mode-switching paradigm, tailored for silicon debuggin
 | January 2026 | 1.0 | Initial competitor benchmarking |
 | January 2026 | 1.1 | Added differentiation strategy from disruptive SaaS leaders |
 | January 2026 | 1.2 | Added 4-mode interaction system (Ask, Agent, Debug, Manual) |
+| January 2026 | 1.3 | Added BYOK & multi-model support strategy |
 
 ---
 

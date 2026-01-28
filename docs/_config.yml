@@ -23,8 +23,11 @@ aux_links_new_tab: true
 # Footer content
 footer_content: "Copyright &copy; 2026 Project Etna. Distributed under the MIT License."
 
-# Color scheme
+# Color scheme - MUST be "dark" for proper styling
 color_scheme: dark
+
+# Disable default color toggle to force dark mode
+color_scheme_toggle: false
 
 # Search
 search_enabled: true

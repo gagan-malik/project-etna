@@ -59,6 +59,7 @@ FST provides ~10-20x compression over VCD.
 | AI queries | 500/day |
 | Debug sessions | Unlimited |
 | Model access | All models including premium |
+| **BYOK (Bring Your Own Key)** | ✓ Unlimited queries with your keys |
 | Priority support | Email support |
 | Session history | 90 days |
 
@@ -97,6 +98,8 @@ FST provides ~10-20x compression over VCD.
 | > 5 stored files | Pro |
 | FST file upload | Pro |
 | > 50 AI queries/day | Pro |
+| Want to use own API keys (BYOK) | Pro |
+| Want specific model (GPT-4, Claude, etc.) | Pro |
 | Team invite | Team |
 | SSO requirement | Team/Enterprise |
 | File > 500 MB | Enterprise |
@@ -156,3 +159,124 @@ FST provides ~10-20x compression over VCD.
 | Linear | $8/user/month |
 
 Project Etna's $19/month Pro tier is competitive with developer tools while being dramatically cheaper than traditional EDA tools.
+
+---
+
+## AI Model Strategy
+
+### MVP Model Selection (Vercel-Compatible)
+
+For MVP, prioritize models that are:
+1. **Fast** - Low latency for good UX
+2. **Cheap** - Sustainable at scale
+3. **Vercel-compatible** - Works with serverless architecture
+
+**Recommended MVP Stack:**
+
+| Use Case | Default Model | Why |
+|----------|---------------|-----|
+| **Free Tier** | DeepSeek V3 (via OpenRouter) | Best price/performance, $0.14/M input |
+| **Ask Mode** | DeepSeek V3 | Good for explanations, cheap |
+| **Agent Mode** | DeepSeek V3 | Strong reasoning, cost-effective |
+| **Debug Mode** | DeepSeek V3 | Excellent at analysis |
+| **Quick tasks** | Llama 3.3 70B | Fast, cheap fallback |
+
+**Cost Comparison:**
+
+| Model | Input (per 1M) | Output (per 1M) | Speed |
+|-------|----------------|-----------------|-------|
+| DeepSeek V3 | $0.14 | $0.28 | Fast |
+| Llama 3.3 70B | $0.10 | $0.40 | Fast |
+| GPT-4o | $2.50 | $10.00 | Medium |
+| Claude 3.5 Sonnet | $3.00 | $15.00 | Medium |
+
+**MVP Recommendation:** Use **OpenRouter** as the unified gateway:
+- Single API integration
+- Access to all models
+- Automatic fallbacks
+- Pay-as-you-go (5.5% platform fee)
+- Works perfectly with Vercel serverless
+
+### BYOK (Bring Your Own Key) - Pro Feature
+
+**What is BYOK?**
+Pro users can add their own API keys to:
+- Remove query limits (use as much as their key allows)
+- Access premium models (GPT-4, Claude, etc.)
+- Control costs directly
+- Use enterprise API agreements
+
+**Supported BYOK Providers:**
+
+| Provider | Key Type | Models Unlocked |
+|----------|----------|-----------------|
+| **OpenRouter** | API Key | 400+ models (recommended) |
+| **OpenAI** | API Key | GPT-4o, GPT-4, O1, O3 |
+| **Anthropic** | API Key | Claude 3.5/4 Sonnet, Opus |
+| **Google** | API Key | Gemini Pro, Ultra |
+
+**Implementation Priority:**
+1. OpenRouter (covers 90% of use cases with one integration)
+2. OpenAI (enterprise customers often have keys)
+3. Anthropic (popular for coding tasks)
+
+**BYOK UX:**
+
+```
+Settings > AI Models
+
+┌─────────────────────────────────────────────────────────────────┐
+│ AI MODEL SETTINGS                                    [Pro ✓]   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ DEFAULT MODEL                                                   │
+│ ┌─────────────────────────────────────────────────────────────┐│
+│ │ DeepSeek V3 (Recommended)                              ▼   ││
+│ └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│ BRING YOUR OWN KEY (BYOK)                                      │
+│ ─────────────────────────────────────────────────────────────  │
+│ Add your API keys to unlock unlimited queries and more models. │
+│                                                                 │
+│ OpenRouter    [sk-or-v1-••••••••••••]  ✓ Connected  [Remove]  │
+│ OpenAI        [Add Key]                                        │
+│ Anthropic     [Add Key]                                        │
+│ Google AI     [Add Key]                                        │
+│                                                                 │
+│ 💡 Tip: OpenRouter gives you access to 400+ models with one   │
+│    key. Get yours at openrouter.ai                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Mode-Specific Model Recommendations:**
+
+When BYOK is enabled, suggest optimal models per mode:
+
+| Mode | Recommended Model | Why |
+|------|-------------------|-----|
+| **Ask** | DeepSeek V3, Llama 3.3 | Cheap, good for Q&A |
+| **Agent** | Claude 3.5 Sonnet, GPT-4o | Best at following complex instructions |
+| **Debug** | DeepSeek V3, Claude | Strong reasoning for hypothesis |
+| **Manual** | Any (simple edits) | Doesn't need advanced model |
+
+### Cost Impact of BYOK
+
+**For Etna (Business):**
+- Pro users with BYOK = $0 AI cost to Etna
+- Pure margin on $19/month subscription
+- Encourages heavy users to upgrade
+
+**For Users:**
+- Control their own spend
+- Use existing enterprise API budgets
+- Access to latest models immediately
+
+### Margin Analysis (Updated with BYOK)
+
+| Tier | Price | AI Cost | Other Cost | Margin |
+|------|-------|---------|------------|--------|
+| Free | $0 | ~$0.10/mo | ~$0.05/mo | -$0.15 |
+| Pro (no BYOK) | $19 | ~$1-2/mo | ~$0.50/mo | 85-90% |
+| Pro (with BYOK) | $19 | **$0** | ~$0.50/mo | **97%** |
+| Team | $49 | Varies | ~$1/mo | 90-98% |
