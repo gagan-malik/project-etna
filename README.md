@@ -21,6 +21,15 @@ See [NEXT_STEPS.md](./NEXT_STEPS.md) for the development roadmap.
 
 ## 📚 Documentation
 
+**[View Full Documentation](https://gaganmalik.github.io/project-etna/)** - Comprehensive guides and API reference
+
+Quick links:
+- [Getting Started](https://gaganmalik.github.io/project-etna/getting-started) - Installation guide
+- [API Reference](https://gaganmalik.github.io/project-etna/api/) - Complete API docs
+- [Features](https://gaganmalik.github.io/project-etna/features) - Feature overview
+- [Roadmap](https://gaganmalik.github.io/project-etna/roadmap) - What's coming next
+
+Local docs:
 - [SETUP.md](./SETUP.md) - Complete setup guide
 - [DATABASE_SETUP.md](./DATABASE_SETUP.md) - Database configuration
 - [DEPENDENCIES.md](./DEPENDENCIES.md) - Installed dependencies

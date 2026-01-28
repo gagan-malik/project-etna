@@ -1,0 +1,67 @@
+// Custom styles for Project Etna documentation
+
+// Improve code block appearance
+.highlight {
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+// Better table styling
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+// Hero section styling
+.fs-9 {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Status labels
+.label-green {
+  background-color: #22C55E !important;
+}
+
+.label-yellow {
+  background-color: #EAB308 !important;
+}
+
+.label-blue {
+  background-color: #3B82F6 !important;
+}
+
+.label-purple {
+  background-color: #8B5CF6 !important;
+}
+
+// Callout improvements
+.highlight {
+  border-left: 4px solid #3B82F6;
+  padding-left: 1rem;
+}
+
+// Navigation improvements
+.site-nav {
+  padding-top: 1rem;
+}
+
+// Better spacing for TOC
+.text-delta {
+  margin-bottom: 0.5rem;
+}
+
+// Code inline styling
+code {
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+}

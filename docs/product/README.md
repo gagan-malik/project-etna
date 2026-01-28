@@ -10,6 +10,9 @@ This folder contains product planning, roadmap, and feature documentation for Pr
 - [Waveform Viewer Integration](./WAVEFORM_INTEGRATION.md) - Plan for integrating waveform viewing capabilities
 - [OpenTitan Integration](./OPENTITAN_INTEGRATION.md) - Opportunities to leverage OpenTitan tooling
 - [Pricing Strategy](./PRICING.md) - Tier structure and monetization plan
+- [Competitor Benchmarking](./COMPETITOR_BENCHMARKING.md) - Competitive analysis, gap analysis, and strategic opportunities
+- [Differentiation Strategy](./DIFFERENTIATION_STRATEGY.md) - Modern UX patterns and features from disruptive SaaS leaders
+- [UX Master File](./UX_MASTER_FILE.md) - Complete UX specification: personas, IA, task flows, and user journeys
 
 ## Quick Links
 
