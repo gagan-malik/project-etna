@@ -13,10 +13,7 @@ jobs:
     steps:
       - uses: actions/add-to-project@v1.0.2
         with:
-          # You need to create a project first and get its URL
-          # Replace with your actual project URL after creating the project
-          # Example: https://github.com/users/gagan-malik/projects/1
-          project-url: https://github.com/users/gagan-malik/projects/1
+          project-url: https://github.com/users/gagan-malik/projects/2
           # This requires a PAT with 'project' scope
           # Create one at: https://github.com/settings/tokens
           # Add it as a secret named PROJECT_TOKEN
