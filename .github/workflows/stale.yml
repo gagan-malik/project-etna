@@ -1,0 +1,69 @@
+name: Stale Issue Management
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Stale issue configuration
+          stale-issue-message: |
+            👋 This issue has been automatically marked as stale because it has not had any activity for 60 days.
+            
+            It will be closed in 14 days if no further activity occurs.
+            
+            If this issue is still relevant:
+            - Add a comment explaining why it should remain open
+            - Add the `keep-open` label to prevent it from being marked stale
+            
+            Thank you for your contributions!
+          
+          stale-issue-label: 'stale'
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          
+          # Stale PR configuration
+          stale-pr-message: |
+            👋 This pull request has been automatically marked as stale because it has not had any activity for 30 days.
+            
+            It will be closed in 7 days if no further activity occurs.
+            
+            If you're still working on this:
+            - Push new commits or rebase on the latest main branch
+            - Add a comment explaining the current status
+            
+            Thank you for your contributions!
+          
+          stale-pr-label: 'stale'
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          
+          # Labels that exempt issues/PRs from being marked stale
+          exempt-issue-labels: 'keep-open,priority/critical,priority/high,in-progress,blocked'
+          exempt-pr-labels: 'keep-open,priority/critical,priority/high,in-progress,blocked'
+          
+          # Don't close issues/PRs with these labels
+          exempt-all-milestones: true
+          
+          # Only process a limited number per run to avoid rate limits
+          operations-per-run: 100
+          
+          # Labels for closing
+          close-issue-message: |
+            🔒 This issue has been closed due to inactivity. If you believe this was closed in error, please reopen it or create a new issue with updated information.
+          
+          close-pr-message: |
+            🔒 This pull request has been closed due to inactivity. If you'd like to continue working on this, please reopen it or create a new PR.

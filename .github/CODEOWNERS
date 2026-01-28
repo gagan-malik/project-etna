@@ -1,0 +1,37 @@
+# CODEOWNERS file for project-etna
+# These owners will be requested for review when someone opens a pull request
+# that modifies files they own.
+
+# Default owners for everything in the repo
+* @gagan-malik
+
+# UI Components
+/components/ @gagan-malik
+/app/**/*.tsx @gagan-malik
+
+# API Routes
+/app/api/ @gagan-malik
+
+# AI/LLM related
+/lib/ai/ @gagan-malik
+
+# Authentication
+/auth.ts @gagan-malik
+/middleware.ts @gagan-malik
+/lib/auth-helpers.ts @gagan-malik
+
+# Database
+/prisma/ @gagan-malik
+/lib/prisma.ts @gagan-malik
+/lib/db.ts @gagan-malik
+
+# Configuration files
+*.config.* @gagan-malik
+package.json @gagan-malik
+tsconfig.json @gagan-malik
+
+# GitHub configuration
+/.github/ @gagan-malik
+
+# Documentation
+*.md @gagan-malik
