@@ -110,6 +110,64 @@ components/
 - `/login` - Login page
 - `/signup` - Signup page
 
+## ⏰ Cron Jobs & Slack Alerts
+
+The project includes a health monitoring system that sends alerts to Slack.
+
+### Configuration
+
+1. **Set up Slack Webhook** - Add to your `.env.local`:
+   ```bash
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   ```
+
+2. **Set Cron Secret** (optional, for production security):
+   ```bash
+   CRON_SECRET=your-secret-here
+   ```
+
+### Triggering Alerts
+
+**Locally (dev server running):**
+```bash
+curl http://localhost:3000/api/cron/health
+```
+
+**On Vercel (production):**
+- Automatically runs every 6 hours via Vercel Cron (configured in `vercel.json`)
+- Manual trigger: `curl https://your-app.vercel.app/api/cron/health`
+
+**Without Vercel (alternative methods):**
+- **System crontab:**
+  ```bash
+  # Add to crontab -e (runs every 6 hours)
+  0 */6 * * * curl -s https://your-app.com/api/cron/health
+  ```
+- **GitHub Actions** - Schedule workflows to hit the endpoint
+- **External cron services** - cron-job.org, EasyCron, etc.
+
+### Health Check Response
+
+```json
+{
+  "success": true,
+  "healthy": true,
+  "checks": {
+    "Database": "Healthy",
+    "Environment": "production",
+    "Timestamp": "2026-01-28T13:21:47.889Z"
+  },
+  "duration": "318ms"
+}
+```
+
+### Slack Alert Functions
+
+Available in `lib/slack.ts`:
+- `sendSlackMessage()` - Send custom messages
+- `sendCronAlert()` - Send cron job notifications (started/completed/failed)
+- `sendErrorAlert()` - Send error notifications
+
 ## License
 
 MIT
