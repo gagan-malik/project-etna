@@ -110,6 +110,7 @@ model spaces {
   integrations     integrations[]
   design_files     design_files[]
   debug_sessions   debug_sessions[]
+  waveform_files   waveform_files[]
   users            users              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
@@ -133,6 +134,7 @@ model users {
   spaces                spaces[]
   design_files          design_files[]
   debug_sessions        debug_sessions[]
+  waveform_files        waveform_files[]
 }
 
 model verification_tokens {
@@ -168,22 +170,45 @@ model design_files {
 }
 
 model debug_sessions {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  status       String        @default("active") // "active", "completed", "failed"
-  spaceId      String
-  userId       String
-  designFileId String?
-  config       Json?         // session configuration
-  findings     Json?         // debug findings and notes
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  spaces       spaces        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  users        users         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  design_files design_files? @relation(fields: [designFileId], references: [id], onDelete: SetNull)
+  id            String          @id @default(cuid())
+  name          String
+  description   String?
+  status        String          @default("active") // "active", "completed", "failed"
+  spaceId       String
+  userId        String
+  designFileId  String?
+  waveformFileId String?
+  config        Json?           // session configuration
+  findings      Json?           // debug findings and notes
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  spaces        spaces          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  users         users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  design_files  design_files?   @relation(fields: [designFileId], references: [id], onDelete: SetNull)
+  waveform_files waveform_files? @relation(fields: [waveformFileId], references: [id], onDelete: SetNull)
 
   @@index([spaceId])
   @@index([userId])
   @@index([status])
+}
+
+// Waveform files for silicon debugging
+model waveform_files {
+  id             String           @id @default(cuid())
+  name           String           // original filename
+  blobUrl        String           // Vercel Blob URL
+  format         String           // "vcd", "fst", "ghw"
+  fileSize       Int              // size in bytes
+  spaceId        String
+  userId         String
+  metadata       Json?            // signal list, time range, etc.
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  spaces         spaces           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  users          users            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debug_sessions debug_sessions[]
+
+  @@index([spaceId])
+  @@index([userId])
+  @@index([format])
 }
