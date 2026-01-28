@@ -888,41 +888,48 @@ When a guest decides to sign up:
 
 ## Interaction Modes
 
-### Overview: Cursor-Inspired Mode System
+### Overview: Streamlined 4-Mode System
 
-Like Cursor's multi-mode approach, Etna provides specialized interaction modes optimized for different silicon debugging tasks. This allows users to get the right level of AI assistance for each situation.
+Etna uses a focused 4-mode system for optimal user experience. Each mode has a clear, distinct purpose - no overlap or confusion.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      ETNA INTERACTION MODES                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐ │
-│  │   ASK   │  │  PLAN   │  │  DEBUG  │  │  AGENT  │  │ MANUAL  │ │
-│  │   💬    │  │   📋    │  │   🐛    │  │   🤖    │  │   ✏️    │ │
-│  │         │  │         │  │         │  │         │  │         │ │
-│  │ Learn & │  │ Design  │  │Systematic│  │Autonomous│  │ Direct │ │
-│  │ Explore │  │ Before  │  │  Bug    │  │  Task   │  │ Control │ │
-│  │         │  │  Build  │  │ Hunting │  │Execution│  │         │ │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘ │
-│       │            │            │            │            │        │
-│       ▼            ▼            ▼            ▼            ▼        │
-│   Read-only    Research &   Runtime     Full        Explicit     │
-│   exploration  planning     analysis   autonomy    instructions   │
+│     ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
+│     │    ASK    │    │   AGENT   │    │   DEBUG   │    │   EDIT    │
+│     │    💬     │    │    🤖     │    │    🐛     │    │    ✏️     │
+│     │           │    │           │    │           │    │           │
+│     │  Learn &  │    │ Autonomous│    │ Systematic│    │  Precise  │
+│     │  Explore  │    │ Execution │    │Bug Hunting│    │  Control  │
+│     └───────────┘    └───────────┘    └───────────┘    └───────────┘
+│          │                │                │                │       
+│          ▼                ▼                ▼                ▼       
+│      Read-only       Full autonomy    Waveforms +      User-driven 
+│      questions       + planning      hypothesis        edits only  
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+### Why 4 Modes?
+
+| Need | Mode | What It Does |
+|------|------|--------------|
+| **"I have a question"** | 💬 Ask | Learn without changing anything |
+| **"Build this for me"** | 🤖 Agent | AI plans and executes autonomously |
+| **"Something's broken"** | 🐛 Debug | Systematic bug hunting + waveforms |
+| **"Change exactly this"** | ✏️ Edit | Precise, controlled modifications |
+
 ### Mode Comparison Matrix
 
-| Aspect | Ask | Plan | Debug | Agent | Manual |
-|--------|-----|------|-------|-------|--------|
-| **Icon** | 💬 | 📋 | 🐛 | 🤖 | ✏️ |
-| **Purpose** | Learn & understand | Design approach | Fix bugs systematically | Autonomous execution | Direct, controlled edits |
-| **Autonomy** | Read-only | Exploratory | Guided investigation | Full autonomy | User-controlled |
-| **Code Changes** | ❌ None | ❌ None (planning only) | ✅ Targeted fixes | ✅ Multi-file changes | ✅ Explicit changes |
-| **Best For** | Questions, learning | Complex tasks, architecture | Tricky bugs, regressions | Feature implementation | Precise modifications |
-| **Shortcut** | `⌘.` then `A` | `⌘.` then `P` | `⌘.` then `D` | `⌘.` then `G` | `⌘.` then `M` |
+| Aspect | Ask 💬 | Agent 🤖 | Debug 🐛 | Edit ✏️ |
+|--------|--------|----------|----------|---------|
+| **Purpose** | Learn & understand | Build & implement | Fix bugs systematically | Precise modifications |
+| **Code Changes** | ❌ None | ✅ Multi-file | ✅ Targeted fixes | ✅ Explicit only |
+| **AI Autonomy** | Read-only | Full (with planning) | Guided | Minimal |
+| **Waveforms** | View only | — | Full integration | — |
+| **Shortcut** | `⌘. A` | `⌘. G` | `⌘. D` | `⌘. E` |
 
 ### Mode Switcher UI
 
