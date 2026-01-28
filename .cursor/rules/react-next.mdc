@@ -1,0 +1,20 @@
+---
+description: React and Next.js App Router patterns
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# React & Next.js Patterns
+
+## Components
+- Use functional components and hooks.
+- Extract reusable logic into custom hooks (hooks/ or colocated).
+- Colocate component-specific styles and types when they are not shared.
+
+## Server vs client
+- Prefer Server Components (default); no "use client" unless needed.
+- Use "use client" only for: useState/useEffect, event handlers that must run in browser, or libraries that require client (e.g. some Radix usage is already in client components).
+
+## UI
+- Use existing components from components/ui/ (Shadcn); add new ones via Shadcn MCP.
+- Prefer composition over prop drilling; use context sparingly.

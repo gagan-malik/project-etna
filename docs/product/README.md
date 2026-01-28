@@ -4,6 +4,7 @@ This folder contains product planning, roadmap, and feature documentation for Pr
 
 ## Contents
 
+- [**Soul Document**](../soul-doc.md) - Project values, priorities, and how to assist on Etna
 - [**Next Steps**](./NEXT_STEPS.md) - Prioritized next steps (start here)
 - [Product Vision](./VISION.md) - Overall product vision and mission
 - [Roadmap](./ROADMAP.md) - Feature development timeline

@@ -1,6 +1,29 @@
-# Shadcn UI MCP Server Configuration
-# The Shadcn UI MCP server is configured in .cursor/mcp.json
-# You can use prompts like:
-# - "Add the button component from Shadcn UI"
-# - "Show me all available Shadcn components"
-# - "Add a dialog component with a form"
+# Project: Etna
+
+## Soul Doc
+- Project values and priorities: [docs/soul-doc.md](docs/soul-doc.md); Cursor rule: [.cursor/rules/soul-doc.mdc](.cursor/rules/soul-doc.mdc).
+
+## Stack
+- Next.js (App Router), TypeScript, Prisma, React, Shadcn UI
+- Use existing UI components from components/ui/; add via Shadcn MCP (.cursor/mcp.json)
+
+## Code standards
+- TypeScript strict: prefer explicit types for API boundaries and shared types; avoid `any`
+- Prefer async/await; handle errors with try/catch and log or rethrow with context
+- API routes: validate input (e.g. lib/validation), return consistent JSON and status codes
+- Prefer server components by default; use "use client" only when needed (state, hooks, browser APIs)
+
+## Structure
+- app/: routes and pages; api/: route handlers
+- lib/: shared logic, DB, auth, integrations
+- components/: reusable UI; colocate component-specific logic
+- prisma/: schema and migrations only
+
+## Security & data
+- Never log or expose secrets or PII; use env vars for config
+- Use Prisma for all DB access; parameterized queries only
+- Auth: use existing auth.ts and session helpers
+
+## Testing & quality
+- Add/update tests for new or changed lib/ and API behavior
+- Run lint (npm run lint) and fix before committing

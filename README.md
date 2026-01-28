@@ -1,6 +1,6 @@
 # Project Etna
 
-A modern AI chat application built with Next.js, Prisma, and multiple AI providers.
+A modern AI-powered silicon debug assistant built with Next.js, Prisma, and multiple AI providers. Helps verification engineers debug RTL designs with AI chat, waveform viewing, and integrated tooling.
 
 ## 🚀 Quick Start
 
@@ -21,15 +21,17 @@ See [NEXT_STEPS.md](./NEXT_STEPS.md) for the development roadmap.
 
 ## 📚 Documentation
 
-**[View Full Documentation](https://gaganmalik.github.io/project-etna/)** - Comprehensive guides and API reference
+**[View Full Documentation](https://gaganmalik.github.io/project-etna/)** — Comprehensive guides and API reference
 
 Quick links:
 - [Getting Started](https://gaganmalik.github.io/project-etna/getting-started) - Installation guide
+- [Soul Document](https://gaganmalik.github.io/project-etna/soul-doc) - Project values and priorities
 - [API Reference](https://gaganmalik.github.io/project-etna/api/) - Complete API docs
 - [Features](https://gaganmalik.github.io/project-etna/features) - Feature overview
 - [Roadmap](https://gaganmalik.github.io/project-etna/roadmap) - What's coming next
 
 Local docs:
+- [docs/soul-doc.md](./docs/soul-doc.md) - Soul Document (values, priorities)
 - [SETUP.md](./SETUP.md) - Complete setup guide
 - [DATABASE_SETUP.md](./DATABASE_SETUP.md) - Database configuration
 - [DEPENDENCIES.md](./DEPENDENCIES.md) - Installed dependencies
@@ -37,46 +39,41 @@ Local docs:
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Next.js 15.5.7
-- **Database:** PostgreSQL with Prisma ORM
-- **Authentication:** Auth.js v5 (NextAuth.js beta)
-- **AI Models:** OpenAI, Google Gemini, DeepSeek, Llama
-- **UI:** Shadcn UI + Tailwind CSS
-- **Vector Search:** pgvector
-- **Storage:** Vercel Blob
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
+| **Database** | PostgreSQL + Prisma ORM, pgvector |
+| **Auth** | Auth.js v5 (NextAuth.js beta) |
+| **AI** | OpenAI, Google Gemini, DeepSeek, Llama |
+| **UI** | shadcn/ui (Maia style, neutral theme), Tailwind CSS, next-themes |
+| **Storage** | Vercel Blob |
 
-## 📦 Project Etna
+## ✨ Features
 
-A modern AI-powered chat application built with Next.js, React, TypeScript, and shadcn/ui.
-
-## Features
-
-- 🤖 AI Chat Interface - Interactive chat with AI models
-- 📜 History - View and manage chat history
-- ⚙️ Settings - Comprehensive settings with sidebar navigation
-- 🌓 Dark Mode - System-aware theme switching
-- 📱 Responsive Design - Works on all devices
-- 🎨 Modern UI - Built with shadcn/ui components
-
-## Tech Stack
-
-- **Framework**: Next.js 15
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Theme**: next-themes for dark mode support
+- 🤖 **AI Chat** — Multi-model chat (OpenAI, Gemini, DeepSeek, Llama) with streaming
+- 📜 **Activity** — Chat and session history
+- 📁 **Files** — Upload and manage design files (Verilog, SystemVerilog, VHDL)
+- 📊 **Waveforms** — Surfer-based viewer for VCD, FST, GHW
+- 🔗 **Integrations** — GitHub, Confluence, Microsoft Graph
+- ⚙️ **Settings** — Sidebar settings, account, billing
+- 🌓 **Dark mode** — System-aware theme (next-themes)
+- 📱 **Responsive** — Works on desktop, tablet, and mobile
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
+- PostgreSQL (or Neon/Supabase)
 
 ### Installation
 
 ```bash
 npm install
+cp .env.example .env.local   # then edit with your keys
+./scripts/setup-database.sh   # or: npx prisma generate && npx prisma db push
 ```
 
 ### Development
@@ -85,7 +82,7 @@ npm install
 npm run dev
 ```
 
-Visit http://localhost:3000
+Visit [http://localhost:3000](http://localhost:3000).
 
 ### Build
 
@@ -98,26 +95,42 @@ npm start
 
 ```
 app/
-  ├── chat/          # Main chat interface
-  ├── activity/      # History page
-  ├── settings/      # Settings page with sidebar-13
-  ├── login/         # Login page (login-04)
-  └── signup/        # Signup page
+  ├── chat/          # Main AI chat interface
+  ├── activity/      # History / activity
+  ├── overview/      # Dashboard overview
+  ├── files/         # Design file management
+  ├── waveforms/     # Waveform viewer
+  ├── integrations/  # GitHub, Confluence, etc.
+  ├── settings/      # Settings (sidebar)
+  ├── billing/       # Billing / subscription
+  ├── account/       # Account management
+  ├── login/         # Login
+  └── signup/        # Signup
 
 components/
   ├── app-sidebar.tsx    # Main application sidebar
   ├── sidebar-layout.tsx # Sidebar layout wrapper
+  ├── chat/              # Chat UI (messages, model selector, etc.)
+  ├── waveform/         # Waveform panel & Surfer viewer
   └── ui/                # shadcn/ui components
 ```
 
 ## Available Routes
 
-- `/` - Redirects to `/chat`
-- `/chat` - Main chat interface
-- `/activity` - Chat history
-- `/settings` - Settings page
-- `/login` - Login page
-- `/signup` - Signup page
+| Route | Description |
+|-------|-------------|
+| `/` | Redirects to app (e.g. overview or chat) |
+| `/chat` | Main AI chat interface |
+| `/overview` | Dashboard overview |
+| `/activity` | Chat and session history |
+| `/files` | Design file management |
+| `/waveforms` | Waveform viewer |
+| `/integrations` | Integrations (GitHub, Confluence, etc.) |
+| `/settings` | Settings page |
+| `/billing` | Billing and subscription |
+| `/account` | Account management |
+| `/login` | Login |
+| `/signup` | Sign up |
 
 ## ⏰ Cron Jobs & Slack Alerts
 

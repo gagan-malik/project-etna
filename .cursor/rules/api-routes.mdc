@@ -1,0 +1,19 @@
+---
+description: API route conventions and validation
+globs: app/api/**/*.ts
+alwaysApply: false
+---
+
+# API Routes
+
+## Input & validation
+- Validate request body/query with lib/validation or equivalent before use.
+- Return 400 for invalid input with a clear error message in the response body.
+
+## Responses
+- Return consistent JSON shape; use the same structure for success and error payloads where appropriate.
+- Use correct status codes: 200 (OK), 201 (created), 400 (bad request), 401 (unauthorized), 404 (not found), 500 (server error).
+
+## Errors
+- Log errors server-side; do not expose stack traces or internals in the response.
+- Return a generic message for 500 (e.g. "Internal server error") and correlate with logs if needed.

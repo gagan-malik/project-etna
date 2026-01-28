@@ -1,0 +1,33 @@
+---
+description: TypeScript coding standards and error handling
+globs: **/*.ts
+alwaysApply: false
+---
+
+# TypeScript Standards
+
+## Typing
+- Prefer explicit types for function parameters, return values, and API boundaries.
+- Avoid `any`; use `unknown` and narrow, or define proper types/interfaces.
+- Use types from types/ and shared interfaces in lib/ where applicable.
+
+## Error handling
+
+```typescript
+// ❌ BAD
+try {
+  await fetchData();
+} catch (e) {}
+
+// ✅ GOOD
+try {
+  await fetchData();
+} catch (e) {
+  logger.error('Failed to fetch', { error: e });
+  throw new DataFetchError('Unable to retrieve data', { cause: e });
+}
+```
+
+## Async
+- Use async/await; avoid raw `.then()` chains unless composing with utilities.
+- Always handle promise rejections (try/catch or .catch with logging).

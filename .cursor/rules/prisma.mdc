@@ -1,0 +1,18 @@
+---
+description: Prisma schema and migration conventions
+globs: prisma/**/*
+alwaysApply: false
+---
+
+# Prisma
+
+## Schema
+- Keep schema.prisma the single source of truth; avoid raw SQL for schema changes.
+- Use meaningful model and field names; add @@map if DB naming differs.
+
+## Migrations
+- Create migrations via `prisma migrate dev` for local changes; use `prisma migrate deploy` in CI/production.
+- Do not edit migration files by hand after they have been applied; add a new migration for fixes.
+
+## Access
+- Use Prisma client from lib/prisma.ts; no raw SQL unless necessary (e.g. complex queries), and prefer parameterized/Prisma APIs.
