@@ -956,6 +956,117 @@ Let users bring their own API keys and choose from multiple AI models.
 
 ---
 
+### Feature Set 10: MCP (Model Context Protocol) & Tool Calling
+
+Implement MCP for extensible tool architecture - the emerging standard for AI-tool integration.
+
+**What is MCP?**
+Model Context Protocol is an open standard (created by Anthropic, adopted by OpenAI) for connecting AI models to external tools and data sources. Think "USB-C for AI" - standardized, portable, extensible.
+
+**Why MCP over Direct Function Calling:**
+
+| Aspect | MCP | Direct Function Calling |
+|--------|-----|------------------------|
+| **Portability** | Works with any MCP client | Locked to your app |
+| **Ecosystem** | 70+ existing servers | Build everything yourself |
+| **Standards** | Industry-backed (Anthropic, OpenAI) | Proprietary |
+| **Extensibility** | Users can add servers | You control all tools |
+
+**Etna's MCP Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     ETNA MCP ARCHITECTURE                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  LLM (via OpenRouter)                                              │
+│      │                                                              │
+│      ▼                                                              │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                   MCP CLIENT (Etna)                          │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│      │                                                              │
+│      ├──────────────┬──────────────┬──────────────┐                │
+│      ▼              ▼              ▼              ▼                │
+│  ┌────────┐    ┌────────┐    ┌────────┐    ┌────────┐             │
+│  │WAVEFORM│    │  RTL   │    │  FILE  │    │  SIM   │             │
+│  │  MCP   │    │  MCP   │    │  MCP   │    │  MCP   │             │
+│  │ Server │    │ Server │    │ Server │    │ Server │             │
+│  └────────┘    └────────┘    └────────┘    └────────┘             │
+│  (Custom)      (Custom)      (Existing)    (Custom)               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Silicon-Specific MCP Tools (Etna's Differentiators):**
+
+| Tool | Description | No One Else Has |
+|------|-------------|-----------------|
+| `analyze_waveform` | Parse VCD/FST, find signal transitions | ✅ |
+| `find_signal_edge` | "Find when clk_en goes high" | ✅ |
+| `detect_protocol_violation` | Check AXI/APB handshake rules | ✅ |
+| `trace_signal_source` | Find where a signal is driven | ✅ |
+| `generate_assertion` | Create SVA from observed behavior | ✅ |
+| `parse_rtl` | Extract module hierarchy, ports | ✅ |
+| `run_simulation` | Execute Verilator WASM | ✅ |
+
+**MVP Tool Set:**
+
+| Tool | MCP Server | Priority | Implementation |
+|------|------------|----------|----------------|
+| `read_file` | filesystem (existing) | 🔴 Critical | Plug-in |
+| `write_file` | filesystem (existing) | 🔴 Critical | Plug-in |
+| `search_files` | filesystem (existing) | 🔴 Critical | Plug-in |
+| `parse_rtl` | etna-rtl (custom) | 🔴 Critical | sv-parser/tree-sitter |
+| `analyze_waveform` | etna-waveform (custom) | 🔴 Critical | Surfer WASM |
+| `find_signal_edge` | etna-waveform (custom) | 🔴 Critical | Surfer WASM |
+| `run_simulation` | etna-sim (custom) | 🟡 High | Verilator WASM |
+| `generate_assertion` | etna-rtl (custom) | 🟡 High | LLM + context |
+
+**Mode-Specific Tool Access:**
+
+| Tool | Ask 💬 | Agent 🤖 | Debug 🐛 | Manual ✏️ |
+|------|--------|----------|----------|-----------|
+| `read_file` | ✅ | ✅ | ✅ | ✅ |
+| `write_file` | ❌ | ✅ | ✅ | ✅ |
+| `search_files` | ✅ | ✅ | ✅ | ❌ |
+| `parse_rtl` | ✅ | ✅ | ✅ | ❌ |
+| `analyze_waveform` | ✅ | ✅ | ✅ | ❌ |
+| `run_simulation` | ❌ | ✅ | ✅ | ❌ |
+| `generate_assertion` | ❌ | ✅ | ✅ | ❌ |
+
+**Simulation Strategy: WASM-First**
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Verilator WASM** ✅ | Fast, free, offline, no server cost | Limited design size |
+| Server-side | Powerful, large designs | Expensive, latency |
+
+MVP uses Verilator compiled to WASM for instant, free simulation in browser.
+
+**Future MCP Integrations:**
+
+| Server | Use Case | Priority |
+|--------|----------|----------|
+| GitHub MCP | PR reviews, issue linking | Phase 2 |
+| Playwright MCP | Browser automation for testing | Phase 2 |
+| Jira MCP | Bug tracking integration | Enterprise |
+| Confluence MCP | Design spec linking | Enterprise |
+
+**Competitive Comparison:**
+
+| Capability | Cursor | Copilot | EDA Tools | Etna |
+|------------|--------|---------|-----------|------|
+| MCP support | ✅ | ❌ | ❌ | ✅ |
+| File tools | ✅ | ✅ | ✅ | ✅ |
+| Terminal/shell | ✅ | ✅ | ✅ | ✅ |
+| **Waveform tools** | ❌ | ❌ | Manual | ✅ AI-powered |
+| **RTL parsing** | ❌ | ❌ | ✅ | ✅ AI-powered |
+| **Simulation** | ❌ | ❌ | ✅ | ✅ WASM |
+| **Protocol checking** | ❌ | ❌ | Manual | ✅ AI-powered |
+
+---
+
 ### Implementation Priority
 
 **Do First (High Impact, Low Effort):**
@@ -971,6 +1082,8 @@ Let users bring their own API keys and choose from multiple AI models.
 | Ask mode (read-only) | 1 week |
 | OpenRouter integration (MVP AI) | 1 week |
 | BYOK settings UI | 1 week |
+| Filesystem MCP server (existing) | 3 days |
+| Basic tool calling framework | 1 week |
 
 **Plan Carefully (High Impact, High Effort):**
 
@@ -980,6 +1093,9 @@ Let users bring their own API keys and choose from multiple AI models.
 | Agent mode with planning | 3-4 weeks |
 | Debug mode with waveform integration | 4-6 weeks |
 | Model recommendations per mode | 2-3 weeks |
+| etna-waveform MCP server | 2-3 weeks |
+| etna-rtl MCP server | 2-3 weeks |
+| Verilator WASM integration | 3-4 weeks |
 | Real-time collaboration | 6-8 weeks |
 | Background agents | 3-4 weeks |
 | Composable blocks | 4-6 weeks |
@@ -1051,6 +1167,7 @@ Let users bring their own API keys and choose from multiple AI models.
 | January 2026 | 1.1 | Added differentiation strategy from disruptive SaaS leaders |
 | January 2026 | 1.2 | Added 4-mode interaction system (Ask, Agent, Debug, Manual) |
 | January 2026 | 1.3 | Added BYOK & multi-model support strategy |
+| January 2026 | 1.4 | Added MCP & tool calling architecture |
 
 ---
 

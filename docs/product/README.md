@@ -4,6 +4,7 @@ This folder contains product planning, roadmap, and feature documentation for Pr
 
 ## Contents
 
+- [**Next Steps**](./NEXT_STEPS.md) - Prioritized next steps (start here)
 - [Product Vision](./VISION.md) - Overall product vision and mission
 - [Roadmap](./ROADMAP.md) - Feature development timeline
 - [Backlog](./BACKLOG.md) - Detailed feature backlog with prioritization

@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Conversations
-parent: API Reference
-nav_order: 2
+title: Conversations API
+description: Manage chat conversations
 ---
 
 # Conversations API
-{: .no_toc }
-
-Manage chat conversations.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -213,5 +201,6 @@ DELETE /api/conversations/[id]
 }
 ```
 
-{: .warning }
+::: warning
 This action is irreversible. All messages in the conversation will also be deleted.
+:::

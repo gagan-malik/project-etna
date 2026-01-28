@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Waveforms
-parent: API Reference
-nav_order: 6
+title: Waveforms API
+description: Upload and manage waveform files for hardware debugging
 ---
 
 # Waveforms API
-{: .no_toc }
-
-Upload and manage waveform files for hardware debugging.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -182,8 +170,9 @@ DELETE /api/waveforms/[id]
 }
 ```
 
-{: .warning }
+::: warning
 This permanently deletes the file from Vercel Blob storage.
+:::
 
 ---
 
@@ -226,5 +215,6 @@ iframe.contentWindow.postMessage({
 }, '*');
 ```
 
-{: .note }
-See the [Waveform Viewer Guide](/project-etna/waveforms) for detailed integration instructions.
+::: note
+See the [Waveform Viewer Guide](/waveforms) for detailed integration instructions.
+:::

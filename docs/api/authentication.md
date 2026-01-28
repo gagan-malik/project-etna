@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Authentication
-parent: API Reference
-nav_order: 1
+title: Authentication API
+description: User authentication and session management
 ---
 
 # Authentication API
-{: .no_toc }
-
-User authentication and session management.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -233,8 +221,9 @@ export async function GET() {
 
 ## Security Notes
 
-{: .important }
-> - Passwords are hashed using bcrypt before storage
+::: important
+- Passwords are hashed using bcrypt before storage
+:::
 > - Session tokens are HTTP-only cookies (not accessible via JavaScript)
 > - CSRF protection is enabled by default
 > - Sessions expire after 30 days of inactivity

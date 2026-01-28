@@ -1,21 +1,11 @@
 ---
-layout: default
 title: Contributing
-nav_order: 8
-description: "How to contribute to Project Etna"
+description: How to contribute to Project Etna
 ---
 
 # Contributing
-{: .no_toc }
 
 Help make Project Etna better.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 

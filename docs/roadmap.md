@@ -1,28 +1,19 @@
 ---
-layout: default
 title: Roadmap
-nav_order: 5
-description: "Project Etna development roadmap and planned features"
+description: Project Etna development roadmap and planned features
 ---
 
 # Product Roadmap
-{: .no_toc }
 
 What's been built and what's coming next.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
 ## Current Status
 
-{: .highlight }
+::: tip
 **Phase 1 (MVP Waveform Support) is COMPLETE** - January 2026
+:::
 
 ### Implemented Features ✅
 
@@ -45,10 +36,6 @@ What's been built and what's coming next.
 ---
 
 ## Phase 1: MVP Waveform Support ✅
-{: .d-inline-block }
-
-Complete
-{: .label .label-green }
 
 **Goal:** Basic waveform viewing to complete the debug workflow
 
@@ -76,10 +63,6 @@ Complete
 ---
 
 ## Phase 2: Enhanced Integration
-{: .d-inline-block }
-
-In Progress
-{: .label .label-yellow }
 
 **Goal:** Deeper integration between waveforms, RTL, and AI
 
@@ -113,10 +96,6 @@ In Progress
 ---
 
 ## Phase 3: Advanced Features
-{: .d-inline-block }
-
-Planned
-{: .label .label-blue }
 
 **Goal:** Professional-grade debugging capabilities
 
@@ -144,10 +123,6 @@ Planned
 ---
 
 ## Phase 4: Enterprise Features
-{: .d-inline-block }
-
-Future
-{: .label .label-purple }
 
 **Goal:** Support large-scale verification workflows
 

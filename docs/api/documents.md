@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Documents
-parent: API Reference
-nav_order: 5
+title: Documents API
+description: Upload and search documents for context-aware AI assistance
 ---
 
 # Documents API
-{: .no_toc }
-
-Upload and search documents for context-aware AI assistance.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -153,8 +141,9 @@ POST /api/documents/search
 }
 ```
 
-{: .note }
+::: note
 Currently uses text search. Vector similarity search with embeddings will be enabled in a future update for more accurate semantic matching.
+:::
 
 ---
 
@@ -249,5 +238,6 @@ Project Etna can parse and analyze:
 | VHDL | `.vhd`, `.vhdl` | VHDL |
 | Text | `.txt`, `.md` | Plain text and Markdown |
 
-{: .highlight }
+::: tip
 RTL files are automatically syntax-highlighted and parsed for module hierarchy extraction.
+:::

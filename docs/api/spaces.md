@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Spaces
-parent: API Reference
-nav_order: 4
+title: Spaces API
+description: Organize work into workspaces
 ---
 
 # Spaces API
-{: .no_toc }
-
-Organize work into workspaces.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -207,5 +195,6 @@ DELETE /api/spaces/space_123?deleteContents=true
 }
 ```
 
-{: .warning }
+::: warning
 You cannot delete your default space. Create a new space and set it as default first.
+:::

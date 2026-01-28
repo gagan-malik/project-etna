@@ -1,21 +1,9 @@
 ---
-layout: default
-title: Messages
-parent: API Reference
-nav_order: 3
+title: Messages API
+description: Send and manage chat messages with AI streaming support
 ---
 
 # Messages API
-{: .no_toc }
-
-Send and manage chat messages with AI streaming support.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 

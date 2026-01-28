@@ -1,21 +1,11 @@
 ---
-layout: default
 title: Architecture
-nav_order: 6
-description: "Technical architecture of Project Etna"
+description: Technical architecture of Project Etna
 ---
 
 # Architecture
-{: .no_toc }
 
 Technical deep-dive into Project Etna's design.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -59,7 +49,8 @@ Technical deep-dive into Project Etna's design.
 | **Next.js 15** | React framework with App Router |
 | **TypeScript** | Type safety |
 | **Tailwind CSS** | Utility-first styling |
-| **shadcn/ui** | UI component library |
+| **shadcn/ui** | UI components (Vega style, zinc theme, large radius) |
+| **tw-animate-css** | Animation utilities for shadcn |
 | **Lucide Icons** | Icon library |
 | **next-themes** | Dark mode support |
 

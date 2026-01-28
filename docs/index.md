@@ -1,40 +1,16 @@
 ---
-layout: default
+layout: home
 title: Home
-nav_order: 1
-description: "Project Etna - AI-Powered Silicon Debug Assistant"
-permalink: /
----
-
-# Project Etna
-{: .fs-9 .fw-700 }
-
-The AI-powered silicon debug assistant that helps verification engineers debug RTL designs faster.
-{: .fs-6 .fw-300 }
-
-[Get Started](/project-etna/getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/gagan-malik/project-etna){: .btn .btn-outline .fs-5 .mb-4 .mb-md-0 }
-
+description: Project Etna - AI-Powered Silicon Debug Assistant
 ---
 
 ## What is Project Etna?
 
 Project Etna is an **AI-powered Silicon Debug Assistant** designed to help verification engineers debug RTL designs and analyze hardware behavior more efficiently. It provides a unified interface for RTL code analysis, waveform viewing, and AI-assisted debugging.
 
-{: .highlight }
-> **Built for verification engineers** — Analyze Verilog, SystemVerilog, and VHDL with AI-powered insights. Debug faster with integrated waveform viewing.
-
-### Key Features
-
-| Feature | Description |
-|:--------|:------------|
-| **Multi-Model AI** | Support for OpenAI GPT-4, Google Gemini, DeepSeek, and Llama |
-| **RTL Analysis** | Parse and analyze Verilog, SystemVerilog, and VHDL files |
-| **Waveform Viewer** | Integrated Surfer viewer for VCD, FST, and GHW files |
-| **Debug Sessions** | Organize and track your debugging workflows |
-| **Modern UI** | Built with Next.js 15 and shadcn/ui for a responsive experience |
-
----
+::: tip Built for verification engineers
+Analyze Verilog, SystemVerilog, and VHDL with AI-powered insights. Debug faster with integrated waveform viewing.
+:::
 
 ## Quick Start
 
@@ -42,7 +18,7 @@ Get up and running in under 5 minutes:
 
 ```bash
 # Clone the repository
-git clone https://github.com/gagan-malik/project-etna.git
+git clone https://github.com/gaganmalik/project-etna.git
 cd project-etna
 
 # Install dependencies
@@ -55,9 +31,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-[Read the full setup guide →](/project-etna/getting-started)
-
----
+[Read the full setup guide →](/getting-started)
 
 ## Why Project Etna?
 
@@ -67,8 +41,6 @@ npm run dev
 | Heavy desktop installation | Web-based, runs in browser |
 | No AI assistance | AI-native from the ground up |
 | Legacy user interfaces | Modern, responsive design |
-
----
 
 ## Built With
 
@@ -82,23 +54,16 @@ npm run dev
 | Tailwind CSS | Styling |
 | Vercel | Deployment |
 
----
-
 ## Documentation
 
-<div class="grid-container">
-</div>
-
-- [**Getting Started**](/project-etna/getting-started) — Installation and setup guides
-- [**API Reference**](/project-etna/api/) — Complete REST API documentation
-- [**Features**](/project-etna/features) — Overview of all features
-- [**Roadmap**](/project-etna/roadmap) — What's coming next
-- [**Architecture**](/project-etna/architecture) — Technical deep-dive
-- [**Contributing**](/project-etna/contributing) — How to contribute
-
----
+- [**Getting Started**](/getting-started) — Installation and setup guides
+- [**API Reference**](/api/) — Complete REST API documentation
+- [**Features**](/features) — Overview of all features
+- [**Roadmap**](/roadmap) — What's coming next
+- [**Architecture**](/architecture) — Technical deep-dive
+- [**Contributing**](/contributing) — How to contribute
 
 ## Community
 
-- [GitHub Discussions](https://github.com/gagan-malik/project-etna/discussions) — Ask questions and share ideas
-- [Issue Tracker](https://github.com/gagan-malik/project-etna/issues) — Report bugs and request features
+- [GitHub Discussions](https://github.com/gaganmalik/project-etna/discussions) — Ask questions and share ideas
+- [Issue Tracker](https://github.com/gaganmalik/project-etna/issues) — Report bugs and request features

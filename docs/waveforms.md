@@ -1,21 +1,11 @@
 ---
-layout: default
 title: Waveform Viewer
-nav_order: 7
-description: "Guide to using the waveform viewer in Project Etna"
+description: Guide to using the waveform viewer in Project Etna
 ---
 
 # Waveform Viewer
-{: .no_toc }
 
 View and analyze simulation waveforms.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -23,8 +13,9 @@ View and analyze simulation waveforms.
 
 Project Etna integrates with the [Surfer](https://surfer-project.org/) waveform viewer to provide VCD, FST, and GHW file viewing directly in your browser.
 
-{: .highlight }
+::: tip
 No software installation required - waveforms render entirely in your browser.
+:::
 
 ---
 
@@ -73,8 +64,9 @@ console.log('Uploaded:', waveform.blobUrl);
 | Pro | 200 MB | 50 files |
 | Team | 500 MB | Unlimited |
 
-{: .note }
+::: note
 Need larger files? [Contact us](mailto:support@example.com) about enterprise options with no file size limits.
+:::
 
 ---
 
@@ -285,17 +277,18 @@ vcd flush
 
 ### File Won't Upload
 
-{: .warning }
+::: warning
 **Error:** "File exceeds maximum size"
 
 **Solution:** 
 - Free plan: Max 25 MB
 - Upgrade to Pro (200 MB) or Team (500 MB)
 - Compress VCD to FST format: `vcd2fst input.vcd output.fst`
+:::
 
 ### Viewer Won't Load
 
-{: .warning }
+::: warning
 **Error:** "Failed to load waveform"
 
 **Solutions:**
@@ -303,16 +296,18 @@ vcd flush
 2. Ensure file isn't corrupted
 3. Try uploading again
 4. Check browser console for errors
+:::
 
 ### Signals Not Showing
 
-{: .warning }
+::: warning
 **Issue:** Waveform loads but no signals visible
 
 **Solutions:**
 1. Click "Add Signal" to select signals
 2. Check that signals were dumped during simulation
 3. Verify `$dumpvars` scope in your testbench
+:::
 
 ---
 

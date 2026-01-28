@@ -1,23 +1,11 @@
 ---
-layout: default
 title: Getting Started
-nav_order: 2
-description: "Quick start guide for Project Etna"
+description: Quick start guide for Project Etna
 ---
 
 # Getting Started
-{: .no_toc }
 
 Get Project Etna up and running in just a few minutes.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
 
 ## Prerequisites
 
@@ -26,8 +14,6 @@ Before you begin, ensure you have:
 - **Node.js 18+** - [Download Node.js](https://nodejs.org/)
 - **npm** or **yarn** - Comes with Node.js
 - **PostgreSQL** - For database (or use Neon/Supabase for serverless)
-
----
 
 ## Quick Installation
 
@@ -90,8 +76,6 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000)
 
----
-
 ## Database Options
 
 ### Option A: Local PostgreSQL
@@ -114,16 +98,15 @@ DATABASE_URL="postgresql://localhost:5432/etna"
 2. Create a new project
 3. Copy the connection string to `DATABASE_URL`
 
-{: .note }
+::: note
 Neon is recommended for development as it provides a free tier and requires no local setup.
+:::
 
 ### Option C: Supabase
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. Go to Settings → Database → Connection string
 3. Copy the connection string to `DATABASE_URL`
-
----
 
 ## AI Provider Setup
 
@@ -155,8 +138,6 @@ GOOGLE_AI_API_KEY="..."
 ```bash
 DEEPSEEK_API_KEY="..."
 ```
-
----
 
 ## Verify Installation
 
@@ -193,14 +174,13 @@ Expected response:
 }
 ```
 
----
-
 ## Common Issues
 
 ### Database Connection Failed
 
-{: .warning }
+::: warning
 `Error: Can't reach database server`
+:::
 
 **Solution:** Ensure PostgreSQL is running and the `DATABASE_URL` is correct.
 
@@ -214,8 +194,9 @@ brew services start postgresql
 
 ### Prisma Generate Failed
 
-{: .warning }
+::: warning
 `Error: Prisma schema is not valid`
+:::
 
 **Solution:** Run Prisma generate manually:
 
@@ -226,18 +207,17 @@ npx prisma db push --force-reset
 
 ### Missing API Key
 
-{: .warning }
+::: warning
 `Error: No API key configured for provider`
+:::
 
 **Solution:** Ensure at least one AI provider is configured in `.env.local`.
-
----
 
 ## Next Steps
 
 Now that you have Project Etna running:
 
-1. **[Explore Features](/project-etna/features)** - Learn about all available features
-2. **[API Reference](/project-etna/api/)** - Integrate with the API
-3. **[Waveform Viewer](/project-etna/waveforms)** - Upload and view waveform files
-4. **[Contributing](/project-etna/contributing)** - Help improve Project Etna
+1. **[Explore Features](/features)** - Learn about all available features
+2. **[API Reference](/api/)** - Integrate with the API
+3. **[Waveform Viewer](/waveforms)** - Upload and view waveform files
+4. **[Contributing](/contributing)** - Help improve Project Etna

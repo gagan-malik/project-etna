@@ -1,17 +1,11 @@
 ---
-layout: default
 title: API Reference
-nav_order: 3
-has_children: true
-description: "Complete API documentation for Project Etna"
-permalink: /api/
+description: Complete API documentation for Project Etna
 ---
 
 # API Reference
-{: .no_toc }
 
 Complete documentation for the Project Etna REST API.
-{: .fs-6 .fw-300 }
 
 ---
 
@@ -103,9 +97,9 @@ When rate-limited, you'll receive a `429 Too Many Requests` response.
 
 ## API Endpoints
 
-- [Authentication](/project-etna/api/authentication) - Sign up, sign in, and session management
-- [Conversations](/project-etna/api/conversations) - Create and manage chat conversations
-- [Messages](/project-etna/api/messages) - Send messages and stream AI responses
-- [Spaces](/project-etna/api/spaces) - Organize work into spaces/workspaces
-- [Documents](/project-etna/api/documents) - Upload and search documents
-- [Waveforms](/project-etna/api/waveforms) - Upload and manage waveform files
+- [Authentication](/api/authentication) - Sign up, sign in, and session management
+- [Conversations](/api/conversations) - Create and manage chat conversations
+- [Messages](/api/messages) - Send messages and stream AI responses
+- [Spaces](/api/spaces) - Organize work into spaces/workspaces
+- [Documents](/api/documents) - Upload and search documents
+- [Waveforms](/api/waveforms) - Upload and manage waveform files

@@ -1,21 +1,11 @@
 ---
-layout: default
 title: Features
-nav_order: 4
-description: "Complete list of Project Etna features"
+description: Complete list of Project Etna features
 ---
 
 # Features
-{: .no_toc }
 
 Everything you can do with Project Etna.
-{: .fs-6 .fw-300 }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
@@ -77,10 +67,10 @@ const supported = ['.v', '.sv', '.svh', '.vhd', '.vhdl'];
 ---
 
 ## Waveform Viewer
-{: .d-inline-block }
 
-New
-{: .label .label-green }
+::: tip New
+Waveform viewer is now available.
+:::
 
 ### Surfer Integration
 
@@ -160,10 +150,11 @@ Each space can contain:
 
 Built with shadcn/ui and Tailwind CSS:
 
-- **Responsive** - Works on desktop, tablet, and mobile
-- **Dark Mode** - System-aware theme switching
-- **Accessible** - WCAG compliant components
-- **Fast** - Next.js 15 with server components
+- **Theme** — shadcn Vega style, zinc base color, large border radius; Inter font, Lucide icons
+- **Responsive** — Works on desktop, tablet, and mobile
+- **Dark Mode** — System-aware theme switching (next-themes)
+- **Accessible** — WCAG compliant Radix-based components
+- **Fast** — Next.js 15 with server components
 
 ### Navigation
 
@@ -242,8 +233,9 @@ Get alerts in Slack:
 
 Features in active development:
 
-{: .highlight }
-> - **Signal-RTL Correlation** - Link waveform signals to RTL code
-> - **AI Waveform Queries** - Natural language waveform analysis
-> - **Team Collaboration** - Shared debug sessions
-> - **Protocol Detection** - Automatic AXI/APB analysis
+::: tip
+- **Signal-RTL Correlation** - Link waveform signals to RTL code
+- **AI Waveform Queries** - Natural language waveform analysis
+- **Team Collaboration** - Shared debug sessions
+- **Protocol Detection** - Automatic AXI/APB analysis
+:::
