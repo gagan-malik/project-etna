@@ -7,8 +7,8 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthProvider } from "@/components/auth-provider";
 
 export const metadata: Metadata = {
-  title: "Project Etna",
-  description: "AI-powered chat application with modern UI",
+  title: "Project Etna - Silicon Debug Assistant",
+  description: "AI-powered silicon debugging tool for verification engineers",
 };
 
 export default function RootLayout({

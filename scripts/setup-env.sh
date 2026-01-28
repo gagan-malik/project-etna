@@ -56,6 +56,14 @@ CONFLUENCE_API_TOKEN="your-confluence-api-token-here"
 
 # Vercel Blob Storage
 BLOB_READ_WRITE_TOKEN="your-vercel-blob-token-here"
+
+# Slack Integration (for cron job alerts)
+# Create an Incoming Webhook at https://api.slack.com/messaging/webhooks
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+# Cron Job Security (set in Vercel project settings)
+# Generate with: openssl rand -base64 32
+CRON_SECRET="your-cron-secret-here"
 EOF
 
   echo "✅ Created .env.local with generated NEXTAUTH_SECRET"

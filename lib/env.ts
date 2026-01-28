@@ -28,6 +28,12 @@ const requiredEnvVars = {
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  
+  // Optional - Slack Integration
+  SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
+  
+  // Optional - Cron Jobs
+  CRON_SECRET: process.env.CRON_SECRET,
 } as const;
 
 /**

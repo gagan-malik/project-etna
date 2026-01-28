@@ -108,6 +108,8 @@ model spaces {
   conversations    conversations[]
   document_indexes document_indexes[]
   integrations     integrations[]
+  design_files     design_files[]
+  debug_sessions   debug_sessions[]
   users            users              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
@@ -129,6 +131,8 @@ model users {
   integrations          integrations[]
   sessions              sessions[]
   spaces                spaces[]
+  design_files          design_files[]
+  debug_sessions        debug_sessions[]
 }
 
 model verification_tokens {
@@ -137,4 +141,49 @@ model verification_tokens {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Silicon debugging models
+
+model design_files {
+  id             String           @id @default(cuid())
+  name           String
+  path           String
+  type           String           // "rtl", "testbench", "constraint", "netlist"
+  format         String           // "verilog", "vhdl", "systemverilog"
+  content        String?
+  spaceId        String
+  userId         String
+  metadata       Json?            // module hierarchy, signals, ports, etc.
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  spaces         spaces           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  users          users            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debug_sessions debug_sessions[]
+
+  @@index([spaceId])
+  @@index([userId])
+  @@index([type])
+  @@index([format])
+}
+
+model debug_sessions {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  status       String        @default("active") // "active", "completed", "failed"
+  spaceId      String
+  userId       String
+  designFileId String?
+  config       Json?         // session configuration
+  findings     Json?         // debug findings and notes
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  spaces       spaces        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  users        users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  design_files design_files? @relation(fields: [designFileId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId])
+  @@index([userId])
+  @@index([status])
 }

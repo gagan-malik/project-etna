@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2 } from "lucide-react";
+import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2, Bug, Cpu, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
@@ -27,6 +27,10 @@ import { getBestModelForQuery, getHighestQualityModel } from "@/lib/ai/model-ran
 import type { ModelInfo } from "@/lib/ai/types";
 import { hasPremiumAccess as checkPremiumAccess } from "@/lib/subscription";
 import { useSession } from "next-auth/react";
+import { QUICK_PROMPTS, getSystemPrompt } from "@/lib/ai/prompts/silicon-debug";
+import { isHardwareDebugQuery } from "@/lib/ai/model-ranking";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface MessageDisplay {
   id: string;
@@ -38,10 +42,21 @@ interface MessageDisplay {
   createdAt?: string;
 }
 
-const SUGGESTIONS = [
+// General suggestions
+const GENERAL_SUGGESTIONS = [
   "What's the latest news about AI?",
   "Explain quantum computing",
   "Best practices for React",
+];
+
+// Silicon debugging suggestions
+const DEBUG_SUGGESTIONS = [
+  "Analyze my Verilog module for potential issues",
+  "Check for race conditions in this testbench",
+  "Review clock domain crossings",
+  "Help debug this FSM implementation",
+  "Generate assertions for this design",
+  "Find timing violations in my RTL",
 ];
 
 function ChatPageContent() {
@@ -108,6 +123,13 @@ function ChatPageContent() {
     return false;
   });
   const [charCount, setCharCount] = useState(0);
+  const [debugMode, setDebugMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("debug-mode");
+      return saved === "true";
+    }
+    return true; // Default to debug mode enabled
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -223,8 +245,12 @@ function ChatPageContent() {
       localStorage.setItem("auto-mode", String(autoMode));
       localStorage.setItem("max-mode", String(maxMode));
       localStorage.setItem("use-multiple-models", String(useMultipleModels));
+      localStorage.setItem("debug-mode", String(debugMode));
     }
-  }, [autoMode, maxMode, useMultipleModels]);
+  }, [autoMode, maxMode, useMultipleModels, debugMode]);
+
+  // Get appropriate suggestions based on debug mode
+  const SUGGESTIONS = debugMode ? DEBUG_SUGGESTIONS : GENERAL_SUGGESTIONS;
 
   // Save selected sources to localStorage
   useEffect(() => {
@@ -508,19 +534,69 @@ function ChatPageContent() {
     <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-8 md:py-16 overflow-hidden">
         {/* Welcome Section */}
         {messages.length === 0 && !streaming && !conversationLoading && (
-          <div className="flex flex-col items-center gap-12 text-center mb-28 flex-shrink-0">
-            <div className="flex flex-col gap-4 items-center">
-              <h1 className="text-2xl font-semibold leading-8 text-foreground">
-                👋🏽 Hello! How can I help you today?
-              </h1>
-              <p className="text-lg font-medium leading-7 text-foreground">
-                Ask me anything, and I'll search the web to give you the best answer.
-              </p>
+          <div className="flex flex-col items-center gap-8 text-center mb-28 flex-shrink-0">
+            {/* Debug Mode Header */}
+            {debugMode ? (
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Cpu className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                <h1 className="text-2xl font-semibold leading-8 text-foreground">
+                  Silicon Debug Assistant
+                </h1>
+                <p className="text-lg font-medium leading-7 text-muted-foreground max-w-lg">
+                  I can help analyze Verilog, VHDL, and SystemVerilog code, identify bugs, 
+                  check timing issues, and review your RTL designs.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4 items-center">
+                <h1 className="text-2xl font-semibold leading-8 text-foreground">
+                  Hello! How can I help you today?
+                </h1>
+                <p className="text-lg font-medium leading-7 text-foreground">
+                  Ask me anything, and I'll search the web to give you the best answer.
+                </p>
+              </div>
+            )}
+
+            {/* Debug Mode Toggle */}
+            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+              <Bug className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="debug-mode" className="text-sm font-medium cursor-pointer">
+                Debug Mode
+              </Label>
+              <Switch
+                id="debug-mode"
+                checked={debugMode}
+                onCheckedChange={setDebugMode}
+              />
             </div>
+
+            {/* Quick Debug Prompts - Only show in debug mode */}
+            {debugMode && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-w-[700px] px-2">
+                {QUICK_PROMPTS.slice(0, 6).map((prompt) => (
+                  <Button
+                    key={prompt.id}
+                    variant="outline"
+                    onClick={() => handleSuggestionClick(prompt.prompt)}
+                    className="h-auto py-3 px-4 flex flex-col items-start gap-1 text-left"
+                  >
+                    <span className="text-xs font-semibold">{prompt.label}</span>
+                    <span className="text-xs text-muted-foreground line-clamp-2">
+                      {prompt.prompt.slice(0, 50)}...
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
             
             {/* Quick Suggestions */}
             <div className="flex flex-wrap gap-2 md:gap-3 justify-center max-w-[600px] px-2">
-              {SUGGESTIONS.map((suggestion, idx) => (
+              {SUGGESTIONS.slice(0, 3).map((suggestion, idx) => (
                 <Button
                   key={idx}
                   variant="outline"

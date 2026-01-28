@@ -14,6 +14,9 @@ export interface ModelMetadata extends ModelInfo {
     math: boolean;
     creative: boolean;
     reasoning: boolean;
+    rtl_analysis: boolean;      // Verilog/VHDL code analysis
+    timing_debug: boolean;       // Timing analysis and debugging
+    signal_trace: boolean;       // Signal tracing and waveform analysis
     speed: "fast" | "medium" | "slow";
   };
 }
@@ -34,6 +37,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: true,
       creative: true,
       reasoning: true,
+      rtl_analysis: true,
+      timing_debug: true,
+      signal_trace: true,
       speed: "medium",
     },
   },
@@ -49,6 +55,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: true,
       creative: true,
       reasoning: true,
+      rtl_analysis: true,
+      timing_debug: true,
+      signal_trace: true,
       speed: "slow",
     },
   },
@@ -64,6 +73,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: false,
       creative: true,
       reasoning: false,
+      rtl_analysis: true,
+      timing_debug: false,
+      signal_trace: false,
       speed: "fast",
     },
   },
@@ -79,6 +91,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: true,
       creative: true,
       reasoning: true,
+      rtl_analysis: true,
+      timing_debug: true,
+      signal_trace: true,
       speed: "medium",
     },
   },
@@ -94,6 +109,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: true,
       creative: false,
       reasoning: true,
+      rtl_analysis: true,
+      timing_debug: true,
+      signal_trace: false,
       speed: "fast",
     },
   },
@@ -109,6 +127,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: false,
       creative: false,
       reasoning: false,
+      rtl_analysis: true,
+      timing_debug: false,
+      signal_trace: false,
       speed: "fast",
     },
   },
@@ -124,6 +145,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: true,
       creative: true,
       reasoning: true,
+      rtl_analysis: true,
+      timing_debug: true,
+      signal_trace: false,
       speed: "medium",
     },
   },
@@ -139,6 +163,9 @@ const MODEL_METADATA: Record<string, ModelMetadata> = {
       math: false,
       creative: true,
       reasoning: false,
+      rtl_analysis: false,
+      timing_debug: false,
+      signal_trace: false,
       speed: "fast",
     },
   },
@@ -172,6 +199,71 @@ export function getBestModelForQuery(
   availableModels: ModelInfo[]
 ): ModelInfo | null {
   const queryLower = query.toLowerCase();
+
+  // Check for RTL/hardware debugging keywords
+  const rtlKeywords = [
+    "verilog",
+    "vhdl",
+    "systemverilog",
+    "module",
+    "wire",
+    "reg",
+    "logic",
+    "always",
+    "posedge",
+    "negedge",
+    "assign",
+    "rtl",
+    "synthesis",
+    "testbench",
+    "uvm",
+    "assertion",
+    "sva",
+    "coverage",
+    "fsm",
+    "state machine",
+    "register",
+    "flip-flop",
+    "latch",
+  ];
+  const isRtlQuery = rtlKeywords.some((keyword) => queryLower.includes(keyword));
+
+  // Check for timing analysis keywords
+  const timingKeywords = [
+    "timing",
+    "setup",
+    "hold",
+    "clock",
+    "frequency",
+    "period",
+    "skew",
+    "jitter",
+    "metastability",
+    "cdc",
+    "clock domain",
+    "synchronizer",
+    "async",
+    "critical path",
+    "slack",
+  ];
+  const isTimingQuery = timingKeywords.some((keyword) => queryLower.includes(keyword));
+
+  // Check for signal/waveform keywords
+  const signalKeywords = [
+    "signal",
+    "waveform",
+    "trace",
+    "transition",
+    "glitch",
+    "spike",
+    "x-propagation",
+    "unknown",
+    "high-z",
+    "simulation",
+    "race condition",
+    "hazard",
+  ];
+  const isSignalQuery = signalKeywords.some((keyword) => queryLower.includes(keyword));
 
   // Check for code-related keywords
   const codeKeywords = [
@@ -222,6 +314,36 @@ export function getBestModelForQuery(
     return availableModels[0] || null;
   }
 
+  // Prioritize hardware debugging queries - these need highest tier models
+  if (isRtlQuery || isTimingQuery || isSignalQuery) {
+    // For RTL analysis, prefer models with rtl_analysis capability
+    if (isRtlQuery) {
+      const rtlModels = modelsWithMetadata
+        .filter((m) => m.capabilities.rtl_analysis)
+        .sort((a, b) => a.tier - b.tier);
+      if (rtlModels.length > 0) return rtlModels[0];
+    }
+
+    // For timing analysis, prefer models with timing_debug capability
+    if (isTimingQuery) {
+      const timingModels = modelsWithMetadata
+        .filter((m) => m.capabilities.timing_debug)
+        .sort((a, b) => a.tier - b.tier);
+      if (timingModels.length > 0) return timingModels[0];
+    }
+
+    // For signal tracing, prefer models with signal_trace capability
+    if (isSignalQuery) {
+      const signalModels = modelsWithMetadata
+        .filter((m) => m.capabilities.signal_trace)
+        .sort((a, b) => a.tier - b.tier);
+      if (signalModels.length > 0) return signalModels[0];
+    }
+
+    // Fall back to highest tier for any hardware debugging
+    return getHighestQualityModel(availableModels);
+  }
+
   // Prioritize based on query type
   if (isCodeQuery) {
     // Prefer code-specialized models
@@ -249,6 +371,22 @@ export function getBestModelForQuery(
 
   // Default: return highest tier model
   return getHighestQualityModel(availableModels);
+}
+
+/**
+ * Check if query is hardware/silicon debugging related
+ */
+export function isHardwareDebugQuery(query: string): boolean {
+  const queryLower = query.toLowerCase();
+  
+  const hardwareKeywords = [
+    "verilog", "vhdl", "systemverilog", "rtl", "module", "wire", "reg", "logic",
+    "always", "posedge", "negedge", "clock", "reset", "fsm", "state machine",
+    "timing", "setup", "hold", "cdc", "metastability", "synthesis", "testbench",
+    "assertion", "coverage", "simulation", "waveform", "signal", "debug",
+  ];
+  
+  return hardwareKeywords.some((keyword) => queryLower.includes(keyword));
 }
 
 /**

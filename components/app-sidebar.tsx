@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  MessageSquare, 
+  Bug, 
   History, 
   Settings, 
   Home, 
-  Sparkles,
+  Cpu,
   User,
   CreditCard,
   HelpCircle,
   Plus,
   Loader2,
-  Link as LinkIcon,
-  FileText
+  Wrench,
+  FileCode
 } from "lucide-react";
 import {
   Sidebar,
@@ -56,24 +56,24 @@ const navigation: NavSection[] = [
         icon: Home,
       },
       {
-        title: "Chat",
+        title: "Debug Assistant",
         url: "/chat",
-        icon: MessageSquare,
+        icon: Bug,
       },
       {
-        title: "History",
+        title: "Debug Sessions",
         url: "/activity",
         icon: History,
       },
       {
-        title: "Integrations",
+        title: "EDA Tools",
         url: "/integrations",
-        icon: LinkIcon,
+        icon: Wrench,
       },
       {
-        title: "Files",
+        title: "Design Files",
         url: "/files",
-        icon: FileText,
+        icon: FileCode,
       },
     ],
   },
@@ -178,10 +178,10 @@ export function AppSidebar() {
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Sparkles className="size-4" />
+                  <Cpu className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">AI Chat</span>
+                  <span className="truncate font-semibold">Silicon Debug</span>
                   <span className="truncate text-xs text-muted-foreground">
                     Project Etna
                   </span>
@@ -193,15 +193,15 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* New Chat Button - Show on chat page */}
+        {/* New Debug Session Button - Show on chat page */}
         {pathname === "/chat" && (
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={handleNewChat} tooltip="New Chat">
+                  <SidebarMenuButton onClick={handleNewChat} tooltip="New Debug Session">
                     <Plus className="h-4 w-4" />
-                    <span>New Chat</span>
+                    <span>New Debug Session</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -209,10 +209,10 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* Conversations List - Show on chat page */}
+        {/* Debug Sessions List - Show on chat page */}
         {pathname === "/chat" && (
           <SidebarGroup>
-            <SidebarGroupLabel>Recent Conversations</SidebarGroupLabel>
+            <SidebarGroupLabel>Recent Debug Sessions</SidebarGroupLabel>
             <SidebarGroupContent>
               {loadingConversations ? (
                 <div className="flex items-center justify-center py-4">
@@ -220,7 +220,7 @@ export function AppSidebar() {
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                  No conversations yet
+                  No debug sessions yet
                 </div>
               ) : (
                 <SidebarMenu>
@@ -229,13 +229,13 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         onClick={() => handleConversationClick(conv.id)}
                         isActive={currentConversationId === conv.id}
-                        tooltip={conv.title || "Untitled Conversation"}
+                        tooltip={conv.title || "Untitled Debug Session"}
                         className="w-full"
                       >
-                        <MessageSquare className="h-4 w-4" />
+                        <Bug className="h-4 w-4" />
                         <div className="flex-1 min-w-0 text-left">
                           <div className="truncate text-sm">
-                            {conv.title || "Untitled Conversation"}
+                            {conv.title || "Untitled Debug Session"}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {formatTimestamp(conv.updatedAt)}
