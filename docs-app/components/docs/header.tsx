@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun, Search, Share } from "lucide-react";
+import { Moon, Sun, Search, Share, Link2, Twitter, Linkedin } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import type { SearchIndexEntry } from "@/lib/docs";
@@ -18,8 +18,10 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [shareCopied, setShareCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const shareRef = useRef<HTMLDivElement>(null);
 
   const normalizedQuery = query.trim().toLowerCase();
   const results =
@@ -42,6 +44,10 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
     if (!mounted) return;
     function onKeyDown(e: KeyboardEvent) {
       if ((e.target as HTMLElement).closest("input, textarea")) return;
+      if (e.key === "Escape") {
+        setShareOpen(false);
+        return;
+      }
       if (e.key === "d" || e.key === "D") {
         e.preventDefault();
         setTheme(theme === "dark" ? "light" : "dark");
@@ -51,7 +57,12 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [mounted, theme, setTheme]);
 
-  const handleShare = async () => {
+  const shareUrl =
+    typeof window !== "undefined" ? encodeURIComponent(window.location.href) : "";
+  const shareTitle =
+    typeof document !== "undefined" ? encodeURIComponent(document.title) : "";
+
+  const handleCopyLink = async () => {
     if (typeof window === "undefined") return;
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -60,6 +71,12 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
     } catch {
       // ignore
     }
+  };
+
+  const openShareWindow = (url: string) => {
+    if (typeof window === "undefined") return;
+    window.open(url, "_blank", "noopener,noreferrer,width=550,height=420");
+    setShareOpen(false);
   };
 
   useEffect(() => {
@@ -85,6 +102,16 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    function handleShareClickOutside(e: MouseEvent) {
+      if (shareRef.current?.contains(e.target as Node)) return;
+      setShareOpen(false);
+    }
+    if (!shareOpen) return;
+    document.addEventListener("mousedown", handleShareClickOutside);
+    return () => document.removeEventListener("mousedown", handleShareClickOutside);
+  }, [shareOpen]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -217,18 +244,67 @@ export function DocsHeader({ searchIndex }: DocsHeaderProps) {
             </Tooltip>
           )}
 
-          {/* Share */}
-          <Tooltip label={shareCopied ? "Copied!" : "Share"}>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
-              aria-label="Share"
-            >
-              <Share className="size-4" />
-              Share
-            </button>
-          </Tooltip>
+          {/* Share popover */}
+          <div ref={shareRef} className="relative inline-flex">
+            <Tooltip label={shareCopied ? "Copied!" : "Share"}>
+              <button
+                type="button"
+                onClick={() => setShareOpen((o) => !o)}
+                className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+                aria-label="Share"
+                aria-expanded={shareOpen}
+                aria-haspopup="menu"
+              >
+                <Share className="size-4" />
+                Share
+              </button>
+            </Tooltip>
+            {shareOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-1 flex min-w-[200px] flex-col rounded-lg border bg-popover py-2 text-popover-foreground shadow-lg"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    handleCopyLink();
+                    setShareOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Link2 className="size-5 shrink-0" />
+                  {shareCopied ? "Copied!" : "Copy link"}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() =>
+                    openShareWindow(
+                      `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`
+                    )
+                  }
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Twitter className="size-5 shrink-0" />
+                  X
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() =>
+                    openShareWindow(
+                      `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`
+                    )
+                  }
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Linkedin className="size-5 shrink-0" />
+                  LinkedIn
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Create Project */}
           <Link

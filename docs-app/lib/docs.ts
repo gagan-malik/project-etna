@@ -138,10 +138,6 @@ export function getDocNavSections(): NavSection[] {
           item.slug[0] !== "soul-doc"
       ),
     },
-    {
-      title: "Product",
-      items: nav.filter((item) => item.slug[0] === "product"),
-    },
   ];
 
   return sections.filter((section) => section.items.length > 0);
