@@ -5,6 +5,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarLayout } from "@/components/sidebar-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthProvider } from "@/components/auth-provider";
+import { NextjsPortalFix } from "@/components/nextjs-portal-fix";
+import { Inter } from "next/font/google";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "Project Etna - Silicon Debug Assistant",
@@ -17,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body>
         <AuthProvider>
           <ThemeProvider
@@ -32,6 +36,7 @@ export default function RootLayout({
               </SidebarLayout>
             </ErrorBoundary>
             <Toaster />
+            <NextjsPortalFix />
           </ThemeProvider>
         </AuthProvider>
       </body>

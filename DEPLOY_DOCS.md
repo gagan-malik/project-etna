@@ -1,21 +1,9 @@
-# Deploying the documentation site
+# Documentation (separate site)
 
-The docs are built with **VitePress** and deployed via **GitHub Actions** to GitHub Pages.
+Documentation is a **standalone Next.js app** in `docs-app/`. It uses the same UI stack as the main app (Next.js, Tailwind, shadcn-style theme) but is **not** part of the production app. Deploy it separately.
 
-## One-time setup: Use GitHub Actions for Pages
+- **Content:** All markdown lives in the repo root `docs/` folder. The docs app reads from `../docs` when building.
+- **Local:** From the repo root run `npm run docs:dev`, then open [http://localhost:3001](http://localhost:3001) (docs use port **3001**; the main app uses 3000).
+- **Deploy:** Add a separate Vercel (or other) project with **Root Directory** set to `docs-app`. Your docs site will have its own URL (e.g. `docs.project-etna.com`), independent of the main app.
 
-For the VitePress site to appear (not the old Jekyll UI), GitHub Pages must use the workflow as the source:
-
-1. Open your repo on GitHub → **Settings** → **Pages**.
-2. Under **Build and deployment** → **Source**, choose **GitHub Actions** (not "Deploy from a branch").
-3. Save. The next push to `main` that touches `docs/` will run the "Deploy Documentation" workflow and publish the new site.
-
-After that, the site will be at **https://YOUR_USERNAME.github.io/project-etna/** (or your repo’s Pages URL).
-
-## Local preview
-
-```bash
-npm run docs:dev    # dev server
-npm run docs:build  # production build
-npm run docs:preview # preview built site
-```
+See `docs-app/README.md` for run and deploy steps.

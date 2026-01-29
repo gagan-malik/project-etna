@@ -49,7 +49,7 @@ Technical deep-dive into Project Etna's design.
 | **Next.js 15** | React framework with App Router |
 | **TypeScript** | Type safety |
 | **Tailwind CSS** | Utility-first styling |
-| **shadcn/ui** | UI components (Vega style, zinc theme, large radius) |
+| **shadcn/ui** | UI components (Maia style, neutral theme, large radius) |
 | **tw-animate-css** | Animation utilities for shadcn |
 | **Lucide Icons** | Icon library |
 | **next-themes** | Dark mode support |

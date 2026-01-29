@@ -18,60 +18,36 @@
 ### AI Models
 - ✅ `openai` (v6.10.0) - OpenAI API client
 - ✅ `@google/generative-ai` (v0.24.1) - Google Gemini API client
+- ✅ DeepSeek — implemented in `lib/ai/deepseek.ts` (REST API)
+- ✅ Llama — implemented in `lib/ai/llama.ts` (REST API)
+
+### UI & Styling
+- ✅ `shadcn` (v3.x) - CLI for shadcn/ui (Vega style, zinc theme, large radius)
+- ✅ `tailwindcss-animate` (v1.0.7) - Tailwind animation plugin
+- ✅ `tw-animate-css` (v1.4.0) - Animation CSS for shadcn components
+- ✅ `lucide-react` - Icon library
+- ✅ `next-themes` - Dark mode support
+- ✅ Radix UI primitives (dialog, dropdown, tabs, etc.) — installed via shadcn
 
 ### API Clients
 - ✅ `@octokit/rest` (v22.0.1) - GitHub REST API client
 - ✅ `@microsoft/microsoft-graph-client` (v3.0.7) - Microsoft Graph API client
 - ✅ `axios` - HTTP client for custom REST API calls
+- ✅ Confluence — implemented in `lib/integrations/confluence.ts` (REST API)
 
-## ⚠️ Custom Implementation Required
+## Optional / Environment-Dependent
 
-The following services don't have official npm packages and will need custom REST client implementations using `axios` or `fetch`:
+- **DeepSeek** — Add `DEEPSEEK_API_KEY` to `.env.local` to enable; client in `lib/ai/deepseek.ts`
+- **Llama** — Configure provider (Replicate, Together AI, etc.); client in `lib/ai/llama.ts`
 
-### AI Models
-- ⚠️ **DeepSeek** - Use REST API directly
-  - API Documentation: https://api-docs.deepseek.com/
-  - Use `axios` or `fetch` to make HTTP requests
+## Package Versions (Summary)
 
-- ⚠️ **Llama** - Use REST API directly
-  - Depends on the Llama service provider (e.g., Replicate, Together AI, or self-hosted)
-  - Use `axios` or `fetch` to make HTTP requests
-
-### API Clients
-- ⚠️ **Confluence API** - Custom REST client needed
-  - Official package `@atlassian/confluence-api` not available in npm registry
-  - Use `axios` or `fetch` with Confluence REST API
-  - Documentation: https://developer.atlassian.com/cloud/confluence/rest/
-
-## Next Steps
-
-1. **Initialize Prisma:**
-   ```bash
-   npx prisma init
-   ```
-
-2. **Configure pgvector in Prisma schema:**
-   - Add pgvector extension to your Prisma schema
-   - Configure vector fields for embeddings
-
-3. **Set up Auth.js:**
-   - Create `auth.ts` configuration file
-   - Configure providers and database adapter
-
-4. **Create custom API clients:**
-   - Create `lib/deepseek.ts` for DeepSeek API
-   - Create `lib/llama.ts` for Llama API
-   - Create `lib/confluence.ts` for Confluence API
-
-5. **Environment Variables:**
-   - Add required API keys and database URLs to `.env`
-
-## Package Versions
-
-All packages are installed and ready to use. The project is configured with:
-- Next.js 15.5.7
-- React 18.3.1
-- TypeScript 5.5.4
-- Prisma 7.1.0
-- Auth.js v5 (beta)
+| Package    | Version   |
+|-----------|-----------|
+| Next.js   | 15.5.7    |
+| React     | 18.3.1    |
+| TypeScript| 5.5.4     |
+| Prisma    | 7.1.0     |
+| Auth.js   | v5 (beta) |
+| shadcn/ui | Maia style, neutral theme |
 

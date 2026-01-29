@@ -1,8 +1,4 @@
-# VitePress build output
-.vitepress/dist
-.vitepress/cache
-
-# Legacy Jekyll (no longer used)
+# Build output (VitePress / static)
 _site/
 
 # macOS

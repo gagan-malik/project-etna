@@ -150,7 +150,7 @@ Each space can contain:
 
 Built with shadcn/ui and Tailwind CSS:
 
-- **Theme** — shadcn Vega style, zinc base color, large border radius; Inter font, Lucide icons
+- **Theme** — shadcn Maia style, neutral base color, large border radius; Inter font, Lucide icons
 - **Responsive** — Works on desktop, tablet, and mobile
 - **Dark Mode** — System-aware theme switching (next-themes)
 - **Accessible** — WCAG compliant Radix-based components
