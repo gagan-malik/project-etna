@@ -33,17 +33,17 @@ export default async function DocPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="mx-auto w-full min-w-0 max-w-3xl">
-        <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
+      <div className="mx-auto w-full min-w-0 max-w-3xl px-5 py-5">
+        <div className="mb-3 flex items-center space-x-1 text-sm text-muted-foreground">
           <div className="overflow-hidden text-ellipsis whitespace-nowrap">Docs</div>
         </div>
-        <div className="space-y-2">
-          <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">{currentTitle}</h1>
+        <div className="space-y-1.5">
+          <h1 className="scroll-m-20 text-xl font-semibold tracking-tight">{currentTitle}</h1>
           {doc.meta.description && (
-            <p className="text-xl text-muted-foreground">{doc.meta.description as string}</p>
+            <p className="text-sm text-muted-foreground">{doc.meta.description as string}</p>
           )}
         </div>
-        <div className="mdx mt-8">
+        <div className="mdx mt-6">
           <DocMarkdown content={doc.content} />
         </div>
       </div>

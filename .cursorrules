@@ -3,6 +3,14 @@
 ## Soul Doc
 - Project values and priorities: [docs/soul-doc.md](docs/soul-doc.md); Cursor rule: [.cursor/rules/soul-doc.mdc](.cursor/rules/soul-doc.mdc).
 
+## Enterprise (rules, skills, workers, hooks)
+- Baseline (always): [.cursor/rules/enterprise-baseline.mdc](.cursor/rules/enterprise-baseline.mdc). API: [.cursor/rules/api-first.mdc](.cursor/rules/api-first.mdc). Frontend: [.cursor/rules/frontend.mdc](.cursor/rules/frontend.mdc). Lib: [.cursor/rules/lib-conventions.mdc](.cursor/rules/lib-conventions.mdc).
+- Skills: api-route, auth-check, db-migration, error-handling, testing, security-review, observability, openapi-snippet, dependency-upgrade ([.cursor/skills/](.cursor/skills/)).
+- Workers/hooks: [.cursor/WORKERS_ENTERPRISE.md](.cursor/WORKERS_ENTERPRISE.md), [.cursor/HOOKS_ENTERPRISE.md](.cursor/HOOKS_ENTERPRISE.md). Script: `./scripts/check-enterprise.sh`. **To see all worker roles:** [AGENTS.md](AGENTS.md) (Cursor may not show a Workers list in the UI—prompt by name or open AGENTS.md).
+
+## UX, usability & accessibility
+- When editing UI (components, pages, forms): [.cursor/rules/ux-usability-accessibility.mdc](.cursor/rules/ux-usability-accessibility.mdc). Skills: [.cursor/skills/ux-review](.cursor/skills/ux-review), [.cursor/skills/usability-check](.cursor/skills/usability-check), [.cursor/skills/accessibility](.cursor/skills/accessibility). Workers/hooks: [.cursor/WORKERS_UX.md](.cursor/WORKERS_UX.md), [.cursor/HOOKS_UX.md](.cursor/HOOKS_UX.md).
+
 ## Stack
 - Next.js (App Router), TypeScript, Prisma, React, Shadcn UI
 - Use existing UI components from components/ui/; add via Shadcn MCP (.cursor/mcp.json)

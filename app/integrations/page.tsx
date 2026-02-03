@@ -232,14 +232,13 @@ export default function IntegrationsPage() {
   };
 
   return (
-    <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-16">
-      {/* Header */}
-      <div className="mb-12 flex items-center justify-between">
+    <main className="flex-1 max-w-4xl mx-auto w-full px-5 py-5 space-y-6">
+      <div className="sticky top-0 z-10 border-b bg-background px-5 py-4 -mx-5 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1">
+          <h1 className="text-xl font-semibold text-foreground">
             Integrations
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Connect external services to index and search content
           </p>
         </div>
@@ -448,9 +447,9 @@ export default function IntegrationsPage() {
           </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {integrations.map((integration) => (
-            <Card key={integration.id} className="p-6">
+            <Card key={integration.id} className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">

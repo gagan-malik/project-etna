@@ -1,0 +1,30 @@
+---
+description: Frontend consistency — components, Shadcn, accessibility
+globs: "components/**/*.tsx,app/**/*.tsx"
+alwaysApply: false
+---
+
+# Frontend
+
+When editing UI (components, app pages), follow these conventions.
+
+## Components
+
+- Use existing components from components/ui/ (Shadcn); add new ones via Shadcn MCP (.cursor/mcp.json).
+- Prefer composition over prop drilling; use context sparingly.
+- Colocate component-specific logic; keep components small and reusable.
+
+## Consistency
+
+- Match patterns from docs/product/UX_MASTER_FILE.md (toasts, modals, command palette, responsive breakpoints).
+- Use design tokens / Tailwind; avoid one-off colors or spacing that bypass the design system.
+
+## Accessibility
+
+- Use semantic HTML and proper labels (Label + Input with htmlFor/id or aria-label for icon-only).
+- Ensure keyboard focus and visible focus states; Esc closes modals; no keyboard traps.
+- For new forms or interactive UI, apply the **accessibility** skill (`.cursor/skills/accessibility/SKILL.md`).
+
+## UX
+
+- For flows, layouts, or forms, also apply [.cursor/rules/ux-usability-accessibility.mdc](.cursor/rules/ux-usability-accessibility.mdc) and the **ux-review** / **usability-check** skills when relevant.

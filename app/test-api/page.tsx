@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageTitle } from "@/components/ui/page-title";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function TestAPIPage() {
@@ -83,15 +84,13 @@ export default function TestAPIPage() {
   const clearResults = () => setResults([]);
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">API Routes Test Page</h1>
-        <p className="text-muted-foreground">
-          Test all API routes directly from the browser. Make sure you're logged in!
-        </p>
-      </div>
+    <div className="container mx-auto px-5 py-5 max-w-6xl space-y-6">
+      <PageTitle
+        title="API Routes Test Page"
+        description="Test all API routes directly from the browser. Make sure you're logged in!"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Spaces Tests */}
         <Card>
           <CardHeader>

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/before-write-lint.sh",
+        "timeout": 60,
+        "matcher": "Write"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/after-edit-lint.sh",
+        "timeout": 60
+      },
+      {
+        "command": ".cursor/hooks/after-edit-api-tests.sh",
+        "timeout": 120
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/before-prisma-migrate.sh",
+        "timeout": 5,
+        "matcher": "prisma migrate"
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": ".cursor/hooks/after-prisma-migrate.sh",
+        "timeout": 30,
+        "matcher": "prisma migrate"
+      },
+      {
+        "command": ".cursor/hooks/after-npm-install.sh",
+        "timeout": 60,
+        "matcher": "npm install|npm ci"
+      }
+    ]
+  }
+}

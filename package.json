@@ -21,6 +21,9 @@
     "test:coverage": "jest --coverage",
     "docs:dev": "cd docs-app && npm run dev"
   },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4"
+  },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
@@ -60,7 +63,7 @@
     "highlight.js": "^11.11.1",
     "isomorphic-fetch": "^3.0.0",
     "lucide-react": "^0.555.0",
-    "next": "^15.5.7",
+    "next": "^16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
     "nodemailer": "^7.0.11",

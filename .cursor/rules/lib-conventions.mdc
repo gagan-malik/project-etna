@@ -1,0 +1,33 @@
+---
+description: Lib conventions — pure logic, testable, explicit types
+globs: lib/**/*.ts
+alwaysApply: false
+---
+
+# Lib Conventions
+
+When editing code under lib/, follow these conventions.
+
+## Scope
+
+- No UI; pure logic, utilities, and integrations only.
+- Use Prisma for DB access (lib/prisma.ts); use auth/session helpers from auth.ts and lib/session.ts.
+
+## Typing
+
+- Prefer explicit types for public function parameters and return values; avoid `any`.
+- Use types from types/ and shared interfaces in lib/ where applicable.
+
+## Errors
+
+- Use try/catch; log or rethrow with context; do not swallow errors.
+- When creating new services or integrations, apply the **error-handling** skill.
+
+## Testing
+
+- New or changed public functions in lib/ must have tests; use the **testing** skill when adding tests.
+- Prefer unit tests for pure logic; integration tests for DB or external calls where appropriate.
+
+## Observability
+
+- When adding new endpoints or background jobs, add logging with correlation/request identifiers where applicable; apply the **observability** skill if needed.

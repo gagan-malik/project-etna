@@ -1,0 +1,49 @@
+---
+description: UX, usability, and accessibility standards for Etna (aligned with docs/product/UX_MASTER_FILE.md)
+globs: "**/*.tsx,**/components/**/*.tsx,**/app/**/page.tsx"
+alwaysApply: false
+---
+
+# UX, Usability & Accessibility
+
+When editing UI (components, pages, forms, modals), follow these standards. Reference: [docs/product/UX_MASTER_FILE.md](docs/product/UX_MASTER_FILE.md).
+
+## UX Principles (Etna)
+
+- **Conversation first**: Chat is primary; avoid burying actions in menus.
+- **Zero friction**: Value before signup; reduce steps to first value.
+- **Keyboard native**: All key flows work without mouse; support shortcuts (e.g. ⌘K, Esc).
+- **Progressive disclosure**: Simple by default; advanced options on demand.
+- **Delightful speed**: Avoid blocking spinners; use skeletons, streaming, optimistic UI where appropriate.
+
+## Usability
+
+- **Labels**: Every form control has a visible or associated label; no placeholder-only labels for required fields.
+- **Feedback**: Success, error, and loading states for every user action; use toasts for non-blocking feedback (see UX_MASTER_FILE toast patterns).
+- **Errors**: Inline validation where possible; clear, actionable error messages; link to recovery (e.g. "Retry", "Edit").
+- **Hierarchy**: Clear visual hierarchy (headings, spacing, contrast); primary action obvious; secondary actions de-emphasized.
+- **Responsive**: Use breakpoints from UX_MASTER_FILE (mobile <640px, tablet 640–1024px, desktop 1024px+); bottom nav on mobile, sidebar on larger.
+- **Touch**: Tap targets ≥44px; avoid hover-only interactions on touch devices.
+
+## Accessibility (WCAG 2.1 AA)
+
+- **Color contrast**: 4.5:1 minimum for normal text, 3:1 for large text; do not rely on color alone for meaning.
+- **Keyboard**: All interactive elements focusable; visible focus indicator (e.g. ring); logical tab order; no keyboard traps; Esc closes modals.
+- **Screen readers**: Use semantic HTML (button, nav, main, heading levels); add `aria-label` or `aria-labelledby` where needed; use `aria-live` for dynamic content (e.g. streaming AI, toasts).
+- **Motion**: Respect `prefers-reduced-motion: reduce`; no autoplay; avoid motion that cannot be disabled.
+- **Zoom**: Layout remains usable at 200% zoom; no horizontal scroll caused by fixed widths.
+- **Focus order**: Skip-to-content link when applicable; order: skip → logo → nav → main → chat input.
+
+## Implementation
+
+- Use existing `components/ui/` (Shadcn); Shadcn components are built with Radix and include basic a11y; ensure custom wrappers preserve focus and labels.
+- For new forms: use Label + Input/Select; associate via `htmlFor`/`id` or wrap in a label.
+- For modals/dialogs: trap focus, restore focus on close, and allow Esc to close.
+- For streaming or live updates: use `aria-live="polite"` (or `assertive` for errors) and announce start/complete when appropriate.
+- Test: keyboard-only navigation and at least one screen reader (e.g. VoiceOver) for new flows.
+
+## When to Apply Skills
+
+- **UX review**: When adding or changing a flow, layout, or set of screens.
+- **Usability check**: When adding forms, errors, or feedback patterns.
+- **Accessibility**: When adding or changing interactive UI (buttons, links, forms, modals, toasts, live regions).

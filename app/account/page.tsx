@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { PageTitle } from "@/components/ui/page-title";
 import { useToast } from "@/hooks/use-toast";
 import {
   User,
@@ -181,15 +182,11 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="flex-1 max-w-4xl mx-auto w-full px-8 py-16">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground mb-2">
-          Account Settings
-        </h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences
-        </p>
-      </div>
+    <div className="flex-1 max-w-4xl mx-auto w-full px-5 py-5 space-y-6">
+      <PageTitle
+        title="Account Settings"
+        description="Manage your account settings and preferences"
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
@@ -216,7 +213,7 @@ export default function AccountPage() {
         </TabsList>
 
         {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-6 mt-6">
+        <TabsContent value="profile" className="space-y-5 mt-5">
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
@@ -289,7 +286,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Account Tab */}
-        <TabsContent value="account" className="space-y-6 mt-6">
+        <TabsContent value="account" className="space-y-5 mt-5">
           <Card>
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
@@ -358,7 +355,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Appearance Tab */}
-        <TabsContent value="appearance" className="space-y-6 mt-6">
+        <TabsContent value="appearance" className="space-y-5 mt-5">
           <Card>
             <CardHeader>
               <CardTitle>Theme</CardTitle>
@@ -381,7 +378,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Notifications Tab */}
-        <TabsContent value="notifications" className="space-y-6 mt-6">
+        <TabsContent value="notifications" className="space-y-5 mt-5">
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
@@ -422,7 +419,7 @@ export default function AccountPage() {
         </TabsContent>
 
         {/* Security Tab */}
-        <TabsContent value="security" className="space-y-6 mt-6">
+        <TabsContent value="security" className="space-y-5 mt-5">
           <Card>
             <CardHeader>
               <CardTitle>Active Sessions</CardTitle>

@@ -163,4 +163,18 @@ is:issue is:open assignee:@me
 
 # Unassigned items ready for pickup
 is:issue is:open no:assignee label:ready
+
+# Cursor-like Settings work
+is:issue is:open label:settings
 ```
+
+## Cursor-like Settings (Phase 2)
+
+Settings work is tracked in the backlog and roadmap. To add Settings issues to the project board:
+
+1. **Issue list:** See [SETTINGS_ISSUES.md](./SETTINGS_ISSUES.md) for titles, bodies, and labels (SET-001–SET-008).
+2. **Create issues:** Use GitHub UI (New Issue) or `gh issue create` with the titles/bodies from that file.
+3. **Add to board:** New issues are auto-added if project automation is configured; otherwise use the Projects sidebar on each issue to add to "Project Etna Roadmap".
+4. **Labels:** Add `settings` and `priority/p0` or `priority/p1` / `priority/p2` so filters work.
+
+**Product docs:** [docs/product/SETTINGS_PLAN.md](../docs/product/SETTINGS_PLAN.md), [docs/product/BACKLOG.md](../docs/product/BACKLOG.md).

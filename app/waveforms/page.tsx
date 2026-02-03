@@ -167,10 +167,10 @@ export default function WaveformsPage() {
       <SidebarInset>
         <div className="flex flex-col h-screen">
           {/* Header */}
-          <header className="flex items-center justify-between h-14 px-6 border-b shrink-0">
+          <header className="flex items-center justify-between px-5 py-4 border-b shrink-0">
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-semibold">Waveforms</h1>
+              <h1 className="text-xl font-semibold text-foreground">Waveforms</h1>
               <Badge variant="secondary">{waveforms.length} files</Badge>
             </div>
             <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
@@ -204,7 +204,7 @@ export default function WaveformsPage() {
           {/* Main Content */}
           <div className="flex-1 overflow-hidden flex">
             {/* File List */}
-            <div className="w-80 border-r overflow-y-auto p-4 space-y-3">
+            <div className="w-80 border-r overflow-y-auto p-3 space-y-2">
               {loading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (

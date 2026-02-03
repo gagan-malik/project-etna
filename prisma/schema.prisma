@@ -126,6 +126,7 @@ model users {
   plan                  String?            @default("free")
   subscriptionStatus    String?
   subscriptionExpiresAt DateTime?
+  userPreferences       Json?               // theme, notifications, privacyMode, etc. (see SETTINGS_PLAN.md)
   accounts              accounts[]
   conversations         conversations[]
   document_indexes      document_indexes[]

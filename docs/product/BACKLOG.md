@@ -238,6 +238,163 @@ Add understanding of shadow registers for security-critical designs.
 
 ---
 
+### Cursor-like Settings
+
+#### SET-001: Settings persistence (P0) ✅
+**Priority:** P0  
+**Effort:** Medium  
+**Impact:** High
+
+Add schema and API for user preferences so settings survive refresh and can sync across devices.
+
+**Tasks:**
+- [x] Add `userPreferences Json?` to `users` in Prisma schema
+- [x] Create migration for user preferences
+- [x] Create GET `/api/settings` (return user preferences + plan for paid-only features)
+- [x] Create PATCH `/api/settings` with Zod validation for allowed keys
+- [x] Document persisted keys (theme, notifications, privacyMode, etc.) vs client-only
+
+**Acceptance Criteria:**
+- Authenticated user can GET/PATCH preferences; free users cannot set privacyMode
+- Invalid keys are rejected with 400
+
+---
+
+#### SET-002: Settings layout and General panel (P1) ✅
+**Priority:** P1  
+**Effort:** Medium  
+**Impact:** High
+
+Single settings shell: left nav (user block, search ⌘F, all sections, Docs link), right content; General section with Manage Account, Preferences, Notifications, Privacy (paid only), Log Out.
+
+**Tasks:**
+- [x] Create shared settings layout component (two-column, user block at top left)
+- [x] Add "Search settings ⌘F" input; client-side filter over section names
+- [x] Implement General panel: Manage Account (Open), Sync layouts, Editor Settings, Keyboard Shortcuts, Import VS Code, Reset dialogs, System/Menu Bar/Completion Sound toggles, Privacy Mode dropdown (paid only), Log Out
+- [x] Support both full page `/settings` and dialog (same IA); URL `?section=general`
+- [x] Wire General controls to `/api/settings` where persisted
+
+**Acceptance Criteria:**
+- Settings open from sidebar (dialog) or `/settings` (page); same nav and content
+- Privacy Mode only shown for paid plan; free users see upgrade or hidden
+- ⌘F focuses search and filters nav
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-003: Rules, Skills, Workers panel (P1) ✅
+**Priority:** P1  
+**Effort:** Medium  
+**Impact:** High
+
+Settings panel for Rules, Skills, Workers, and Commands (Cursor-like).
+
+**Tasks:**
+- [x] Add "Rules, Skills, Workers" section to settings nav
+- [x] Context filters: All, User, project (pills)
+- [x] "Include third-party skills, workers, and other configs" toggle
+- [x] Rules: list (.cursorrules, soul-doc, file-path rules) + "+ New"
+- [x] Skills: empty state + "New Skill" button
+- [x] Workers: empty state + "New Worker" button
+- [x] Commands: empty state + "New Command" button
+- [x] Persist include-third-party and rule metadata via `/api/settings` where applicable
+
+**Acceptance Criteria:**
+- Panel matches wireframe in SETTINGS_PLAN.md; placeholders for create flows
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md), [WORKERS_UX.md](../../.cursor/WORKERS_UX.md)
+
+---
+
+#### SET-004: Hooks panel (P1) ✅
+**Priority:** P1  
+**Effort:** Small  
+**Impact:** Medium
+
+Settings panel for configured hooks and execution log.
+
+**Tasks:**
+- [x] Add "Hooks" section to settings nav
+- [x] "Configured Hooks (0)" collapsible + empty state "No hooks configured"
+- [x] "Execution Log" with "Clear log" button + empty state "No hook executions yet"
+- [x] Optional: persist "Clear log" preference or keep client-only
+
+**Acceptance Criteria:**
+- Panel matches wireframe; ready for future hooks backend
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-005: Tab panel (P2) ✅
+**Priority:** P2  
+**Effort:** Small  
+**Impact:** Medium
+
+Tab settings: Cursor Tab, Partial Accepts, Suggestions While Commenting, Whitespace-Only Suggestions, Imports, Auto Import for Python (BETA).
+
+**Tasks:**
+- [x] Add "Tab" section to settings nav
+- [x] Six rows with toggles; wire to preferences API (cursorTab, partialAccepts, etc.)
+- [x] BETA badge on Auto Import for Python
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-006: Models panel (P2) ✅
+**Priority:** P2  
+**Effort:** Medium  
+**Impact:** High
+
+Models list (search + toggles) and API Keys (BYOK): OpenAI, Anthropic, Google, Azure, AWS Bedrock.
+
+**Tasks:**
+- [x] Add "Models" section to settings nav
+- [x] Add/search model input + model list with toggles (enabledModelIds persisted)
+- [x] API Keys expandable: OpenAI, Anthropic, Google (placeholders; keys not stored in preferences)
+- [x] Persist enabled model IDs via preferences; API keys never stored in userPreferences
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md), [UX_MASTER_FILE.md](./UX_MASTER_FILE.md) BYOK
+
+---
+
+#### SET-007: Agents panel (P2) ✅
+**Priority:** P2  
+**Effort:** Large  
+**Impact:** High
+
+Full Agents settings: General agent, Agent Review, Context, Applying Changes, Auto-Run, Protection, Inline & Terminal, Attribution.
+
+**Tasks:**
+- [x] Add "Agents" section to settings nav
+- [x] Implement sub-sections: General, Agent Review, Context, Applying Changes, Auto-Run, Protection, Inline & Terminal, Attribution; persist via `/api/settings`
+- [x] Persist agent-related preferences (agentDefaultMode, agentAutoRunMode, protections, etc.)
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-008: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta (P2–P3) ✅
+**Priority:** P2–P3  
+**Effort:** Medium each  
+**Impact:** Medium
+
+Remaining panels: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta. Docs is nav-only (external link).
+
+**Tasks:**
+- [x] Cloud Agents: Manage Settings (Open → /integrations), Connect Slack, Workspace Config, Personal Configuration (expandable)
+- [x] Tools & MCP: Browser automation dropdown, Show localhost links toggle, Installed MCP servers list + Add custom
+- [x] Indexing & Docs: Codebase indexing (progress, Sync, Delete), Index new folders toggle, .cursorignore; Docs empty state + Add Doc
+- [x] Network: HTTP Compatibility Mode (HTTP/1.1, HTTP/2) persisted; Run Diagnostic button
+- [x] Beta: Update Access (Stable/Early), Agent Autocomplete, Extension RPC Tracer — persisted via `/api/settings`
+- [x] Docs: left nav link only (external)
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
 ### Waveform Integration
 
 #### WF-001: Basic VCD Upload

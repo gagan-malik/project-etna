@@ -1,0 +1,25 @@
+# Cron Alert — scheduled health ping; triggers app /api/cron/health (Slack alert)
+# Runs daily at 09:00 UTC. Set repo secrets CRON_SECRET and CRON_APP_URL to enable.
+name: Cron Alert
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger health cron
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          APP_URL: ${{ secrets.CRON_APP_URL }}
+        run: |
+          if [ -n "$CRON_SECRET" ] && [ -n "$APP_URL" ]; then
+            curl -sf -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/cron/health" && echo "Health check triggered."
+          else
+            echo "Add secrets CRON_SECRET and CRON_APP_URL (e.g. https://your-app.vercel.app) to trigger health + Slack alert."
+          fi
+      - name: Done
+        run: echo "Cron alert finished $(date -u +%Y-%m-%dT%H:%M:%SZ)"

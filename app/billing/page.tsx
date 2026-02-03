@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageTitle } from "@/components/ui/page-title";
+import { PageSection } from "@/components/ui/page-section";
 import { Check, Sparkles, Zap, CreditCard, Receipt } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
 
 interface Plan {
   id: string;
@@ -115,40 +116,27 @@ export default function BillingPage() {
   };
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-16">
-      {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-3xl font-semibold text-foreground mb-2">
-          Billing & Subscription
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Manage your subscription and billing information
-        </p>
-      </div>
+    <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-5 space-y-6">
+      <PageTitle
+        title="Billing & Subscription"
+        description="Manage your subscription and billing information"
+      />
 
       {/* Current Plan */}
-      <Card className="p-6 mb-8">
+      <PageSection title="Current Plan">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-1">
-              Current Plan
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {loading ? "Loading..." : `You are currently on the ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan`}
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {loading ? "Loading..." : `You are currently on the ${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan`}
+          </p>
           <Badge variant={currentPlan === "free" ? "secondary" : "default"}>
             {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
           </Badge>
         </div>
-      </Card>
+      </PageSection>
 
       {/* Plans Grid */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-foreground mb-6">
-          Available Plans
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <PageSection title="Available Plans">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PLANS.map((plan) => {
             const isCurrentPlan = currentPlan === plan.id;
             const isPopular = plan.popular;
@@ -156,7 +144,7 @@ export default function BillingPage() {
             return (
               <Card
                 key={plan.id}
-                className={`relative p-6 flex flex-col ${
+                className={`relative p-4 flex flex-col ${
                   isPopular ? "border-primary border-2" : ""
                 }`}
               >
@@ -183,7 +171,7 @@ export default function BillingPage() {
                   </p>
                 </div>
 
-                <ul className="flex-1 space-y-3 mb-6">
+                <ul className="flex-1 space-y-2 mb-4">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -204,16 +192,13 @@ export default function BillingPage() {
             );
           })}
         </div>
-      </div>
+      </PageSection>
 
       {/* Premium Features Section */}
-      <Card className="p-6 mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
-          Premium Features
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+      <PageSection title="Premium Features">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
               <Zap className="h-5 w-5 text-foreground" />
             </div>
             <div>
@@ -223,8 +208,8 @@ export default function BillingPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-5 w-5 text-foreground" />
             </div>
             <div>
@@ -235,25 +220,24 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
-      </Card>
+      </PageSection>
 
       {/* Billing History Section */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Billing History
-          </h2>
-          <Button variant="outline" size="sm">
-            <Receipt className="h-4 w-4 mr-2" />
-            Download All
-          </Button>
+      <PageSection title="Billing History">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex w-full justify-end">
+            <Button variant="outline" size="sm">
+              <Receipt className="h-4 w-4 mr-2" />
+              Download All
+            </Button>
+          </div>
+          <div className="text-center text-muted-foreground py-4 w-full">
+            <CreditCard className="h-10 w-10 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">No billing history yet</p>
+            <p className="text-xs mt-1">Your invoices will appear here once you subscribe to a paid plan.</p>
+          </div>
         </div>
-        <div className="text-center text-muted-foreground py-8">
-          <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No billing history yet</p>
-          <p className="text-sm mt-2">Your invoices will appear here once you subscribe to a paid plan.</p>
-        </div>
-      </Card>
+      </PageSection>
     </main>
   );
 }

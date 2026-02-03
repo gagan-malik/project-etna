@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Settings UI** – Full-page settings at `/settings` with sidebar nav, search, and panels (General, Agents, Rules, Hooks, Models, Network, etc.). Centered content (`max-w-2xl mx-auto`) and full-width scrollable pane.
+- **Shared layout components** – `PageTitle` (sticky page header) and `PageSection` (muted section block) in `components/ui/` for consistent page layout across the app.
+- **Consistent page layout** – Compact spacing (`px-5 py-5`, `space-y-6`), sticky titles, and muted sections applied to Overview, Account, Billing, Activity, Files, Integrations, Waveforms, and Test API pages; docs-app doc page uses compact title and spacing.
+
+### Changed
+- **Settings pane** – Layout uses full width (`w-full`) so the scrollbar sits at the right edge; panel content is centered with `max-w-2xl mx-auto`.
+- **Docs app** – Doc page uses `text-xl` title, `px-5 py-5`, and `mt-6` for body.
+
 ## [0.2.0] - 2026-01-28
 
 ### Added - Waveform Viewer Integration (Phase 1 Complete)

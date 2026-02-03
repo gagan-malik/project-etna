@@ -10,7 +10,7 @@
 
 | Product | Core Disruption | Key Insight for Etna |
 |---------|-----------------|---------------------|
-| **Cursor** | AI-native code editor | Agent architecture, subagents, background tasks |
+| **Cursor** | AI-native code editor | Agent architecture, workers, background tasks |
 | **Linear** | Purpose-built for product teams | Opinionated workflows beat flexibility |
 | **Figma** | Real-time multiplayer design | Collaboration as first-class citizen |
 | **Notion** | Blocks + flexibility | Composable primitives |

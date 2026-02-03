@@ -277,15 +277,14 @@ export default function DesignFilesPage() {
   );
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-16">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+    <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-5 space-y-6">
+      <div className="sticky top-0 z-10 border-b bg-background px-5 py-4 -mx-5 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1 flex items-center gap-2">
-            <FileCode className="h-6 w-6" />
+          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <FileCode className="h-5 w-5" />
             Design Files
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage your Verilog, VHDL, and SystemVerilog design files
           </p>
         </div>
@@ -310,8 +309,7 @@ export default function DesignFilesPage() {
         </div>
       </div>
 
-      {/* Tabs for file types */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">
             All ({designFiles.length})
@@ -331,8 +329,7 @@ export default function DesignFilesPage() {
         </TabsList>
       </Tabs>
 
-      {/* Search and Filters */}
-      <div className="mb-6 flex items-center gap-4">
+      <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

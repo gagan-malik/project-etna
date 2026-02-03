@@ -77,29 +77,57 @@ prisma/migrations/20260128000000_add_waveform_files/
 | Pro | 200 MB | 50 files | VCD + FST |
 | Team | 500 MB | Unlimited | All |
 
-### Phase 2: Enhanced Integration
+### Phase 2: Cursor-like Settings ✅ COMPLETED
+
+**Goal:** Single, persistent settings experience (dialog + full page) with full IA: General, Rules/Skills/Workers, Hooks in first release.
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md), [BACKLOG.md](./BACKLOG.md) SET-001–SET-008.
+
+#### 2.0 Settings persistence (P0) ✅
+- [x] Add `userPreferences Json?` to `users` (Prisma)
+- [x] GET/PATCH `/api/settings` with validation; privacy mode paid-only
+- [x] Document persisted vs client-only keys
+
+#### 2.1 Settings layout and General (P1) ✅
+- [x] Shared layout: left nav (user block, search ⌘F, all sections), right content
+- [x] General panel: Manage Account, Preferences, Notifications, Privacy (paid only), Log Out
+- [x] Entry: dialog from sidebar + full page `/settings`; `?section=general`
+- [x] Wire General to `/api/settings`
+
+#### 2.2 Rules, Skills, Workers panel (P1) ✅
+- [x] Context filters; include third-party toggle; Rules/Skills/Workers/Commands lists + empty states
+
+#### 2.3 Hooks panel (P1) ✅
+- [x] Configured Hooks (0) + Execution Log + empty states
+
+#### 2.4 Later panels (P2+) ✅
+- [x] Tab, Models, Agents, Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta (see BACKLOG SET-005–SET-008)
+
+---
+
+### Phase 3: Enhanced Integration (Waveforms + RTL + AI)
 
 **Goal:** Deeper integration between waveforms, RTL, and AI
 
-#### 2.1 Host Surfer WASM
+#### 3.1 Host Surfer WASM
 - [ ] Download Surfer WASM build
 - [ ] Host in `/public/surfer/`
 - [ ] Implement postMessage API communication
 - [ ] Custom Etna-branded UI wrapper
 
-#### 2.2 Signal-RTL Correlation
+#### 3.2 Signal-RTL Correlation
 - [ ] Extract signal names from waveform files
 - [ ] Match signals to RTL module/port definitions
 - [ ] Highlight correlated signals in both viewers
 - [ ] "Jump to signal" from RTL to waveform
 
-#### 2.3 AI Waveform Awareness
+#### 3.3 AI Waveform Awareness
 - [ ] Include signal list in AI context
 - [ ] AI can reference specific time ranges
 - [ ] AI can suggest signals to examine
 - [ ] Natural language waveform queries ("show me when data_valid goes high")
 
-#### 2.4 OpenTitan Integration - Quick Wins
+#### 3.4 OpenTitan Integration - Quick Wins
 > See [OPENTITAN_INTEGRATION.md](./OPENTITAN_INTEGRATION.md) for details
 
 - [ ] Add `hjson` npm package for parsing
@@ -108,29 +136,29 @@ prisma/migrations/20260128000000_add_waveform_files/
 - [ ] Store UVM templates as prompt context for testbench generation
 - [ ] Add hardware access type understanding (hro, hrw, hwo)
 
-### Phase 3: Advanced Features
+### Phase 4: Advanced Features
 
 **Goal:** Professional-grade debugging capabilities
 
-#### 3.1 Waveform Analysis
+#### 4.1 Waveform Analysis
 - [ ] Automatic protocol detection (AXI, APB, etc.)
 - [ ] Timing violation detection
 - [ ] Clock domain crossing analysis
 - [ ] Signal comparison (golden vs. actual)
 
-#### 3.2 Collaboration
+#### 4.2 Collaboration
 - [ ] Shared debug sessions
 - [ ] Waveform annotations
 - [ ] Comment threads on specific signals/times
 - [ ] Export debug reports
 
-#### 3.3 CI/CD Integration
+#### 4.3 CI/CD Integration
 - [ ] API for automated waveform uploads
 - [ ] Regression comparison
 - [ ] Automated bug detection
 - [ ] GitHub/GitLab integration
 
-#### 3.4 OpenTitan Integration - Medium Term
+#### 4.4 OpenTitan Integration - Medium Term
 > See [OPENTITAN_INTEGRATION.md](./OPENTITAN_INTEGRATION.md) for details
 
 - [ ] Full Hjson register file parser (`lib/design-files/hjson-parser.ts`)
@@ -140,29 +168,29 @@ prisma/migrations/20260128000000_add_waveform_files/
 - [ ] FPV assertion pattern library for AI generation
 - [ ] Shadow register understanding for AI context
 
-### Phase 4: Enterprise Features
+### Phase 5: Enterprise Features
 
 **Goal:** Support large-scale verification workflows
 
-#### 4.1 Server Mode (Infrastructure Addition)
+#### 5.1 Server Mode (Infrastructure Addition)
 - [ ] Deploy Surfer server on Fly.io/Railway
 - [ ] Streaming for large files (500MB+)
 - [ ] FST format full support
 - [ ] No file size limits
 
-#### 4.2 Enterprise Security
+#### 5.2 Enterprise Security
 - [ ] SSO/SAML integration
 - [ ] On-premise deployment option
 - [ ] Audit logging
 - [ ] Data retention policies
 
-#### 4.3 Custom AI
+#### 5.3 Custom AI
 - [ ] Fine-tuned models for specific designs
 - [ ] RAG over internal documentation
 - [ ] Custom assertion generation
 - [ ] Integration with formal verification tools
 
-#### 4.4 OpenTitan Integration - Deep
+#### 5.4 OpenTitan Integration - Deep
 > See [OPENTITAN_INTEGRATION.md](./OPENTITAN_INTEGRATION.md) for details
 
 - [ ] reggen output parsing (auto-generated RTL/headers)

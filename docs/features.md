@@ -162,6 +162,16 @@ Built with shadcn/ui and Tailwind CSS:
 - **Command Palette** - Keyboard-driven navigation
 - **Breadcrumbs** - Always know where you are
 
+### Settings
+
+Full-page settings at `/settings` with:
+
+- **Sidebar** — Search (⌘F), user block, and section nav (General, Agents, Rules, Hooks, Models, Network, etc.)
+- **Panels** — Muted section blocks (`SettingsSection`) with compact spacing; content centered with `max-w-2xl`
+- **Layout** — Full-width scrollable pane; sticky page title; consistent density (`px-5 py-5`, `space-y-6`)
+
+App pages (Overview, Account, Billing, Activity, Files, Integrations, Waveforms, Test API) use shared `PageTitle` and `PageSection` components for consistent sticky headers and muted section blocks.
+
 ### Chat Interface
 
 - **Markdown Support** - Rich text formatting

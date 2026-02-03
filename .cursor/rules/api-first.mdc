@@ -1,0 +1,31 @@
+---
+description: API-first — consistent request/response, validation, docs
+globs: app/api/**/*.ts
+alwaysApply: false
+---
+
+# API-First
+
+When adding or changing API routes (app/api/**), follow these conventions.
+
+## Request/response
+
+- Validate input with lib/validation (Zod schemas or equivalent) before use; return 400 with a clear error message for invalid input.
+- Return a consistent JSON shape: e.g. `{ data?: T, error?: string, message?: string }`; use the same structure for success and error where appropriate.
+- Use correct status codes: 200 (OK), 201 (created), 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found), 500 (server error).
+
+## Errors
+
+- Do not expose stack traces or internals in the response; log server-side with context.
+- For 500, return a generic message (e.g. "Internal server error") and correlate with logs.
+
+## Documentation
+
+- Document new or changed endpoints in docs/api/ or OpenAPI; include request/response shape and error cases.
+- For public or partner APIs, version the path or header and document breaking changes.
+
+## Skills
+
+- When adding a new route: use the **api-route** skill.
+- When the route touches auth: use the **auth-check** skill.
+- When adding/changing public API: use the **openapi-snippet** skill.

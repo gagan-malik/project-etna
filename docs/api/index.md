@@ -103,3 +103,4 @@ When rate-limited, you'll receive a `429 Too Many Requests` response.
 - [Spaces](/api/spaces) - Organize work into spaces/workspaces
 - [Documents](/api/documents) - Upload and search documents
 - [Waveforms](/api/waveforms) - Upload and manage waveform files
+- [Settings](/api/settings) - Get and update user preferences (theme, notifications, privacy mode, etc.)

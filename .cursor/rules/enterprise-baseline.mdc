@@ -1,0 +1,35 @@
+---
+description: Enterprise baseline — security, data, API, observability, testing
+alwaysApply: true
+---
+
+# Enterprise Baseline
+
+When working on Etna, follow these standards for security, correctness, and maintainability.
+
+## Security
+
+- Never log or expose secrets, API keys, PII, or tokens; use env vars (lib/env.ts) and never commit them.
+- All API routes validate and sanitize input; use parameterized queries only (Prisma); no raw SQL string interpolation.
+- Auth/session: use existing auth.ts and session helpers; never bypass; assume least privilege for new features.
+
+## Data & correctness
+
+- Use Prisma for all DB access; no ad-hoc SQL unless documented and reviewed.
+- Prefer explicit types at API boundaries and shared types; avoid `any`; TypeScript strict.
+- Destructive or bulk operations: require confirmation or dry-run; document rollback.
+
+## API
+
+- Validate all request bodies/query with lib/validation (or equivalent); return consistent JSON and HTTP status codes; document errors in API docs.
+- Version or namespace public/partner APIs; keep backward compatibility or document breaking changes.
+
+## Observability
+
+- Log errors with context (route, correlation id if present); never log PII or secrets.
+- Use structured logging where available; include request/operation identifiers for tracing.
+
+## Testing & quality
+
+- New or changed lib/ and API behavior must have tests; run `npm run lint` and fix before committing.
+- Prefer server components by default; use "use client" only when needed (state, hooks, browser APIs).

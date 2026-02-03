@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Zap, Users } from "lucide-react";
+import { PageTitle } from "@/components/ui/page-title";
+import { PageSection } from "@/components/ui/page-section";
+import { Check, Sparkles, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -114,19 +116,14 @@ export default function OverviewPage() {
   };
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-8 py-16">
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <h1 className="text-3xl font-semibold text-foreground mb-2">
-          Choose Your Plan
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Select the plan that best fits your needs
-        </p>
-      </div>
+    <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-5 space-y-6">
+      <PageTitle
+        title="Choose Your Plan"
+        description="Select the plan that best fits your needs"
+      />
 
       {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {PLANS.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPopular = plan.popular;
@@ -134,7 +131,7 @@ export default function OverviewPage() {
           return (
             <Card
               key={plan.id}
-              className={`relative p-6 flex flex-col ${
+              className={`relative p-4 flex flex-col ${
                 isPopular ? "border-primary border-2" : ""
               }`}
             >
@@ -184,13 +181,10 @@ export default function OverviewPage() {
       </div>
 
       {/* Premium Features Section */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
-          Premium Features
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+      <PageSection title="Premium Features">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
               <Zap className="h-5 w-5 text-foreground" />
             </div>
             <div>
@@ -200,8 +194,8 @@ export default function OverviewPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-5 w-5 text-foreground" />
             </div>
             <div>
@@ -212,7 +206,7 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
-      </Card>
+      </PageSection>
     </main>
   );
 }

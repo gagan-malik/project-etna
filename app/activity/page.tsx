@@ -352,15 +352,14 @@ export default function DebugSessionsPage() {
   });
 
   return (
-    <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-16">
-      {/* Page Header */}
-      <div className="mb-8 flex items-center justify-between">
+    <main className="flex-1 max-w-4xl mx-auto w-full px-5 py-5 space-y-6">
+      <div className="sticky top-0 z-10 border-b bg-background px-5 py-4 -mx-5 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground mb-1 flex items-center gap-2">
-            <Bug className="h-6 w-6" />
+          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Bug className="h-5 w-5" />
             Debug Sessions
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             View and manage your silicon debugging sessions
           </p>
         </div>
@@ -417,7 +416,7 @@ export default function DebugSessionsPage() {
       </div>
 
       {/* Search */}
-      <div className="mb-6">
+      <div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -430,7 +429,7 @@ export default function DebugSessionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 mb-8 flex-wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <Tabs value={statusFilter} onValueChange={setStatusFilter}>
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
