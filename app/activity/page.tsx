@@ -352,8 +352,8 @@ export default function DebugSessionsPage() {
   });
 
   return (
-    <main className="flex-1 max-w-4xl mx-auto w-full px-5 py-5 space-y-6">
-      <div className="sticky top-0 z-10 border-b bg-background px-5 py-4 -mx-5 flex items-center justify-between gap-4">
+    <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-4 space-y-4">
+      <div className="sticky top-0 z-10 border-b bg-background px-4 py-3 -mx-4 flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <Bug className="h-5 w-5" />
@@ -429,7 +429,7 @@ export default function DebugSessionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <Tabs value={statusFilter} onValueChange={setStatusFilter}>
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
@@ -493,10 +493,10 @@ export default function DebugSessionsPage() {
               return (
                 <Card
                   key={session.id}
-                  className="p-4 hover:bg-accent transition-colors cursor-pointer"
+                  className="p-3 hover:bg-accent transition-colors cursor-pointer"
                   onClick={() => handleSessionClick(session)}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                       {session.type === "debug" ? (
                         <Bug className="h-5 w-5 text-foreground" />
@@ -528,7 +528,7 @@ export default function DebugSessionsPage() {
                           {session.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatTimestamp(session.updatedAt)}

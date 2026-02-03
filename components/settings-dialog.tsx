@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,10 @@ import {
 import {
   SettingsLayout,
   SettingsPageTitle,
-  DEFAULT_SECTION,
   getSectionById,
+  OverviewSettingsPanel,
   GeneralSettingsPanel,
+  AccountSettingsPanel,
   RulesPanel,
   SkillsPanel,
   WorkersPanel,
@@ -19,11 +20,15 @@ import {
   ModelsSettingsPanel,
   AgentsSettingsPanel,
   CloudAgentsPanel,
+  UsagePanel,
+  BillingInvoicesPanel,
   ToolsMcpPanel,
   IndexingDocsPanel,
   BetaPanel,
+  ContactUsPanel,
   PlaceholderPanel,
 } from "@/components/settings";
+import { useSettingsModal } from "@/components/settings-modal-context";
 import type { SessionStatus } from "@/components/settings/settings-layout";
 import type { Session } from "next-auth";
 
@@ -36,12 +41,16 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange, session, status }: SettingsDialogProps) {
-  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
+  const { activeSection, setActiveSection } = useSettingsModal();
 
   const renderContent = useCallback(() => {
     switch (activeSection) {
+      case "overview":
+        return <OverviewSettingsPanel />;
       case "general":
         return <GeneralSettingsPanel />;
+      case "account":
+        return <AccountSettingsPanel />;
       case "rules":
         return <RulesPanel />;
       case "skills":
@@ -58,12 +67,18 @@ export function SettingsDialog({ open, onOpenChange, session, status }: Settings
         return <AgentsSettingsPanel />;
       case "cloud-agents":
         return <CloudAgentsPanel />;
+      case "usage":
+        return <UsagePanel />;
+      case "billing-invoices":
+        return <BillingInvoicesPanel />;
       case "tools-mcp":
         return <ToolsMcpPanel />;
       case "indexing-docs":
         return <IndexingDocsPanel />;
       case "beta":
         return <BetaPanel />;
+      case "contact":
+        return <ContactUsPanel />;
       default: {
         const section = getSectionById(activeSection);
         return (

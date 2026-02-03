@@ -167,7 +167,7 @@ export default function WaveformsPage() {
       <SidebarInset>
         <div className="flex flex-col h-screen">
           {/* Header */}
-          <header className="flex items-center justify-between px-5 py-4 border-b shrink-0">
+          <header className="flex items-center justify-between px-4 py-3 border-b shrink-0">
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
               <h1 className="text-xl font-semibold text-foreground">Waveforms</h1>
@@ -209,7 +209,7 @@ export default function WaveformsPage() {
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
                     <Card key={i} className="animate-pulse">
-                      <CardContent className="p-4">
+                      <CardContent className="p-3">
                         <div className="h-4 bg-muted rounded w-3/4 mb-2" />
                         <div className="h-3 bg-muted rounded w-1/2" />
                       </CardContent>
@@ -218,7 +218,7 @@ export default function WaveformsPage() {
                 </div>
               ) : waveforms.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 text-center">
                     <FileUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <p className="text-sm text-muted-foreground mb-4">
                       No waveform files yet
@@ -242,7 +242,7 @@ export default function WaveformsPage() {
                     }`}
                     onClick={() => setSelectedWaveform(waveform)}
                   >
-                    <CardContent className="p-4">
+                    <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm truncate">
@@ -282,7 +282,7 @@ export default function WaveformsPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatDate(waveform.createdAt)}
@@ -301,7 +301,7 @@ export default function WaveformsPage() {
             </div>
 
             {/* Viewer Panel */}
-            <div className="flex-1 overflow-hidden p-4">
+            <div className="flex-1 overflow-hidden p-3">
               {selectedWaveform ? (
                 <SurferViewer
                   waveformUrl={selectedWaveform.url}
@@ -315,10 +315,14 @@ export default function WaveformsPage() {
                   <CardContent className="text-center">
                     <Eye className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-30" />
                     <CardTitle className="text-lg mb-2">
-                      Select a Waveform
+                      {waveforms.length === 0
+                        ? "No waveform files yet"
+                        : "Select a Waveform"}
                     </CardTitle>
                     <CardDescription>
-                      Click on a waveform file from the list to view it here
+                      {waveforms.length === 0
+                        ? "Upload a waveform file using the button above to view it here"
+                        : "Click on a waveform file from the list to view it here"}
                     </CardDescription>
                   </CardContent>
                 </Card>
@@ -328,7 +332,7 @@ export default function WaveformsPage() {
 
           {/* Storage Info Footer */}
           <footer className="h-10 px-6 border-t flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
                 <HardDrive className="h-3 w-3" />
                 {waveforms.length} files •{" "}
@@ -337,7 +341,7 @@ export default function WaveformsPage() {
             </div>
             <span>
               Free tier: 5 files, 25 MB max •{" "}
-              <a href="/billing" className="text-primary hover:underline">
+              <a href="/settings" className="text-primary hover:underline">
                 Upgrade for more
               </a>
             </span>

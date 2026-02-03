@@ -116,14 +116,14 @@ export default function OverviewPage() {
   };
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-5 space-y-6">
+    <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-4 space-y-4">
       <PageTitle
         title="Choose Your Plan"
         description="Select the plan that best fits your needs"
       />
 
       {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {PLANS.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPopular = plan.popular;
@@ -131,7 +131,7 @@ export default function OverviewPage() {
           return (
             <Card
               key={plan.id}
-              className={`relative p-4 flex flex-col ${
+              className={`relative p-3 flex flex-col ${
                 isPopular ? "border-primary border-2" : ""
               }`}
             >
@@ -158,7 +158,7 @@ export default function OverviewPage() {
                 </p>
               </div>
 
-              <ul className="flex-1 space-y-3 mb-6">
+              <ul className="flex-1 space-y-2 mb-4">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -182,9 +182,9 @@ export default function OverviewPage() {
 
       {/* Premium Features Section */}
       <PageSection title="Premium Features">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-[var(--radius)] bg-background flex items-center justify-center flex-shrink-0">
               <Zap className="h-5 w-5 text-foreground" />
             </div>
             <div>
@@ -195,7 +195,7 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg bg-background flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-[var(--radius)] bg-background flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-5 w-5 text-foreground" />
             </div>
             <div>

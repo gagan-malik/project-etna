@@ -26,14 +26,14 @@ export function PageTitle({
   return (
     <div
       className={cn(
-        "border-b bg-background px-5 py-4",
+        "border-b bg-background px-4 py-3",
         sticky && "sticky top-0 z-10",
         className
       )}
     >
-      <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+      <h1 className="text-lg font-semibold text-foreground">{title}</h1>
       {description != null && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
       )}
     </div>
   );

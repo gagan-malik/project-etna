@@ -28,6 +28,9 @@ const userPreferencesSchema = z
     autoImportPython: z.boolean().optional(),
     // Models (SET-006) — which model IDs are enabled; API keys never stored here
     enabledModelIds: z.array(z.string()).optional(),
+    autoMode: z.boolean().optional(),
+    maxMode: z.boolean().optional(),
+    useMultipleModels: z.boolean().optional(),
     // Agents (SET-007)
     agentDefaultMode: z.string().optional(),
     agentDefaultLocation: z.string().optional(),

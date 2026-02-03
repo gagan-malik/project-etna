@@ -6,6 +6,7 @@ import { useEffect } from "react";
  * Fix nextjs-portal 0x0 size in Cursor/Next dev overlay.
  * Next.js injects the element with inline position:absolute and no dimensions;
  * we force dimensions via inline style (wins over injected styles) so layout/accessibility don't flag it.
+ * z-index: -1 so "Select element" (elementFromPoint) hits the page, not this node.
  */
 function applyPortalFix(el: HTMLElement) {
   el.style.setProperty("display", "block", "important");
@@ -19,6 +20,7 @@ function applyPortalFix(el: HTMLElement) {
   el.style.setProperty("overflow", "hidden", "important");
   el.style.setProperty("clip-path", "inset(100%)", "important");
   el.style.setProperty("pointer-events", "none", "important");
+  el.style.setProperty("z-index", "-1", "important");
 }
 
 export function NextjsPortalFix() {
@@ -34,8 +36,8 @@ export function NextjsPortalFix() {
     const t1 = setTimeout(fix, 50);
     const t2 = setTimeout(fix, 200);
     const t3 = setTimeout(fix, 1000);
-    const intervalId = setInterval(fix, 300);
-    const stopInterval = setTimeout(() => clearInterval(intervalId), 3000);
+    // Reapply every 500ms so we win over any re-injected styles (e.g. Cursor/Next dev overlay)
+    const intervalId = setInterval(fix, 500);
 
     const observer = new MutationObserver(() => {
       requestAnimationFrame(fix);
@@ -48,7 +50,6 @@ export function NextjsPortalFix() {
       clearTimeout(t2);
       clearTimeout(t3);
       clearInterval(intervalId);
-      clearTimeout(stopInterval);
       observer.disconnect();
     };
   }, []);

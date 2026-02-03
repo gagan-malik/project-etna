@@ -16,7 +16,7 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 | Persistence | `userPreferences` (JSON on `users`) + GET/PATCH `/api/settings`; server-side for theme, notifications, privacyMode, etc.; client-only for "Reset Don't Ask Again" |
 | User block | Avatar + email + plan at top of settings left column |
 | Search | "Search settings ⌘F" in v1; client-side filter |
-| Manage Account / Docs | Manage Account → `/account`; Docs → external or `/docs` |
+| Manage Account / Docs | Manage Account → Settings → Account; Docs → external or `/docs` |
 | Privacy Mode | Only for paid plans; free = hide or "Upgrade to enable" |
 | Full IA | All sections; placeholders where not yet implemented |
 | P1 sections | General, **Rules/Skills/Workers**, **Hooks** (same priority as layout + General) |
@@ -68,7 +68,7 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 
 ## Wireframe 1: General
 
-- **Manage Account:** description + [Open ↗] → `/account`
+- **Manage Account:** description + [Open ↗] → Settings → Account
 - **Preferences:** Sync layouts (toggle), Editor Settings (Open), Keyboard Shortcuts (Open), Import VS Code (Import), Reset "Don't Ask Again" (Show)
 - **Notifications:** System Notifications, Menu Bar Icon, Completion Sound (toggles)
 - **Privacy:** Privacy Mode (lock icon) — dropdown, **paid only**

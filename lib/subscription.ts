@@ -5,7 +5,7 @@
 
 import { prisma } from "@/lib/prisma";
 
-export type Plan = "free" | "pro" | "enterprise";
+export type Plan = "free" | "pro" | "ultra" | "enterprise";
 export type SubscriptionStatus = "active" | "canceled" | "expired" | null;
 
 /**
@@ -28,7 +28,8 @@ export async function hasPremiumAccess(userId: string): Promise<boolean> {
     }
 
     // Check if user has a premium plan
-    const isPremiumPlan = user.plan === "pro" || user.plan === "enterprise";
+    const isPremiumPlan =
+      user.plan === "pro" || user.plan === "ultra" || user.plan === "enterprise";
 
     if (!isPremiumPlan) {
       return false;

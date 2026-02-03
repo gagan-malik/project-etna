@@ -104,7 +104,7 @@ export function AgentsSettingsPanel() {
   }
 
   return (
-    <div className="w-full px-[96px] py-5 space-y-6">
+    <div className="w-full px-8 py-5 space-y-6">
       <SettingsSection title="General Agent Settings">
         <div className="space-y-1">
           {row("Default Mode", "Mode for new agents", "agentDefaultMode", "select", prefs.agentDefaultMode ?? "agent", [

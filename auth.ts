@@ -6,11 +6,12 @@ import Credentials from "next-auth/providers/credentials"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import { verifyPassword } from "@/lib/auth-helpers"
+import { isDevTierProfileEmail } from "@/lib/dev-profiles"
 import { z } from "zod"
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(1),
 })
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -42,8 +43,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null
           }
 
+          // Dev-only: switch to tier profile users without a real password
+          const devSecret = process.env.NEXT_PUBLIC_DEV_PROFILE_SECRET
+          if (
+            process.env.NODE_ENV === "development" &&
+            devSecret &&
+            password === devSecret &&
+            isDevTierProfileEmail(user.email)
+          ) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+            }
+          }
+
           // For OAuth users, password will be null
           if (!user.password) {
+            return null
+          }
+
+          if (password.length < 8) {
             return null
           }
 
@@ -95,6 +116,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           select: { plan: true },
         })
         token.plan = dbUser?.plan ?? "free"
+        // Ensure user has at least one space (e.g. tier users from seed before space was added)
+        const spaceCount = await prisma.spaces.count({
+          where: { ownerId: user.id },
+        })
+        if (spaceCount === 0) {
+          await prisma.spaces.create({
+            data: {
+              name: `${(user as { name?: string }).name || user.email || "User"}'s Workspace`,
+              slug: `workspace-${user.id}`,
+              ownerId: user.id,
+            },
+          })
+        }
       }
       if (account) {
         token.accessToken = account.access_token

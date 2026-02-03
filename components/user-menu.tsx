@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -17,6 +17,7 @@ import { Sun, Moon, Monitor, Cookie, User, FileText, HelpCircle, LogOut, Copy } 
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
+import { useSettingsModal } from "@/components/settings-modal-context";
 
 interface UserMenuProps {
   name?: string | null;
@@ -26,6 +27,7 @@ interface UserMenuProps {
 
 export function UserMenu({ name, email, image }: UserMenuProps) {
   const router = useRouter();
+  const { openSettings } = useSettingsModal();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { updatePreferences } = useUserSettings();
@@ -35,6 +37,14 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
     void updatePreferences({ theme: value });
   };
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  // Close when window loses focus so Cursor's "Select element" tool isn't blocked.
+  useEffect(() => {
+    const handleBlur = () => setOpen(false);
+    window.addEventListener("blur", handleBlur);
+    return () => window.removeEventListener("blur", handleBlur);
+  }, []);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
@@ -62,7 +72,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
@@ -126,7 +136,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/account")}>
+        <DropdownMenuItem onClick={() => openSettings("account")}>
           <User className="mr-2 h-4 w-4" />
           <span>Your profile</span>
         </DropdownMenuItem>

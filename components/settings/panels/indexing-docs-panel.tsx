@@ -8,11 +8,13 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
+import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 
 export function IndexingDocsPanel() {
   const { toast } = useToast();
-  const { preferences, isLoading, updatePreferences } = useUserSettings();
+  const { preferences, plan, isLoading, updatePreferences } = useUserSettings();
+  const paid = isPaidPlan(plan);
   const [saving, setSaving] = useState(false);
   const [codebaseProgress] = useState(100);
   const [fileCount] = useState(0);
@@ -39,8 +41,17 @@ export function IndexingDocsPanel() {
   }
 
   return (
-    <div className="w-full px-[96px] py-5 space-y-6">
+    <div className="w-full px-8 py-5 space-y-6">
       <SettingsSection title="Codebase Indexing">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <Label className="text-sm font-medium">Codebase Indexing</Label>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Codebase Indexing" />
+        </div>
         <p className="text-xs text-muted-foreground mb-3">
           Embed codebase for improved contextual understanding. Embeddings and metadata are stored in the cloud; all code is stored locally.
         </p>
@@ -54,9 +65,6 @@ export function IndexingDocsPanel() {
         {fileCount > 0 && (
           <p className="text-xs text-muted-foreground mb-3">{fileCount} files</p>
         )}
-        <div className="flex gap-2">
-          <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
-        </div>
       </SettingsSection>
 
       <SettingsSection title="Index New Folders">
@@ -76,15 +84,30 @@ export function IndexingDocsPanel() {
       </SettingsSection>
 
       <SettingsSection title="Ignore Files in .cursorignore">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <Label className="text-sm font-medium">Ignore Files in .cursorignore</Label>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Ignore files" />
+        </div>
         <p className="text-xs text-muted-foreground mb-2">
           Files to exclude from indexing in addition to .gitignore
         </p>
-        <div className="flex gap-2">
-          <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
-        </div>
       </SettingsSection>
 
       <SettingsSection title="Docs">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <Label className="text-sm font-medium">Docs</Label>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Docs" />
+        </div>
         <p className="text-xs text-muted-foreground mb-2">
           Crawl and index custom resources and developer docs.
         </p>
@@ -92,7 +115,6 @@ export function IndexingDocsPanel() {
         <p className="text-xs text-muted-foreground mb-3">
           Add documentation to use as context. You can also use @Add in Chat or while editing to add a doc.
         </p>
-        <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
       </SettingsSection>
     </div>
   );

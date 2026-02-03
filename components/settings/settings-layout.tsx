@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import type { Session } from "next-auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   SETTINGS_SECTIONS,
+  SETTINGS_GROUP_ORDER,
   getSectionById,
   type SettingsSectionDef,
 } from "./settings-config";
@@ -29,15 +29,6 @@ export interface SettingsLayoutProps {
   /** When provided (e.g. from modal parent), use this instead of useSession() so portaled content shows correct auth state */
   sessionOverride?: Session | null;
   statusOverride?: SessionStatus;
-}
-
-function getInitials(name?: string | null) {
-  if (!name) return "U";
-  const parts = name.split(" ");
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name[0].toUpperCase();
 }
 
 export function SettingsLayout({
@@ -97,10 +88,36 @@ export function SettingsLayout({
     planLabel === "free"
       ? "Free Plan"
       : planLabel === "pro"
-        ? "Pro Plan"
-        : planLabel === "enterprise"
-          ? "Enterprise"
-          : `${planLabel.charAt(0).toUpperCase()}${planLabel.slice(1)} Plan`;
+        ? "Pro+ Plan"
+        : planLabel === "ultra"
+          ? "Ultra Plan"
+          : planLabel === "enterprise"
+            ? "Enterprise"
+            : `${planLabel.charAt(0).toUpperCase()}${planLabel.slice(1)} Plan`;
+
+  // Group sections for nav: preserve order, insert divider + label when group changes
+  const navGroups = useMemo(() => {
+    const orderMap = new Map(SETTINGS_GROUP_ORDER.map((g, i) => [g, i]));
+    const getOrder = (g: string | undefined) => (g ? orderMap.get(g) ?? 999 : 999);
+    const withGroup = SETTINGS_SECTIONS.map((s) => ({
+      ...s,
+      groupOrder: getOrder(s.group),
+    }));
+    const grouped: { groupLabel?: string; sections: typeof SETTINGS_SECTIONS }[] = [];
+    let currentGroup: string | undefined;
+    for (const section of withGroup) {
+      const visible = filteredSections.some((s) => s.id === section.id);
+      if (!visible) continue;
+      const g = section.group;
+      if (g !== currentGroup) {
+        currentGroup = g;
+        grouped.push({ groupLabel: g, sections: [section] });
+      } else {
+        grouped[grouped.length - 1].sections.push(section);
+      }
+    }
+    return grouped;
+  }, [filteredSections]);
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1">
@@ -112,57 +129,44 @@ export function SettingsLayout({
         )}
       >
         {showUserBlock && (
-          <div className="flex items-center gap-2 px-3 pt-4 pb-4">
-            <Avatar className="h-12 w-12 rounded-full">
-              {isAuthenticated && session?.user ? (
-                <>
-                  <AvatarImage src={session.user.image ?? undefined} />
-                  <AvatarFallback className="rounded-full text-base">
-                    {getInitials(session.user.name)}
-                  </AvatarFallback>
-                </>
+          <div className="flex flex-col gap-2 px-2.5 pt-3 pb-3">
+            <div className="min-w-0 space-y-0.5">
+              {status === "loading" ? (
+                <p className="truncate text-sm text-muted-foreground">Loading…</p>
               ) : (
-                <AvatarFallback className="rounded-full text-base">
-                  {status === "loading" ? "…" : "G"}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="min-w-0 flex-1 space-y-1">
-              {isAuthenticated && session?.user ? (
                 <>
                   <p className="truncate text-sm font-medium text-foreground">
-                    {session.user.name ?? session.user.email ?? "User"}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {session.user.email ?? "No email"}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
                     {planDisplay}
                   </p>
+                  <p className="truncate text-xs text-muted-foreground" title={session?.user?.email ?? undefined}>
+                    {isAuthenticated && session?.user?.email
+                      ? session.user.email
+                      : "—"}
+                  </p>
+                </>
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {isAuthenticated ? (
+                <>
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="mt-1 h-7 w-full text-xs"
+                    className="h-7 w-full text-xs"
                     onClick={() => signOut({ callbackUrl: "/login" })}
                   >
                     Sign out
                   </Button>
-                </>
-              ) : status === "loading" ? (
-                <>
-                  <p className="truncate text-sm font-medium text-muted-foreground">
-                    Loading…
-                  </p>
+                  {(planLabel === "free" || !planLabel) && (
+                    <Button variant="default" size="sm" className="h-7 w-full text-xs" asChild>
+                      <Link href="/overview" aria-label="Upgrade plan">Upgrade</Link>
+                    </Button>
+                  )}
                 </>
               ) : (
-                <>
-                  <p className="truncate text-sm font-medium text-foreground">
-                    Guest user
-                  </p>
-                  <Button variant="secondary" size="sm" className="mt-1 h-7 w-full text-xs" asChild>
-                    <Link href="/login">Sign in</Link>
-                  </Button>
-                </>
+                <Button variant="secondary" size="sm" className="h-7 w-full text-xs" asChild>
+                  <Link href="/login">Sign in</Link>
+                </Button>
               )}
             </div>
           </div>
@@ -170,7 +174,7 @@ export function SettingsLayout({
 
         {/* Search row: below user block */}
         {showSearch && (
-          <div className="px-2 py-4">
+          <div className="px-2 py-3">
             <Input
               data-settings-search="true"
               placeholder="Search settings ⌘F"
@@ -182,40 +186,51 @@ export function SettingsLayout({
           </div>
         )}
 
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
-          {SETTINGS_SECTIONS.map((section) => {
-            const isFilteredOut =
-              filteredSections.find((s) => s.id === section.id) == null;
-            if (isFilteredOut) return null;
-
-            const Icon = section.icon;
-            const isActive = activeSection === section.id && !section.external;
-
-            return (
-              <div key={section.id}>
-                <button
-                  type="button"
-                  onClick={() => handleNavClick(section)}
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    section.external && "text-muted-foreground"
+        <nav className="flex-1 space-y-0.5 overflow-y-auto scrollbar-hide px-2 pb-3" aria-label="Settings">
+          {navGroups.map(({ groupLabel, sections }, groupIndex) => (
+            <div key={groupLabel ?? "ungrouped"} className={groupIndex === 0 ? "" : "pt-1"}>
+              {groupLabel && (
+                <>
+                  {groupIndex > 0 && (
+                    <div className="border-t border-border/60 pt-2 mt-1" role="separator" />
                   )}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{section.label}</span>
-                  {section.external && (
-                    <span className="ml-auto shrink-0" aria-hidden>
-                      ↗
-                    </span>
-                  )}
-                </button>
+                  <p className="px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    {groupLabel}
+                  </p>
+                </>
+              )}
+              <div className="space-y-0.5">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  const isActive = activeSection === section.id && !section.external;
+
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => handleNavClick(section)}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        section.external && "text-muted-foreground"
+                      )}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{section.label}</span>
+                      {section.external && (
+                        <span className="ml-auto shrink-0" aria-hidden>
+                          ↗
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </nav>
       </aside>
 
@@ -230,8 +245,8 @@ export function SettingsLayout({
 export function SettingsPageTitle({ sectionId }: { sectionId: string }) {
   const section = getSectionById(sectionId);
   return (
-    <div className="sticky top-0 z-10 bg-background px-[96px] py-4">
-      <h1 className="text-xl font-semibold text-foreground">
+    <div className="sticky top-0 z-10 bg-background px-8 py-3">
+      <h1 className="text-lg font-semibold text-foreground">
         {section?.label ?? "Settings"}
       </h1>
     </div>

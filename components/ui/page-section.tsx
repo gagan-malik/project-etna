@@ -23,15 +23,15 @@ export function PageSection({
   list = false,
 }: PageSectionProps) {
   return (
-    <section className={cn("space-y-1.5", className)}>
+    <section className={cn("space-y-1", className)}>
       {title != null && (
-        <h2 className="text-sm font-medium text-foreground mb-1.5">{title}</h2>
+        <h2 className="text-xs font-medium text-foreground mb-1">{title}</h2>
       )}
       <div
         className={cn(
-          "rounded-md bg-muted p-3",
+          "rounded-[var(--radius)] bg-muted p-2.5",
           list &&
-            "divide-y divide-border/50 [&>div]:px-3 [&>div]:py-2 [&>div:first-child]:pt-3 [&>div:last-child]:pb-3"
+            "divide-y divide-border/50 [&>div]:px-2.5 [&>div]:py-1.5 [&>div:first-child]:pt-2.5 [&>div:last-child]:pb-2.5"
         )}
       >
         {children}

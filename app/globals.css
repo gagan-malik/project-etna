@@ -5,8 +5,9 @@
 @tailwind utilities;
 
 @layer base {
+  /* Mira: compact, dense interfaces */
   :root {
-    --radius: 0.875rem;
+    --radius: 0.5rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -94,7 +95,10 @@
 /* Next.js / Cursor dev portal: avoid 0x0 size errors (accessibility, layout).
    Next.js injects with inline position:absolute and no dimensions; we override so
    the element is non-zero and out of the way. Custom elements need display:block
-   for width/height to apply. */
+   for width/height to apply.
+   z-index: -1 sends the portal behind the page so the browser "Select element"
+   tool (elementFromPoint) hits real content; pointer-events: none does not
+   affect elementFromPoint. */
 nextjs-portal,
 nextjs-portal[data-cursor-element-id],
 nextjs-portal[style] {
@@ -109,7 +113,7 @@ nextjs-portal[style] {
   overflow: hidden !important;
   clip-path: inset(100%) !important;
   pointer-events: none !important;
-  z-index: 2147483647 !important;
+  z-index: -1 !important;
   font-size: 16px !important;
   box-sizing: border-box !important;
 }

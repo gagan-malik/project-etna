@@ -104,3 +104,4 @@ When rate-limited, you'll receive a `429 Too Many Requests` response.
 - [Documents](/api/documents) - Upload and search documents
 - [Waveforms](/api/waveforms) - Upload and manage waveform files
 - [Settings](/api/settings) - Get and update user preferences (theme, notifications, privacy mode, etc.)
+- [Cloud Agents](/api/cloud-agents) - Programmatically launch and manage cloud agents on your repositories

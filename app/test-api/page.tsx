@@ -84,13 +84,13 @@ export default function TestAPIPage() {
   const clearResults = () => setResults([]);
 
   return (
-    <div className="container mx-auto px-5 py-5 max-w-6xl space-y-6">
+    <div className="container mx-auto px-4 py-4 max-w-6xl space-y-4">
       <PageTitle
         title="API Routes Test Page"
         description="Test all API routes directly from the browser. Make sure you're logged in!"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Spaces Tests */}
         <Card>
           <CardHeader>
@@ -208,7 +208,7 @@ export default function TestAPIPage() {
             <ScrollArea className="h-[500px]">
               <div className="space-y-4">
                 {results.map((result, index) => (
-                  <div key={index} className="border rounded-lg p-4">
+                  <div key={index} className="border rounded-[var(--radius)] p-3">
                     <div className="flex items-center justify-between mb-2">
                       <code className="text-sm font-semibold">{result.endpoint}</code>
                       <span

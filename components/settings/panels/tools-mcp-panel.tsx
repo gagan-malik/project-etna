@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
+import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 
 const DEFAULT_MCP_SERVERS = [{ id: "shadcn", name: "shadcn", enabled: false }];
@@ -22,7 +23,8 @@ type McpServer = { id: string; name: string; enabled: boolean };
 
 export function ToolsMcpPanel() {
   const { toast } = useToast();
-  const { preferences, isLoading, updatePreferences } = useUserSettings();
+  const { preferences, plan, isLoading, updatePreferences } = useUserSettings();
+  const paid = isPaidPlan(plan);
   const [saving, setSaving] = useState(false);
 
   const browserTab = (preferences.browserAutomationTab as string) ?? "none";
@@ -55,7 +57,7 @@ export function ToolsMcpPanel() {
   }
 
   return (
-    <div className="w-full px-[96px] py-5 space-y-6">
+    <div className="w-full px-8 py-5 space-y-6">
       <SettingsSection title="Browser">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
@@ -94,6 +96,15 @@ export function ToolsMcpPanel() {
       </SettingsSection>
 
       <SettingsSection title="Installed MCP Servers">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <Label className="text-sm font-medium">Installed MCP Servers</Label>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Installed MCP Servers" />
+        </div>
         <div className="space-y-3">
           {mcpServers.map((m) => (
             <div key={m.id} className="flex items-center justify-between gap-4">
@@ -101,12 +112,11 @@ export function ToolsMcpPanel() {
               <Switch
                 checked={m.enabled}
                 onCheckedChange={(v) => toggleMcp(m.id, v)}
-                disabled={saving}
+                disabled={saving || !paid}
               />
             </div>
           ))}
         </div>
-        <Badge variant="upgrade" className="mt-3 gap-1"><Gem className="h-3 w-3" />Pro</Badge>
       </SettingsSection>
     </div>
   );

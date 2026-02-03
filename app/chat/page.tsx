@@ -23,7 +23,7 @@ import { ModelSelector } from "@/components/chat/model-selector";
 import { SourceSelector, type SourceType } from "@/components/chat/source-selector";
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
-import { getBestModelForQuery, getHighestQualityModel } from "@/lib/ai/model-ranking";
+import { getBestModelForQuery, getHighestQualityModel, getModelMetadata } from "@/lib/ai/model-ranking";
 import { DEFAULT_CHAT_MODELS } from "@/lib/ai";
 import type { ModelInfo } from "@/lib/ai/types";
 import { hasPremiumAccess as checkPremiumAccess } from "@/lib/subscription";
@@ -65,7 +65,7 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { data: session } = useSession();
-  const { preferences } = useUserSettings();
+  const { preferences, updatePreferences } = useUserSettings();
   const {
     currentConversation,
     messages: dbMessages,
@@ -77,6 +77,9 @@ function ChatPageContent() {
   const { streaming, streamMessage } = useAIStream();
 
   const [messages, setMessagesDisplay] = useState<MessageDisplay[]>([]);
+  const [allModels, setAllModels] = useState<
+    Array<{ id: string; name: string; provider: string; category: string; available?: boolean }>
+  >([]);
   const [availableModels, setAvailableModels] = useState<
     Array<{ id: string; name: string; provider: string; category: string }>
   >([]);
@@ -104,27 +107,51 @@ function ChatPageContent() {
     return ["web", "my_files"];
   });
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
-  const [autoMode, setAutoMode] = useState(() => {
+  const [autoModeState, setAutoModeState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("auto-mode");
       return saved === "true";
     }
     return false;
   });
-  const [maxMode, setMaxMode] = useState(() => {
+  const [maxModeState, setMaxModeState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("max-mode");
       return saved === "true";
     }
     return false;
   });
-  const [useMultipleModels, setUseMultipleModels] = useState(() => {
+  const [useMultipleModelsState, setUseMultipleModelsState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("use-multiple-models");
       return saved === "true";
     }
     return false;
   });
+  const autoMode = (session?.user && (preferences.autoMode as boolean | undefined) != null)
+    ? (preferences.autoMode as boolean)
+    : autoModeState;
+  const maxMode = (session?.user && (preferences.maxMode as boolean | undefined) != null)
+    ? (preferences.maxMode as boolean)
+    : maxModeState;
+  const useMultipleModels = (session?.user && (preferences.useMultipleModels as boolean | undefined) != null)
+    ? (preferences.useMultipleModels as boolean)
+    : useMultipleModelsState;
+  const setAutoMode = useCallback((v: boolean) => {
+    setAutoModeState(v);
+    if (session?.user) void updatePreferences({ autoMode: v });
+    if (typeof window !== "undefined") localStorage.setItem("auto-mode", String(v));
+  }, [session?.user, updatePreferences]);
+  const setMaxMode = useCallback((v: boolean) => {
+    setMaxModeState(v);
+    if (session?.user) void updatePreferences({ maxMode: v });
+    if (typeof window !== "undefined") localStorage.setItem("max-mode", String(v));
+  }, [session?.user, updatePreferences]);
+  const setUseMultipleModels = useCallback((v: boolean) => {
+    setUseMultipleModelsState(v);
+    if (session?.user) void updatePreferences({ useMultipleModels: v });
+    if (typeof window !== "undefined") localStorage.setItem("use-multiple-models", String(v));
+  }, [session?.user, updatePreferences]);
   const [charCount, setCharCount] = useState(0);
   const [debugMode, setDebugMode] = useState(() => {
     if (typeof window !== "undefined") {
@@ -185,6 +212,7 @@ function ChatPageContent() {
     if (!session?.user?.id) {
       // Guest: use static list; filter by enabledModelIds from localStorage when set
       const base = DEFAULT_CHAT_MODELS;
+      setAllModels(base);
       const models =
         enabledModelIds.length > 0
           ? base.filter((m) => enabledModelIds.includes(m.id))
@@ -202,16 +230,18 @@ function ChatPageContent() {
         });
         if (response.ok) {
           const data = await response.json();
-          let models: ModelInfo[] = data.models.map((m: { id: string; name: string; provider: string; category: string; available?: boolean }) => ({
+          const fullList: ModelInfo[] = data.models.map((m: { id: string; name: string; provider: string; category: string; available?: boolean }) => ({
             id: m.id,
             name: m.name,
             provider: m.provider,
             category: m.category,
             available: m.available ?? false,
           }));
-          if (enabledModelIds.length > 0) {
-            models = models.filter((m) => enabledModelIds.includes(m.id));
-          }
+          setAllModels(fullList);
+          const models =
+            enabledModelIds.length > 0
+              ? fullList.filter((m) => enabledModelIds.includes(m.id))
+              : fullList;
           setAvailableModels(models);
           if (models.length > 0 && !selectedModel) {
             const availableModel = models.find(m => m.available) || models[0];
@@ -224,6 +254,22 @@ function ChatPageContent() {
     };
     loadModels();
   }, [session?.user?.id, enabledModelIdsKey]);
+
+  // Restrict reasoning models to paid users: recompute available list when premium status or enabled list changes
+  useEffect(() => {
+    if (!session?.user || allModels.length === 0) return;
+    let list =
+      enabledModelIds.length > 0
+        ? allModels.filter((m) => enabledModelIds.includes(m.id))
+        : [...allModels];
+    if (!hasPremiumAccess) {
+      list = list.filter((m) => !getModelMetadata(m.id)?.capabilities.reasoning);
+    }
+    setAvailableModels(list);
+    if (selectedModel && !list.some((m) => m.id === selectedModel.id)) {
+      setSelectedModel(list[0] ?? null);
+    }
+  }, [session?.user, allModels, enabledModelIdsKey, hasPremiumAccess, selectedModel]);
 
   // Load saved model preference
   useEffect(() => {
@@ -263,7 +309,20 @@ function ChatPageContent() {
     }
   }, [maxMode, hasPremiumAccess, availableModels, selectedModel]);
 
-  // Persist toggle states
+  // Sync local state from preferences when they load (e.g. after login)
+  useEffect(() => {
+    if (session?.user && (preferences.autoMode as boolean | undefined) != null) {
+      setAutoModeState(preferences.autoMode as boolean);
+    }
+    if (session?.user && (preferences.maxMode as boolean | undefined) != null) {
+      setMaxModeState(preferences.maxMode as boolean);
+    }
+    if (session?.user && (preferences.useMultipleModels as boolean | undefined) != null) {
+      setUseMultipleModelsState(preferences.useMultipleModels as boolean);
+    }
+  }, [session?.user, preferences.autoMode, preferences.maxMode, preferences.useMultipleModels]);
+
+  // Persist toggle states to localStorage (for guests)
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("auto-mode", String(autoMode));
@@ -598,7 +657,7 @@ function ChatPageContent() {
           <div className="flex flex-col items-center gap-8 text-center mb-28 flex-shrink-0">
             {/* Debug Mode Header */}
             {debugMode ? (
-              <div className="flex flex-col gap-4 items-center">
+              <div className="flex flex-col gap-3 items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
                     <Cpu className="h-6 w-6 text-foreground" />
@@ -613,7 +672,7 @@ function ChatPageContent() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-4 items-center">
+              <div className="flex flex-col gap-3 items-center">
                 <h1 className="text-2xl font-semibold text-foreground">
                   Hello! How can I help you today?
                 </h1>
@@ -853,7 +912,7 @@ function ChatPageContent() {
 
             {/* Input Container */}
             <div className="w-full flex-shrink-0 pt-4">
-              <Card className="bg-muted border border-border rounded-2xl p-3 md:p-4">
+              <Card className="bg-muted border border-border rounded-[var(--radius)] p-3">
                 <div className="flex flex-col gap-2">
                   {/* File Preview */}
                   {selectedFiles.length > 0 && (
@@ -998,7 +1057,6 @@ function ChatPageContent() {
                           hasPremiumAccess={hasPremiumAccess}
                           autoMode={autoMode}
                           maxMode={maxMode}
-                          useMultipleModels={useMultipleModels}
                           onAutoModeChange={setAutoMode}
                           onMaxModeChange={(enabled) => {
                             if (enabled && !hasPremiumAccess) {
@@ -1018,25 +1076,6 @@ function ChatPageContent() {
                               return;
                             }
                             setMaxMode(enabled);
-                          }}
-                          onUseMultipleModelsChange={(enabled) => {
-                            if (enabled && !hasPremiumAccess) {
-                              toast({
-                                title: "Premium Feature",
-                                description: "Use Multiple Models requires a premium subscription. Please upgrade to access this feature.",
-                                action: (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => window.location.href = "/overview"}
-                                  >
-                                    Upgrade
-                                  </Button>
-                                ),
-                              });
-                              return;
-                            }
-                            setUseMultipleModels(enabled);
                           }}
                         />
                       )}

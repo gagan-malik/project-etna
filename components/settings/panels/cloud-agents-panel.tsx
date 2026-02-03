@@ -8,15 +8,20 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Cloud, Gem } from "lucide-react";
 import { useState } from "react";
+import { useUserSettings } from "@/components/user-settings-provider";
+import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 
 export function CloudAgentsPanel() {
+  const { plan } = useUserSettings();
+  const paid = isPaidPlan(plan);
   const [personalOpen, setPersonalOpen] = useState(true);
 
   return (
-    <div className="w-full px-[96px] py-5 space-y-6">
+    <div className="w-full px-8 py-5 space-y-6">
       <SettingsSection title="Manage Settings">
         <p className="text-xs text-muted-foreground mb-3">
           Connect GitHub, manage team and user settings, and more.
@@ -27,10 +32,18 @@ export function CloudAgentsPanel() {
       </SettingsSection>
 
       <SettingsSection title="Connect Slack">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium">Connect Slack</span>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Connect Slack" />
+        </div>
         <p className="text-xs text-muted-foreground mb-3">
           Work with Cloud Agents from Slack.
         </p>
-        <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
       </SettingsSection>
 
       <SettingsSection title="Workspace Configuration">

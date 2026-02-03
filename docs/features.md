@@ -7,6 +7,8 @@ description: Complete list of Project Etna features
 
 Everything you can do with Project Etna.
 
+**Plans and tiers:** See [Feature map by tier](/product/TIER_FEATURES) for what’s available on Demo (unauthenticated), Free, Pro, and Ultra.
+
 ---
 
 ## AI-Powered Chat

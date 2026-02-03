@@ -10,15 +10,12 @@ import {
   Settings, 
   Home, 
   Cpu,
-  User,
-  CreditCard,
   HelpCircle,
   Plus,
   Loader2,
   Wrench,
   FileCode,
   Activity,
-  ChevronRight
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,8 +30,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { FlaskConical } from "lucide-react";
+import { DevProfileSwitcher } from "@/components/dev-profile-switcher";
+import { UserMenu } from "@/components/user-menu";
+import { useUserSettings } from "@/components/user-settings-provider";
 import { useSettingsModal } from "@/components/settings-modal-context";
 import { SettingsDialog } from "@/components/settings-dialog";
 
@@ -94,16 +95,6 @@ const navigation: NavSection[] = [
         url: "/settings",
         icon: Settings,
       },
-      {
-        title: "Billing",
-        url: "/billing",
-        icon: CreditCard,
-      },
-      {
-        title: "Account",
-        url: "/account",
-        icon: User,
-      },
     ],
   },
 ];
@@ -119,20 +110,11 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
-  const { open: settingsOpen, setOpen: setSettingsOpen } = useSettingsModal();
+  const { isEarlyAccess } = useUserSettings();
+  const { open: settingsOpen, setOpen: setSettingsOpen, openSettings } = useSettingsModal();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-
-  // Get user initials
-  const getInitials = (name?: string | null) => {
-    if (!name) return "U";
-    const parts = name.split(" ");
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name[0].toUpperCase();
-  };
 
   // Extract conversation ID from URL if on chat page
   useEffect(() => {
@@ -219,7 +201,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={handleNewChat} tooltip="New Debug Session">
+                  <SidebarMenuButton variant="primary" onClick={handleNewChat} tooltip="New Debug Session">
                     <Plus className="h-4 w-4" />
                     <span>New Debug Session</span>
                   </SidebarMenuButton>
@@ -305,7 +287,7 @@ export function AppSidebar() {
                       </SidebarMenuItem>
                     );
                   }
-                  
+
                   return (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton 
@@ -332,31 +314,25 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/account">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={session?.user?.image || undefined} alt={session?.user?.name || "User"} />
-                  <AvatarFallback className="rounded-lg">
-                    {getInitials(session?.user?.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {session?.user?.name || "User"}
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {session?.user?.email || "No email"}
-                  </span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="mt-auto border-t border-sidebar-border">
+        <div className="flex flex-col gap-2 px-1.5 py-2">
+          <div className="flex items-center gap-1.5">
+            <DevProfileSwitcher />
+            {isEarlyAccess && (
+              <Badge variant="secondary" className="text-xs font-medium gap-1 shrink-0">
+                <FlaskConical className="h-3.5 w-3.5" />
+                Beta access
+              </Badge>
+            )}
+          </div>
+          <UserMenu
+            name={session?.user?.name || session?.user?.email || "User"}
+            email={session?.user?.email || undefined}
+            image={session?.user?.image || undefined}
+          />
+        </div>
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
     <SettingsDialog

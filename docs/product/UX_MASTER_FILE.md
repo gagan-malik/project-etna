@@ -1954,13 +1954,13 @@ etna.dev
 │   ├── Integrations
 │   └── API Keys
 │
-├── 💳 Billing (/billing)
+├── 💳 Billing (Settings → Billing & Invoices)
 │   ├── Current Plan
 │   ├── Usage
 │   ├── Invoices
 │   └── Upgrade/Downgrade
 │
-└── 👤 Account (/account)
+└── 👤 Account (Settings → Account)
     ├── Profile
     ├── Security
     ├── Team (if applicable)

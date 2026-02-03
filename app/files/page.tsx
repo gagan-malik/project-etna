@@ -277,8 +277,8 @@ export default function DesignFilesPage() {
   );
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-5 py-5 space-y-6">
-      <div className="sticky top-0 z-10 border-b bg-background px-5 py-4 -mx-5 flex items-center justify-between gap-4">
+    <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-4 space-y-4">
+      <div className="sticky top-0 z-10 border-b bg-background px-4 py-3 -mx-4 flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <FileCode className="h-5 w-5" />
@@ -329,7 +329,7 @@ export default function DesignFilesPage() {
         </TabsList>
       </Tabs>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -377,7 +377,7 @@ export default function DesignFilesPage() {
           </Button>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredFiles.map((file) => {
             const typeConfig = getTypeConfig(file.type);
             const TypeIcon = typeConfig.icon;
@@ -385,8 +385,8 @@ export default function DesignFilesPage() {
             const topModule = file.metadata?.topModule;
 
             return (
-              <Card key={file.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start gap-4">
+              <Card key={file.id} className="p-3 hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
                   <div
                     className={`w-12 h-12 rounded-lg ${typeConfig.bgColor} flex items-center justify-center`}
                   >
@@ -407,7 +407,7 @@ export default function DesignFilesPage() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{moduleCount} module{moduleCount !== 1 ? "s" : ""}</span>
                       <span>•</span>
                       <span>{new Date(file.updatedAt).toLocaleDateString()}</span>

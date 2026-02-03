@@ -1,9 +1,56 @@
-import { PrismaClient } from '@prisma/client'
+import { config } from 'dotenv'
+import { expand } from 'dotenv-expand'
 
-const prisma = new PrismaClient()
+// Load .env.local then .env (same as prisma.config.ts)
+expand(config({ path: '.env.local' }))
+expand(config({ path: '.env' }))
+
+import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
+
+const connectionString = process.env.DATABASE_URL
+if (!connectionString) {
+  throw new Error('DATABASE_URL is required to run the seed')
+}
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
+
+/** Tier profile users: one per product plan with canonical display names */
+const TIER_PROFILES = [
+  { email: 'freeplan-user@example.com', name: 'freeplan user', plan: 'free' as const },
+  { email: 'prodplan-user@example.com', name: 'prodplanuser', plan: 'pro' as const },
+  { email: 'ultraplan-user@example.com', name: 'ultraplan user', plan: 'ultra' as const },
+]
 
 async function main() {
   console.log('🌱 Seeding database...')
+
+  // Create tier profile users (free, pro, ultra) and a default space for each
+  for (const profile of TIER_PROFILES) {
+    const tierUser = await prisma.users.upsert({
+      where: { email: profile.email },
+      update: { name: profile.name, plan: profile.plan },
+      create: {
+        email: profile.email,
+        name: profile.name,
+        plan: profile.plan,
+        emailVerified: new Date(),
+      },
+    })
+    const spaceSlug = `workspace-${tierUser.id}`
+    await prisma.spaces.upsert({
+      where: { slug: spaceSlug },
+      update: {},
+      create: {
+        name: `${profile.name}'s Workspace`,
+        slug: spaceSlug,
+        ownerId: tierUser.id,
+      },
+    })
+    console.log(`✅ Tier profile [${profile.plan}]:`, tierUser.email, '→', tierUser.name)
+  }
 
   // Create a test user
   const user = await prisma.users.upsert({

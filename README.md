@@ -126,9 +126,7 @@ components/
 | `/files` | Design file management |
 | `/waveforms` | Waveform viewer |
 | `/integrations` | Integrations (GitHub, Confluence, etc.) |
-| `/settings` | Settings page |
-| `/billing` | Billing and subscription |
-| `/account` | Account management |
+| `/settings` | Settings page (includes Account, Billing & Invoices) |
 | `/login` | Login |
 | `/signup` | Sign up |
 

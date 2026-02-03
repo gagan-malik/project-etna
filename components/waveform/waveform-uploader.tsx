@@ -344,7 +344,7 @@ export function WaveformUploader({
         {/* Size limit notice */}
         <p className="text-xs text-muted-foreground mt-3 text-center">
           Free tier: {formatFileSize(maxSize)} max •{" "}
-          <a href="/billing" className="text-primary hover:underline">
+          <a href="/settings" className="text-primary hover:underline">
             Upgrade for larger files
           </a>
         </p>

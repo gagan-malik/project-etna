@@ -60,6 +60,7 @@ npm run dev
 - [**Soul Document**](/soul-doc) — Project values, priorities, and how to assist on Etna
 - [**API Reference**](/api/) — Complete REST API documentation
 - [**Features**](/features) — Overview of all features
+- [**Feature map by tier**](/product/TIER_FEATURES) — Demo, Free, Pro, and Ultra
 - [**Roadmap**](/roadmap) — What's coming next
 - [**Architecture**](/architecture) — Technical deep-dive
 - [**Contributing**](/contributing) — How to contribute

@@ -10,14 +10,19 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { useUserSettings } from "@/components/user-settings-provider";
+import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 
 export function HooksPanel() {
+  const { plan } = useUserSettings();
+  const paid = isPaidPlan(plan);
   const [configuredOpen, setConfiguredOpen] = useState(true);
   const [logOpen, setLogOpen] = useState(true);
 
   return (
-    <div className="w-full px-[96px] py-5 space-y-6">
+    <div className="w-full px-8 py-5 space-y-6">
       <SettingsSection title="Configured Hooks">
         <p className="text-sm text-muted-foreground mb-3">
           Configure and manage Etna hooks.
@@ -38,8 +43,14 @@ export function HooksPanel() {
       </SettingsSection>
 
       <SettingsSection title="Execution Log">
-        <div className="flex justify-end mb-2">
-          <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium">Execution Log</span>
+            {!paid && (
+              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
+            )}
+          </div>
+          <Switch checked={false} disabled={!paid} aria-label="Execution Log" />
         </div>
         <Collapsible open={logOpen} onOpenChange={setLogOpen}>
           <CollapsibleContent>
