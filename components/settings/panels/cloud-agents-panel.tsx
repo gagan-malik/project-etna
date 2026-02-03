@@ -7,7 +7,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Cloud } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Cloud, Gem } from "lucide-react";
 import { useState } from "react";
 import { SettingsSection } from "../settings-section";
 
@@ -29,7 +30,7 @@ export function CloudAgentsPanel() {
         <p className="text-xs text-muted-foreground mb-3">
           Work with Cloud Agents from Slack.
         </p>
-        <Button variant="outline" size="xs">Connect ↗</Button>
+        <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
       </SettingsSection>
 
       <SettingsSection title="Workspace Configuration">

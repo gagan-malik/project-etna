@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -12,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
 import { SettingsSection } from "../settings-section";
 
 type AgentPrefs = {
@@ -31,35 +31,32 @@ type AgentPrefs = {
 
 export function AgentsSettingsPanel() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const { preferences, isLoading, updatePreferences } = useUserSettings();
   const [saving, setSaving] = useState(false);
-  const [prefs, setPrefs] = useState<AgentPrefs>({});
 
-  useEffect(() => {
-    fetch("/api/settings", { credentials: "include" })
-      .then((r) => r.ok ? r.json() : { preferences: {} })
-      .then((d) => { setPrefs((d.preferences ?? {}) as AgentPrefs); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const prefs: AgentPrefs = {
+    agentDefaultMode: (preferences.agentDefaultMode as string) ?? "agent",
+    agentDefaultLocation: (preferences.agentDefaultLocation as string) ?? "pane",
+    agentAutoClearChat: (preferences.agentAutoClearChat as boolean) ?? true,
+    agentReviewOnCommit: (preferences.agentReviewOnCommit as boolean) ?? true,
+    agentWebSearchTool: (preferences.agentWebSearchTool as boolean) ?? true,
+    agentAutoAcceptOnCommit: (preferences.agentAutoAcceptOnCommit as boolean) ?? true,
+    agentAutoRunMode: (preferences.agentAutoRunMode as string) ?? "run-everything",
+    agentBrowserProtection: (preferences.agentBrowserProtection as boolean) ?? true,
+    agentMcpToolsProtection: (preferences.agentMcpToolsProtection as boolean) ?? false,
+    agentFileDeletionProtection: (preferences.agentFileDeletionProtection as boolean) ?? true,
+    agentToolbarOnSelection: (preferences.agentToolbarOnSelection as boolean) ?? true,
+    agentCommitAttribution: (preferences.agentCommitAttribution as boolean) ?? true,
+  };
 
   const update = async (updates: AgentPrefs) => {
     setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
-      const data = await res.json();
-      setPrefs((p) => ({ ...p, ...(data.preferences as AgentPrefs) }));
+    const result = await updatePreferences(updates);
+    setSaving(false);
+    if (result.success) {
       toast({ title: "Settings saved" });
-    } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
-    } finally {
-      setSaving(false);
+    } else {
+      toast({ title: "Error", description: result.error ?? "Failed to save", variant: "destructive" });
     }
   };
 
@@ -102,7 +99,7 @@ export function AgentsSettingsPanel() {
     </div>
   );
 
-  if (loading) {
+  if (isLoading) {
     return <div className="px-6 py-8"><p className="text-sm text-muted-foreground">Loading…</p></div>;
   }
 

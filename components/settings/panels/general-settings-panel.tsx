@@ -1,89 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
+import { Gem, Sun, Moon, Monitor } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
+import { useSettingsModal } from "@/components/settings-modal-context";
 import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 import { Lock } from "lucide-react";
 
-type Preferences = {
-  theme?: "light" | "dark" | "system";
-  syncLayouts?: boolean;
-  systemNotifications?: boolean;
-  menuBarIcon?: boolean;
-  completionSound?: boolean;
-  privacyMode?: "off" | "standard" | "strict";
-};
-
 export function GeneralSettingsPanel() {
-  const { data: session } = useSession();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const { openSettings } = useSettingsModal();
+  const { theme, setTheme } = useTheme();
+  const { preferences, plan, isLoading, updatePreferences } = useUserSettings();
   const [saving, setSaving] = useState(false);
-  const [preferences, setPreferences] = useState<Preferences>({});
-  const [plan, setPlan] = useState<string>("free");
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/settings", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          setPreferences(data.preferences ?? {});
-          setPlan(data.plan ?? "free");
-        }
-      } catch (e) {
-        console.error("Failed to fetch settings", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const handleThemeChange = async (value: "light" | "dark" | "system") => {
+    setTheme(value);
+    await updatePreference({ theme: value });
+  };
 
-  const updatePreference = async (updates: Partial<Preferences>) => {
+  const updatePreference = async (updates: Record<string, unknown>) => {
     setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to update");
-      }
-      const data = await res.json();
-      setPreferences(data.preferences ?? preferences);
+    const result = await updatePreferences(updates);
+    setSaving(false);
+    if (result.success) {
       toast({ title: "Settings saved", description: "Your preferences have been updated." });
-    } catch (e) {
+    } else {
       toast({
         title: "Error",
-        description: e instanceof Error ? e.message : "Failed to save settings",
+        description: result.error ?? "Failed to save settings",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
   const paid = isPaidPlan(plan);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="px-6 py-8">
         <p className="text-sm text-muted-foreground">Loading settings…</p>
@@ -109,6 +71,49 @@ export function GeneralSettingsPanel() {
       <SettingsSection title="Preferences" list>
           <div className="flex items-center justify-between gap-2.5">
             <div>
+              <Label className="text-sm">Theme</Label>
+              <p className="text-xs text-muted-foreground">
+                Light, dark, or follow system
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={theme === "light" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-full"
+                onClick={() => handleThemeChange("light")}
+                disabled={saving}
+                title="Light mode"
+                aria-label="Light mode"
+              >
+                <Sun className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={theme === "dark" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-full"
+                onClick={() => handleThemeChange("dark")}
+                disabled={saving}
+                title="Dark mode"
+                aria-label="Dark mode"
+              >
+                <Moon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={theme === "system" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-full"
+                onClick={() => handleThemeChange("system")}
+                disabled={saving}
+                title="Follow system"
+                aria-label="Follow system"
+              >
+                <Monitor className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-2.5">
+            <div>
               <Label className="text-sm">Sync layouts across windows</Label>
               <p className="text-xs text-muted-foreground">
                 When enabled, all windows share the same layout
@@ -127,8 +132,8 @@ export function GeneralSettingsPanel() {
                 Configure font, formatting, minimap and more
               </p>
             </div>
-            <Button variant="outline" size="xs" asChild>
-              <Link href="/settings">Open</Link>
+            <Button variant="outline" size="xs" onClick={openSettings}>
+              Open
             </Button>
           </div>
           <div className="flex items-center justify-between gap-2.5">
@@ -138,9 +143,7 @@ export function GeneralSettingsPanel() {
                 Configure keyboard shortcuts
               </p>
             </div>
-            <Button variant="outline" size="xs">
-              Open
-            </Button>
+            <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
           </div>
           <div className="flex items-center justify-between gap-2.5">
             <div>
@@ -149,9 +152,7 @@ export function GeneralSettingsPanel() {
                 Import settings, extensions, and keybindings from VS Code
               </p>
             </div>
-            <Button variant="outline" size="xs">
-              Import
-            </Button>
+            <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
           </div>
           <div className="flex items-center justify-between gap-2.5">
             <div>

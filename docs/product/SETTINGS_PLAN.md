@@ -1,7 +1,7 @@
 # Cursor-like Settings — Plan and Wireframes
 
-> **Status:** Complete (P0–P3); SET-001–SET-008 implemented  
-> **Backlog:** [BACKLOG.md](./BACKLOG.md) SET-001–SET-008  
+> **Status:** Complete (P0–P3); SET-001–SET-010 implemented  
+> **Backlog:** [BACKLOG.md](./BACKLOG.md) SET-001–SET-010  
 > **Roadmap:** [ROADMAP.md](./ROADMAP.md) Phase 2
 
 ## Overview
@@ -108,20 +108,71 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 
 ---
 
+## Unauthenticated (guest) experience
+
+Users can try the app without signing in. Settings support both modes:
+
+| Mode | Source | Write |
+|------|--------|--------|
+| **Signed in** | `GET /api/settings` (server) | `PATCH /api/settings` then refetch |
+| **Guest** | `localStorage` key `etna_guest_preferences` | Merge into localStorage + in-memory state |
+
+- **UserSettingsProvider** (`components/user-settings-provider.tsx`) decides: if `session?.user` exists, use API; otherwise load/save from localStorage with the same preference shape.
+- **updatePreferences(updates)** from `useUserSettings()` does the right thing: API when authenticated, localStorage when guest. Panels (e.g. Beta) call this so toggles never 401.
+- **Chat** and other consumers read `useUserSettings().preferences` so Agent Autocomplete and Early access work for guests (stored in localStorage).
+- When guest, the settings layout shows a banner: **"Sign in to sync these settings across devices"** with a Sign in link. Optional future: on first login, merge guest preferences into server once.
+
+---
+
 ## Persisted Keys (API)
 
 Stored in `users.userPreferences` (JSON), validated on PATCH:
 
-- `theme`: "light" | "dark" | "system"
-- `syncLayouts`: boolean
-- `systemNotifications`: boolean
-- `menuBarIcon`: boolean
-- `completionSound`: boolean
-- `privacyMode`: "off" | "standard" | "strict" (paid only; reject for free)
-- `includeThirdPartyConfig`: boolean (Rules/Skills)
-- (Future: agent defaults, tab toggles, etc.)
+- `theme`: "light" | "dark" | "system" — **wired:** ThemeProvider + General panel + user menu; syncs app theme.
+- `syncLayouts`: boolean — **reserved:** No multi-window layout in app yet; wire when feature exists.
+- `systemNotifications`: boolean — **reserved:** Wire when "notify when stream completes" (or similar) exists.
+- `menuBarIcon`: boolean — **reserved:** No menu bar in app yet; wire when feature exists.
+- `completionSound`: boolean — **reserved:** Wire when completion sound feature exists.
+- `privacyMode`: "off" | "standard" | "strict" (paid only; reject for free) — **reserved:** Document semantics (e.g. data sharing / telemetry); wire when that feature exists.
+- `includeThirdPartyConfig`: boolean (Rules/Skills) — persisted; **wire when** rules/skills list can include third-party config.
+- Tab, Agents, Models, Beta keys — see below.
 
 Client-only (e.g. localStorage or in-memory): "Reset Don't Ask Again" cleared state.
+
+### Extension RPC Tracer (Beta)
+
+When **Early access** is on and **Extension RPC Tracer** is on, and `NODE_ENV === "development"`, the app logs one short line per streaming request (e.g. `POST /api/messages/stream` + timestamp). Logs are PII-free and off in production unless explicitly enabled later.
+
+### Tab, Agents, Rules — wire when features exist
+
+- **Tab** (`cursorTab`, `partialAccepts`, `suggestionsWhileCommenting`, etc.): No Cursor-style tab or completion UI yet. When a completion/suggestion feature is added, read the corresponding preference from `useUserSettings().preferences` and gate or configure the behavior.
+- **Agents** (`agentDefaultMode`, `agentAutoRunMode`, protections, etc.): When an explicit "agent mode" or "auto-run" control exists in chat (or elsewhere), read these from preferences as defaults.
+- **Rules** (`includeThirdPartyConfig`): When the rules/skills list can include third-party config, filter or include based on `preferences.includeThirdPartyConfig`.
+
+### Placeholder features (show “Upgrade” badge)
+
+These controls have no backend or flow yet; they show an **“Upgrade”** badge instead of a button so it’s clear the feature is not yet available.
+
+| Panel | Button / control | File |
+|-------|------------------|------|
+| **General** | Keyboard Shortcuts “Open” | general-settings-panel.tsx |
+| **General** | Import Settings from VS Code “Import” | general-settings-panel.tsx |
+| **Rules** | Context: All, User, project-etna | rules-panel.tsx |
+| **Rules** | Rules “+ New” | rules-panel.tsx |
+| **Rules** | Commands “+ New”, “New Command” | rules-panel.tsx |
+| **Rules, Skills, Workers** | Context: All, User, project-etna | rules-skills-subagents-panel.tsx |
+| **Rules, Skills, Workers** | Rules “+ New” | rules-skills-subagents-panel.tsx |
+| **Rules, Skills, Workers** | Skills “+ New”, “New Skill” | rules-skills-subagents-panel.tsx |
+| **Rules, Skills, Workers** | Workers “+ New”, “New Worker” | rules-skills-subagents-panel.tsx |
+| **Rules, Skills, Workers** | Commands “+ New”, “New Command” | rules-skills-subagents-panel.tsx |
+| **Skills** (standalone) | “+ New”, “New Skill” | skills-panel.tsx |
+| **Workers** (standalone) | “+ New”, “New Worker” | workers-panel.tsx |
+| **Tools & MCP** | “+ Add a Custom MCP Server” | tools-mcp-panel.tsx |
+| **Indexing & Docs** | Sync, Delete Index | indexing-docs-panel.tsx |
+| **Indexing & Docs** | View included files, Edit (.cursorignore) | indexing-docs-panel.tsx |
+| **Indexing & Docs** | “+ Add Doc” | indexing-docs-panel.tsx |
+| **Hooks** | Clear log | hooks-panel.tsx |
+| **Cloud Agents** | Connect Slack “Connect ↗” | cloud-agents-panel.tsx |
 
 ---
 

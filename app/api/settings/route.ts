@@ -47,6 +47,12 @@ const userPreferencesSchema = z
     updateAccess: z.enum(["stable", "early"]).optional(),
     agentAutocomplete: z.boolean().optional(),
     extensionRpcTracer: z.boolean().optional(),
+    // Tools & MCP
+    browserAutomationTab: z.string().optional(),
+    showLocalhostLinks: z.boolean().optional(),
+    mcpServers: z.array(z.object({ id: z.string(), name: z.string(), enabled: z.boolean() })).optional(),
+    // Indexing & Docs
+    indexNewFolders: z.boolean().optional(),
   })
   .strict();
 

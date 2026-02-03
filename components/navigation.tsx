@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, History } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useSettingsModalOptional } from "@/components/settings-modal-context";
 
 export function Navigation({ currentPage = "chat" }: { currentPage?: "chat" | "activity" | "settings" }) {
+  const settingsModal = useSettingsModalOptional();
   return (
     <div className="flex flex-1 items-center justify-between">
       <div className="flex items-center gap-4">
@@ -37,16 +39,30 @@ export function Navigation({ currentPage = "chat" }: { currentPage?: "chat" | "a
         >
           History
         </Link>
-        <Link 
-          href="/settings" 
-          className={`text-sm font-semibold transition-colors ${
-            currentPage === "settings" 
-              ? "text-foreground" 
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Settings
-        </Link>
+        {settingsModal ? (
+          <button
+            type="button"
+            onClick={() => settingsModal.openSettings()}
+            className={`text-sm font-semibold transition-colors ${
+              currentPage === "settings" 
+                ? "text-foreground" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Settings
+          </button>
+        ) : (
+          <Link 
+            href="/settings" 
+            className={`text-sm font-semibold transition-colors ${
+              currentPage === "settings" 
+                ? "text-foreground" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Settings
+          </Link>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="rounded-full">

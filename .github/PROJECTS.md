@@ -170,6 +170,8 @@ is:issue is:open label:settings
 
 ## Cursor-like Settings (Phase 2)
 
+**Completed (move to Done on board):** SET-010 Guest settings (try before signup) — localStorage for unauthenticated users; `updatePreferences` in UserSettingsProvider; Beta panel and chat use it; "Sign in to sync" banner when guest.
+
 Settings work is tracked in the backlog and roadmap. To add Settings issues to the project board:
 
 1. **Issue list:** See [SETTINGS_ISSUES.md](./SETTINGS_ISSUES.md) for titles, bodies, and labels (SET-001–SET-008).

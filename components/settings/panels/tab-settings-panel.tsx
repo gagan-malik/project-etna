@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
 import { SettingsSection } from "../settings-section";
 
 type TabPrefs = {
@@ -17,67 +18,34 @@ type TabPrefs = {
 
 export function TabSettingsPanel() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const { preferences, isLoading, updatePreferences } = useUserSettings();
   const [saving, setSaving] = useState(false);
-  const [prefs, setPrefs] = useState<TabPrefs>({
-    cursorTab: true,
-    partialAccepts: true,
-    suggestionsWhileCommenting: true,
-    whitespaceOnlySuggestions: false,
-    imports: true,
-    autoImportPython: false,
-  });
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/settings", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          const p = data.preferences ?? {};
-          setPrefs({
-            cursorTab: p.cursorTab ?? true,
-            partialAccepts: p.partialAccepts ?? true,
-            suggestionsWhileCommenting: p.suggestionsWhileCommenting ?? true,
-            whitespaceOnlySuggestions: p.whitespaceOnlySuggestions ?? false,
-            imports: p.imports ?? true,
-            autoImportPython: p.autoImportPython ?? false,
-          });
-        }
-      } catch (e) {
-        console.error("Failed to fetch settings", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const prefs: TabPrefs = {
+    cursorTab: (preferences.cursorTab as boolean) ?? true,
+    partialAccepts: (preferences.partialAccepts as boolean) ?? true,
+    suggestionsWhileCommenting: (preferences.suggestionsWhileCommenting as boolean) ?? true,
+    whitespaceOnlySuggestions: (preferences.whitespaceOnlySuggestions as boolean) ?? false,
+    imports: (preferences.imports as boolean) ?? true,
+    autoImportPython: (preferences.autoImportPython as boolean) ?? false,
+  };
 
   const update = async (updates: Partial<TabPrefs>) => {
     setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to update");
-      const data = await res.json();
-      setPrefs((prev) => ({ ...prev, ...data.preferences }));
+    const result = await updatePreferences(updates);
+    setSaving(false);
+    if (result.success) {
       toast({ title: "Settings saved" });
-    } catch (e) {
+    } else {
       toast({
         title: "Error",
-        description: e instanceof Error ? e.message : "Failed to save",
+        description: result.error ?? "Failed to save",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="px-6 py-8">
         <p className="text-sm text-muted-foreground">Loading…</p>

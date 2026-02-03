@@ -72,19 +72,30 @@ export async function POST(req: Request) {
       }
     }
 
-    // Verify conversation ownership
-    const conversation = await prisma.conversations.findFirst({
-      where: {
-        id: conversationId,
-        userId: session.user.id,
-      },
-    });
+    // Verify conversation ownership and load user preferences (for extension RPC tracer)
+    const [conversation, user] = await Promise.all([
+      prisma.conversations.findFirst({
+        where: {
+          id: conversationId,
+          userId: session.user.id,
+        },
+      }),
+      prisma.users.findUnique({
+        where: { id: session.user.id },
+        select: { userPreferences: true },
+      }),
+    ]);
 
     if (!conversation) {
       return NextResponse.json(
         { error: "Conversation not found" },
         { status: 404 }
       );
+    }
+
+    const prefs = (user?.userPreferences as Record<string, unknown> | null) ?? {};
+    if (prefs.extensionRpcTracer === true && process.env.NODE_ENV === "development") {
+      console.log(`[RPC] POST /api/messages/stream ${new Date().toISOString()}`);
     }
 
     // Get conversation messages for context

@@ -104,6 +104,21 @@ export async function* streamAIResponse(
 }
 
 /**
+ * Default model list for chat when unauthenticated (guests).
+ * Matches the shape returned by getAvailableModels(); availability is false for guests.
+ */
+export const DEFAULT_CHAT_MODELS: ModelInfo[] = [
+  { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai", category: "General", available: false },
+  { id: "gpt-4", name: "GPT-4", provider: "openai", category: "General", available: false },
+  { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai", category: "General", available: false },
+  { id: "gemini-pro", name: "Gemini Pro", provider: "google", category: "General", available: false },
+  { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", category: "General", available: false },
+  { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", category: "Code", available: false },
+  { id: "llama-3-70b", name: "Llama 3 70B", provider: "llama", category: "Open Source", available: false },
+  { id: "llama-3-8b", name: "Llama 3 8B", provider: "llama", category: "Open Source", available: false },
+];
+
+/**
  * Get available models
  * Always returns all models, but marks availability based on configured providers
  */

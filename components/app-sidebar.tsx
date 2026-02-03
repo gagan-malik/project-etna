@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { useSettingsModal } from "@/components/settings-modal-context";
 import { SettingsDialog } from "@/components/settings-dialog";
 
 interface NavItem {
@@ -117,8 +118,8 @@ interface Conversation {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { data: session, status: sessionStatus } = useSession();
+  const { open: settingsOpen, setOpen: setSettingsOpen } = useSettingsModal();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
@@ -358,7 +359,12 @@ export function AppSidebar() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    <SettingsDialog
+      open={settingsOpen}
+      onOpenChange={setSettingsOpen}
+      session={session}
+      status={sessionStatus}
+    />
     </>
   );
 }

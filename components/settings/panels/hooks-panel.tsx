@@ -1,5 +1,7 @@
 "use client";
 
+import { Gem } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -37,9 +39,7 @@ export function HooksPanel() {
 
       <SettingsSection title="Execution Log">
         <div className="flex justify-end mb-2">
-          <Button variant="ghost" size="xs">
-            Clear log
-          </Button>
+          <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Pro</Badge>
         </div>
         <Collapsible open={logOpen} onOpenChange={setLogOpen}>
           <CollapsibleContent>

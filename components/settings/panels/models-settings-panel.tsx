@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -11,6 +11,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
+import { useSession } from "next-auth/react";
 import { SettingsSection } from "../settings-section";
 import { ChevronDown, RefreshCw } from "lucide-react";
 
@@ -19,52 +21,57 @@ interface ModelInfo {
   name: string;
 }
 
+const DEFAULT_MODELS: ModelInfo[] = [
+  { id: "gpt-4-turbo", name: "GPT-4 Turbo" },
+  { id: "gpt-4", name: "GPT-4" },
+  { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo" },
+  { id: "gemini-pro", name: "Gemini Pro" },
+  { id: "deepseek-chat", name: "DeepSeek Chat" },
+  { id: "deepseek-coder", name: "DeepSeek Coder" },
+  { id: "llama-3-70b", name: "Llama 3 70B" },
+  { id: "llama-3-8b", name: "Llama 3 8B" },
+];
+
 export function ModelsSettingsPanel() {
   const { toast } = useToast();
+  const { data: session } = useSession();
+  const { preferences, isLoading: prefsLoading, updatePreferences } = useUserSettings();
   const [models, setModels] = useState<ModelInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [modelsLoading, setModelsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
-  const [enabledIds, setEnabledIds] = useState<Set<string>>(new Set());
   const [apiKeysOpen, setApiKeysOpen] = useState(false);
 
   useEffect(() => {
+    if (!session?.user) {
+      setModels(DEFAULT_MODELS);
+      setModelsLoading(false);
+      return;
+    }
     const fetchModels = async () => {
       try {
         const res = await fetch("/api/ai/models", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
-          setModels(data.models ?? []);
+          const list = (data.models ?? []).map((m: { id: string; name: string }) => ({ id: m.id, name: m.name }));
+          setModels(list.length > 0 ? list : DEFAULT_MODELS);
+        } else {
+          setModels(DEFAULT_MODELS);
         }
       } catch (e) {
-        console.error("Failed to fetch models", e);
+        setModels(DEFAULT_MODELS);
       } finally {
-        setLoading(false);
+        setModelsLoading(false);
       }
     };
     fetchModels();
-  }, []);
+  }, [session?.user]);
 
-  useEffect(() => {
-    if (models.length === 0) return;
-    const fetchPrefs = async () => {
-      try {
-        const res = await fetch("/api/settings", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          const ids = (data.preferences?.enabledModelIds as string[] | undefined) ?? [];
-          setEnabledIds(
-            ids.length > 0 ? new Set(ids) : new Set(models.map((m) => m.id))
-          );
-        } else {
-          setEnabledIds(new Set(models.map((m) => m.id)));
-        }
-      } catch (e) {
-        setEnabledIds(new Set(models.map((m) => m.id)));
-      }
-    };
-    fetchPrefs();
-  }, [models]);
+  const enabledIds = useMemo(() => {
+    const ids = (preferences.enabledModelIds as string[] | undefined) ?? [];
+    if (ids.length > 0) return new Set(ids);
+    return new Set(models.map((m) => m.id));
+  }, [preferences.enabledModelIds, models]);
 
   const filteredModels = models.filter(
     (m) =>
@@ -77,29 +84,21 @@ export function ModelsSettingsPanel() {
     const next = new Set(enabledIds);
     if (enabled) next.add(id);
     else next.delete(id);
-    setEnabledIds(next);
     setSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ enabledModelIds: Array.from(next) }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to update");
+    const result = await updatePreferences({ enabledModelIds: Array.from(next) });
+    setSaving(false);
+    if (result.success) {
       toast({ title: "Settings saved" });
-    } catch (e) {
-      setEnabledIds(enabledIds);
+    } else {
       toast({
         title: "Error",
-        description: e instanceof Error ? e.message : "Failed to save",
+        description: result.error ?? "Failed to save",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
+  const loading = prefsLoading || modelsLoading;
   if (loading) {
     return (
       <div className="px-6 py-8">

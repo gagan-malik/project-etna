@@ -2,13 +2,16 @@
 
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Search, Bell, ChevronDown } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 import { useSession } from "next-auth/react";
+import { useUserSettings } from "@/components/user-settings-provider";
 
 export function AppHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { isEarlyAccess } = useUserSettings();
 
   // Hide header on auth pages
   if (pathname === "/login" || pathname === "/signup" || pathname === "/auth") {
@@ -38,6 +41,11 @@ export function AppHeader() {
 
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
+          {isEarlyAccess && (
+            <Badge variant="secondary" className="text-xs font-medium">
+              Early access
+            </Badge>
+          )}
           <Button variant="ghost" size="icon" className="rounded-full">
             <Search className="h-5 w-5" />
           </Button>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Gem } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -11,18 +12,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
 import { SettingsSection } from "../settings-section";
 
+const DEFAULT_MCP_SERVERS = [{ id: "shadcn", name: "shadcn", enabled: false }];
+
+type McpServer = { id: string; name: string; enabled: boolean };
+
 export function ToolsMcpPanel() {
-  const [browserTab, setBrowserTab] = useState("none");
-  const [showLocalhostLinks, setShowLocalhostLinks] = useState(true);
-  const [mcpServers, setMcpServers] = useState<{ id: string; name: string; enabled: boolean }[]>([
-    { id: "shadcn", name: "shadcn", enabled: false },
-  ]);
+  const { toast } = useToast();
+  const { preferences, isLoading, updatePreferences } = useUserSettings();
+  const [saving, setSaving] = useState(false);
+
+  const browserTab = (preferences.browserAutomationTab as string) ?? "none";
+  const showLocalhostLinks = (preferences.showLocalhostLinks as boolean) ?? true;
+  const mcpServers: McpServer[] =
+    (preferences.mcpServers as McpServer[] | undefined) ?? DEFAULT_MCP_SERVERS;
+
+  const update = async (updates: Record<string, unknown>) => {
+    setSaving(true);
+    const result = await updatePreferences(updates);
+    setSaving(false);
+    if (result.success) {
+      toast({ title: "Settings saved" });
+    } else {
+      toast({ title: "Error", description: result.error ?? "Failed to save", variant: "destructive" });
+    }
+  };
 
   const toggleMcp = (id: string, enabled: boolean) => {
-    setMcpServers((s) => s.map((m) => (m.id === id ? { ...m, enabled } : m)));
+    const next = mcpServers.map((m) => (m.id === id ? { ...m, enabled } : m));
+    void update({ mcpServers: next });
   };
+
+  if (isLoading) {
+    return (
+      <div className="px-6 py-8">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full px-[96px] py-5 space-y-6">
@@ -33,7 +63,11 @@ export function ToolsMcpPanel() {
               <Label className="text-sm">Browser Automation</Label>
               <p className="text-xs text-muted-foreground">Connected to Browser Tab</p>
             </div>
-            <Select value={browserTab} onValueChange={setBrowserTab}>
+            <Select
+              value={browserTab}
+              onValueChange={(v) => update({ browserAutomationTab: v })}
+              disabled={saving}
+            >
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Browser Tab" />
               </SelectTrigger>
@@ -52,7 +86,8 @@ export function ToolsMcpPanel() {
             </div>
             <Switch
               checked={showLocalhostLinks}
-              onCheckedChange={setShowLocalhostLinks}
+              onCheckedChange={(v) => update({ showLocalhostLinks: v })}
+              disabled={saving}
             />
           </div>
         </div>
@@ -66,13 +101,12 @@ export function ToolsMcpPanel() {
               <Switch
                 checked={m.enabled}
                 onCheckedChange={(v) => toggleMcp(m.id, v)}
+                disabled={saving}
               />
             </div>
           ))}
         </div>
-        <Button variant="outline" size="xs" className="mt-3">
-          + Add a Custom MCP Server
-        </Button>
+        <Badge variant="upgrade" className="mt-3 gap-1"><Gem className="h-3 w-3" />Pro</Badge>
       </SettingsSection>
     </div>
   );

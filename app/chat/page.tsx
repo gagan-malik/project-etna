@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,7 @@ import { SourceSelector, type SourceType } from "@/components/chat/source-select
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
 import { getBestModelForQuery, getHighestQualityModel } from "@/lib/ai/model-ranking";
+import { DEFAULT_CHAT_MODELS } from "@/lib/ai";
 import type { ModelInfo } from "@/lib/ai/types";
 import { hasPremiumAccess as checkPremiumAccess } from "@/lib/subscription";
 import { useSession } from "next-auth/react";
@@ -31,6 +32,7 @@ import { QUICK_PROMPTS, getSystemPrompt } from "@/lib/ai/prompts/silicon-debug";
 import { isHardwareDebugQuery } from "@/lib/ai/model-ranking";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useUserSettings } from "@/components/user-settings-provider";
 
 interface MessageDisplay {
   id: string;
@@ -63,6 +65,7 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { data: session } = useSession();
+  const { preferences } = useUserSettings();
   const {
     currentConversation,
     messages: dbMessages,
@@ -130,6 +133,10 @@ function ChatPageContent() {
     }
     return true; // Default to debug mode enabled
   });
+  const agentAutocomplete = (preferences.agentAutocomplete as boolean) ?? true;
+  const [inputFocused, setInputFocused] = useState(false);
+  const [autocompleteSelectedIndex, setAutocompleteSelectedIndex] = useState(0);
+  const [autocompleteJustAccepted, setAutocompleteJustAccepted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -171,8 +178,23 @@ function ChatPageContent() {
     checkPremiumAccess();
   }, [session]);
 
-  // Load available models from API
+  // Load available models: from API when authenticated, static list for guests
+  const enabledModelIds = (preferences.enabledModelIds as string[] | undefined) ?? [];
+  const enabledModelIdsKey = enabledModelIds.join(",");
   useEffect(() => {
+    if (!session?.user?.id) {
+      // Guest: use static list; filter by enabledModelIds from localStorage when set
+      const base = DEFAULT_CHAT_MODELS;
+      const models =
+        enabledModelIds.length > 0
+          ? base.filter((m) => enabledModelIds.includes(m.id))
+          : base;
+      setAvailableModels(models);
+      if (models.length > 0 && !selectedModel) {
+        setSelectedModel(models[0]);
+      }
+      return;
+    }
     const loadModels = async () => {
       try {
         const response = await fetch("/api/ai/models", {
@@ -180,16 +202,18 @@ function ChatPageContent() {
         });
         if (response.ok) {
           const data = await response.json();
-          const models: ModelInfo[] = data.models.map((m: any) => ({
+          let models: ModelInfo[] = data.models.map((m: { id: string; name: string; provider: string; category: string; available?: boolean }) => ({
             id: m.id,
             name: m.name,
             provider: m.provider,
             category: m.category,
-            available: m.available ?? false, // Include available property
+            available: m.available ?? false,
           }));
+          if (enabledModelIds.length > 0) {
+            models = models.filter((m) => enabledModelIds.includes(m.id));
+          }
           setAvailableModels(models);
           if (models.length > 0 && !selectedModel) {
-            // Prefer selecting an available model, or just the first one
             const availableModel = models.find(m => m.available) || models[0];
             setSelectedModel(availableModel);
           }
@@ -199,7 +223,7 @@ function ChatPageContent() {
       }
     };
     loadModels();
-  }, []);
+  }, [session?.user?.id, enabledModelIdsKey]);
 
   // Load saved model preference
   useEffect(() => {
@@ -251,6 +275,20 @@ function ChatPageContent() {
 
   // Get appropriate suggestions based on debug mode
   const SUGGESTIONS = debugMode ? DEBUG_SUGGESTIONS : GENERAL_SUGGESTIONS;
+
+  // Contextual autocomplete: combine quick prompts + debug + general, filter by input prefix
+  const autocompleteSuggestions = useMemo(() => {
+    const all: string[] = [
+      ...QUICK_PROMPTS.map((p) => p.prompt),
+      ...DEBUG_SUGGESTIONS,
+      ...GENERAL_SUGGESTIONS,
+    ];
+    const trimmed = inputValue.trim().toLowerCase();
+    if (!trimmed) return all.slice(0, 6);
+    return all
+      .filter((s) => s.toLowerCase().includes(trimmed) || s.toLowerCase().startsWith(trimmed))
+      .slice(0, 6);
+  }, [inputValue]);
 
   // Save selected sources to localStorage
   useEffect(() => {
@@ -527,8 +565,31 @@ function ChatPageContent() {
 
   const handleSuggestionClick = (suggestion: string) => {
     setInputValue(suggestion);
+    setCharCount(suggestion.length);
     textareaRef.current?.focus();
   };
+
+  // Accept contextual autocomplete suggestion (from dropdown)
+  const acceptAutocomplete = useCallback((suggestion: string) => {
+    setInputValue(suggestion);
+    setCharCount(suggestion.length);
+    setAutocompleteJustAccepted(true);
+    textareaRef.current?.focus();
+    setTimeout(() => setAutocompleteJustAccepted(false), 150);
+  }, []);
+
+  const showAutocomplete =
+    agentAutocomplete &&
+    inputFocused &&
+    autocompleteSuggestions.length > 0 &&
+    !autocompleteJustAccepted;
+
+  // Clamp selected index when suggestions change
+  useEffect(() => {
+    setAutocompleteSelectedIndex((i) =>
+      Math.min(Math.max(0, i), autocompleteSuggestions.length - 1)
+    );
+  }, [autocompleteSuggestions.length]);
 
   return (
     <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-8 md:py-16 overflow-hidden">
@@ -804,16 +865,47 @@ function ChatPageContent() {
                     />
                   )}
 
-                  {/* Text Input */}
-                  <div className="flex items-center gap-2">
+                  {/* Text Input with contextual autocomplete */}
+                  <div className="flex items-center gap-2 relative">
                     <Textarea
                       ref={textareaRef}
                       value={inputValue}
                       onChange={(e) => {
                         setInputValue(e.target.value);
                         setCharCount(e.target.value.length);
+                        setAutocompleteSelectedIndex(0);
+                      }}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => {
+                        // Allow click on suggestion before blur fires
+                        setTimeout(() => setInputFocused(false), 150);
                       }}
                       onKeyDown={(e) => {
+                        if (showAutocomplete) {
+                          if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setAutocompleteSelectedIndex((i) =>
+                              Math.min(i + 1, autocompleteSuggestions.length - 1)
+                            );
+                            return;
+                          }
+                          if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setAutocompleteSelectedIndex((i) => Math.max(0, i - 1));
+                            return;
+                          }
+                          if (e.key === "Enter" || e.key === "Tab") {
+                            e.preventDefault();
+                            const suggestion = autocompleteSuggestions[autocompleteSelectedIndex];
+                            if (suggestion) acceptAutocomplete(suggestion);
+                            return;
+                          }
+                          if (e.key === "Escape") {
+                            e.preventDefault();
+                            setInputFocused(false);
+                            return;
+                          }
+                        }
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
                           handleSend();
@@ -822,7 +914,44 @@ function ChatPageContent() {
                       placeholder="Ask anything..."
                       className="flex-1 bg-transparent border-none resize-none text-base leading-6 text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
                       rows={1}
+                      aria-autocomplete="list"
+                      aria-controls={showAutocomplete ? "agent-autocomplete-list" : undefined}
+                      aria-expanded={showAutocomplete}
+                      aria-activedescendant={
+                        showAutocomplete && autocompleteSuggestions[autocompleteSelectedIndex]
+                          ? `agent-autocomplete-option-${autocompleteSelectedIndex}`
+                          : undefined
+                      }
                     />
+                    {showAutocomplete && (
+                      <div
+                        id="agent-autocomplete-list"
+                        role="listbox"
+                        aria-label="Contextual suggestions"
+                        className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[220px] overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+                      >
+                        {autocompleteSuggestions.map((suggestion, idx) => (
+                          <button
+                            key={`${idx}-${suggestion.slice(0, 30)}`}
+                            id={`agent-autocomplete-option-${idx}`}
+                            role="option"
+                            aria-selected={idx === autocompleteSelectedIndex ? "true" : "false"}
+                            type="button"
+                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                              idx === autocompleteSelectedIndex
+                                ? "bg-accent text-accent-foreground"
+                                : "hover:bg-muted"
+                            }`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              acceptAutocomplete(suggestion);
+                            }}
+                          >
+                            <span className="line-clamp-2">{suggestion}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Bottom Bar */}

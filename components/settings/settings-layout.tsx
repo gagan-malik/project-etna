@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   SETTINGS_SECTIONS,
@@ -11,6 +13,8 @@ import {
   type SettingsSectionDef,
 } from "./settings-config";
 import { cn } from "@/lib/utils";
+
+export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
 
 export interface SettingsLayoutProps {
   activeSection: string;
@@ -22,6 +26,9 @@ export interface SettingsLayoutProps {
   showUserBlock?: boolean;
   /** Base path for internal section links (e.g. /settings for full page) */
   basePath?: string;
+  /** When provided (e.g. from modal parent), use this instead of useSession() so portaled content shows correct auth state */
+  sessionOverride?: Session | null;
+  statusOverride?: SessionStatus;
 }
 
 function getInitials(name?: string | null) {
@@ -40,9 +47,14 @@ export function SettingsLayout({
   showSearch = true,
   showUserBlock = true,
   basePath = "/settings",
+  sessionOverride,
+  statusOverride,
 }: SettingsLayoutProps) {
-  const { data: session } = useSession();
+  const sessionFromHook = useSession();
+  const session = sessionOverride !== undefined ? sessionOverride : sessionFromHook.data;
+  const status = statusOverride !== undefined ? statusOverride : sessionFromHook.status;
   const [searchQuery, setSearchQuery] = useState("");
+  const isAuthenticated = status === "authenticated" && !!session?.user;
 
   // ⌘F / Ctrl+F: focus search
   useEffect(() => {
@@ -99,7 +111,64 @@ export function SettingsLayout({
           "hidden md:flex"
         )}
       >
-        {/* Search row: compact, aligned with page title */}
+        {showUserBlock && (
+          <div className="flex items-center gap-2 px-3 pt-4 pb-4">
+            <Avatar className="h-12 w-12 rounded-full">
+              {isAuthenticated && session?.user ? (
+                <>
+                  <AvatarImage src={session.user.image ?? undefined} />
+                  <AvatarFallback className="rounded-full text-base">
+                    {getInitials(session.user.name)}
+                  </AvatarFallback>
+                </>
+              ) : (
+                <AvatarFallback className="rounded-full text-base">
+                  {status === "loading" ? "…" : "G"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="min-w-0 flex-1 space-y-1">
+              {isAuthenticated && session?.user ? (
+                <>
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {session.user.name ?? session.user.email ?? "User"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {session.user.email ?? "No email"}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {planDisplay}
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="mt-1 h-7 w-full text-xs"
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                  >
+                    Sign out
+                  </Button>
+                </>
+              ) : status === "loading" ? (
+                <>
+                  <p className="truncate text-sm font-medium text-muted-foreground">
+                    Loading…
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="truncate text-sm font-medium text-foreground">
+                    Guest user
+                  </p>
+                  <Button variant="secondary" size="sm" className="mt-1 h-7 w-full text-xs" asChild>
+                    <Link href="/login">Sign in</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Search row: below user block */}
         {showSearch && (
           <div className="px-2 py-4">
             <Input
@@ -113,26 +182,7 @@ export function SettingsLayout({
           </div>
         )}
 
-        {showUserBlock && session?.user && (
-          <div className="flex items-center gap-2 px-3 pb-3">
-            <Avatar className="h-8 w-8 rounded-full">
-              <AvatarImage src={session.user.image ?? undefined} />
-              <AvatarFallback className="rounded-full text-sm">
-                {getInitials(session.user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">
-                {session.user.email ?? "User"}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {planDisplay}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
           {SETTINGS_SECTIONS.map((section) => {
             const isFilteredOut =
               filteredSections.find((s) => s.id === section.id) == null;

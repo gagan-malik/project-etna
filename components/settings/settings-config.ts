@@ -11,7 +11,6 @@ import {
   Bot,
   Link2,
   Database,
-  Globe,
   FlaskConical,
   BookOpen,
 } from "lucide-react";
@@ -39,7 +38,6 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
   { id: "workers", label: "Workers", icon: Bot },
   { id: "hooks", label: "Hooks", icon: Link2 },
   { id: "indexing-docs", label: "Indexing & Docs", icon: Database },
-  { id: "network", label: "Network", icon: Globe },
   { id: "beta", label: "Beta", icon: FlaskConical },
   { id: "docs", label: "Documentation", icon: BookOpen, external: true, separatorBefore: true },
 ];

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Sun, Moon, Monitor, Cookie, User, FileText, HelpCircle, LogOut, Copy } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/components/user-settings-provider";
 
 interface UserMenuProps {
   name?: string | null;
@@ -27,6 +28,12 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { updatePreferences } = useUserSettings();
+
+  const handleThemeChange = (value: "light" | "dark" | "system") => {
+    setTheme(value);
+    void updatePreferences({ theme: value });
+  };
   const [copied, setCopied] = useState(false);
 
   const handleLogout = async () => {
@@ -89,27 +96,30 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
             <Button
               variant={theme === "light" ? "secondary" : "ghost"}
               size="icon"
-              className="h-7 w-7"
-              onClick={() => setTheme("light")}
+              className="h-7 w-7 shrink-0 rounded-full"
+              onClick={() => handleThemeChange("light")}
               title="Light mode"
+              aria-label="Light mode"
             >
               <Sun className="h-4 w-4" />
             </Button>
             <Button
               variant={theme === "dark" ? "secondary" : "ghost"}
               size="icon"
-              className="h-7 w-7"
-              onClick={() => setTheme("dark")}
+              className="h-7 w-7 shrink-0 rounded-full"
+              onClick={() => handleThemeChange("dark")}
               title="Dark mode"
+              aria-label="Dark mode"
             >
               <Moon className="h-4 w-4" />
             </Button>
             <Button
               variant={theme === "system" ? "secondary" : "ghost"}
               size="icon"
-              className="h-7 w-7"
-              onClick={() => setTheme("system")}
+              className="h-7 w-7 shrink-0 rounded-full"
+              onClick={() => handleThemeChange("system")}
               title="System"
+              aria-label="Follow system"
             >
               <Monitor className="h-4 w-4" />
             </Button>

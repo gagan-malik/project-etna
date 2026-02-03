@@ -19,6 +19,5 @@ export { AgentsSettingsPanel } from "./panels/agents-settings-panel";
 export { CloudAgentsPanel } from "./panels/cloud-agents-panel";
 export { ToolsMcpPanel } from "./panels/tools-mcp-panel";
 export { IndexingDocsPanel } from "./panels/indexing-docs-panel";
-export { NetworkPanel } from "./panels/network-panel";
 export { BetaPanel } from "./panels/beta-panel";
 export { PlaceholderPanel } from "./panels/placeholder-panel";

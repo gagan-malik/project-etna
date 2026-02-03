@@ -11,6 +11,9 @@
 ## UX, usability & accessibility
 - When editing UI (components, pages, forms): [.cursor/rules/ux-usability-accessibility.mdc](.cursor/rules/ux-usability-accessibility.mdc). Skills: [.cursor/skills/ux-review](.cursor/skills/ux-review), [.cursor/skills/usability-check](.cursor/skills/usability-check), [.cursor/skills/accessibility](.cursor/skills/accessibility). Workers/hooks: [.cursor/WORKERS_UX.md](.cursor/WORKERS_UX.md), [.cursor/HOOKS_UX.md](.cursor/HOOKS_UX.md).
 
+## Agent instructions
+- Be explicit to avoid confusion: [.cursor/rules/agent-explicit-instructions.mdc](.cursor/rules/agent-explicit-instructions.mdc). Call out what is implemented vs placeholder; don’t imply “everything is done” when some UI has no backend/flow.
+
 ## Stack
 - Next.js (App Router), TypeScript, Prisma, React, Shadcn UI
 - Use existing UI components from components/ui/; add via Shadcn MCP (.cursor/mcp.json)

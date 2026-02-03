@@ -21,17 +21,21 @@ import {
   CloudAgentsPanel,
   ToolsMcpPanel,
   IndexingDocsPanel,
-  NetworkPanel,
   BetaPanel,
   PlaceholderPanel,
 } from "@/components/settings";
+import type { SessionStatus } from "@/components/settings/settings-layout";
+import type { Session } from "next-auth";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Pass session from parent (e.g. AppSidebar) so portaled dialog content shows correct auth state */
+  session?: Session | null;
+  status?: SessionStatus;
 }
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange, session, status }: SettingsDialogProps) {
   const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
 
   const renderContent = useCallback(() => {
@@ -58,8 +62,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         return <ToolsMcpPanel />;
       case "indexing-docs":
         return <IndexingDocsPanel />;
-      case "network":
-        return <NetworkPanel />;
       case "beta":
         return <BetaPanel />;
       default: {
@@ -81,6 +83,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             basePath="/settings"
+            sessionOverride={session}
+            statusOverride={status}
           >
             <SettingsPageTitle sectionId={activeSection} />
             {renderContent()}

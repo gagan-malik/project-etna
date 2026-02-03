@@ -1,0 +1,17 @@
+---
+description: Agent must be explicit about what is implemented vs placeholder to avoid confusion
+alwaysApply: true
+---
+
+# Agent: Be explicit to avoid confusion
+
+## When completing work or summarizing
+
+- **Call out placeholders.** If the codebase or plan includes UI that looks complete (buttons, links, forms) but has no implementation (no handler, no API, no flow), say so explicitly. List which controls or flows are placeholders and which are fully implemented.
+- **Don’t imply “everything is done.”** When a task or phase is “complete,” state clearly: what is implemented end-to-end, what is only UI/placeholder, and what is deferred or backlog.
+- **Prefer explicit over implied.** When describing scope, say “X is implemented; Y and Z are placeholders” rather than only “X is done.” If the user could reasonably assume something is built when it isn’t, state the limitation.
+
+## When implementing from a plan
+
+- Before finishing, check: does the plan leave any buttons/actions as “wire later” or “placeholder”? If yes, explicitly tell the user which ones and that they have no backend/flow yet.
+- When giving “next steps,” include any items that look implemented in the UI but are not (e.g. “Button X currently shows a placeholder message; real implementation would require …”).

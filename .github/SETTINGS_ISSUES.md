@@ -1,6 +1,6 @@
 # Cursor-like Settings — GitHub Issues for Project Board
 
-> **Status:** SET-001–SET-008 are **implemented**. These issue templates are kept for reference and for closing corresponding board cards.
+> **Status:** SET-001–SET-010 are **implemented**. These issue templates are kept for reference and for closing corresponding board cards.
 
 Add these issues to the Project Etna Roadmap board (Backlog or Ready column). New issues/PRs are auto-added when `PROJECT_TOKEN` is set; see [PROJECTS.md](./PROJECTS.md).
 
@@ -75,6 +75,16 @@ Add these issues to the Project Etna Roadmap board (Backlog or Ready column). Ne
 ### SET-008: Remaining panels
 **Title:** `[Settings] P2–P3: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta panels`  
 **Labels:** `enhancement`, `settings`, `priority/p2`  
+
+### SET-009: Network settings tab (backlog)
+**Title:** `[Settings] P3: Re-add Network settings tab`  
+**Labels:** `enhancement`, `settings`, `priority/p3`  
+**Body:** Re-add Network section and panel (HTTP compatibility, Run Diagnostic). See BACKLOG.md SET-009. Deferred to backlog.
+
+### SET-010: Guest settings (try before signup) ✅
+**Title:** `[Settings] P2: Guest settings — localStorage for unauthenticated users`  
+**Labels:** `enhancement`, `settings`, `priority/p2`  
+**Body:** UserSettingsProvider uses API when signed in, localStorage when guest; updatePreferences(); Beta panel and chat use it; "Sign in to sync" banner. Ref: BACKLOG.md SET-010, SETTINGS_PLAN.md. **Implemented.**
 
 ---
 

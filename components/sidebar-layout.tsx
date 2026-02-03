@@ -10,8 +10,8 @@ import {
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Hide sidebar on auth pages and settings (which has its own sidebar)
-  const hideSidebar = pathname === "/login" || pathname === "/signup" || pathname === "/auth" || pathname === "/settings";
+  // Hide sidebar on auth pages only (settings opens as modal)
+  const hideSidebar = pathname === "/login" || pathname === "/signup" || pathname === "/auth";
 
   if (hideSidebar) {
     return <>{children}</>;

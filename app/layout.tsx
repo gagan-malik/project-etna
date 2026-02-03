@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeSyncFromPreferences } from "@/components/theme-sync-from-preferences";
 import { SidebarLayout } from "@/components/sidebar-layout";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthProvider } from "@/components/auth-provider";
 import { NextjsPortalFix } from "@/components/nextjs-portal-fix";
+import { SettingsModalProvider } from "@/components/settings-modal-context";
 import { Inter } from "next/font/google";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -30,10 +32,13 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <ThemeSyncFromPreferences />
             <ErrorBoundary>
-              <SidebarLayout>
-                {children}
-              </SidebarLayout>
+              <SettingsModalProvider>
+                <SidebarLayout>
+                  {children}
+                </SidebarLayout>
+              </SettingsModalProvider>
             </ErrorBoundary>
             <Toaster />
             <NextjsPortalFix />

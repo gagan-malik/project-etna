@@ -376,22 +376,61 @@ Full Agents settings: General agent, Agent Review, Context, Applying Changes, Au
 
 ---
 
-#### SET-008: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta (P2–P3) ✅
+#### SET-008: Cloud Agents, Tools & MCP, Indexing & Docs, Beta (P2–P3) ✅
 **Priority:** P2–P3  
 **Effort:** Medium each  
 **Impact:** Medium
 
-Remaining panels: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta. Docs is nav-only (external link).
+Remaining panels: Cloud Agents, Tools & MCP, Indexing & Docs, Beta. Docs is nav-only (external link). Network tab removed from UI; see SET-009 for backlog.
 
 **Tasks:**
 - [x] Cloud Agents: Manage Settings (Open → /integrations), Connect Slack, Workspace Config, Personal Configuration (expandable)
 - [x] Tools & MCP: Browser automation dropdown, Show localhost links toggle, Installed MCP servers list + Add custom
 - [x] Indexing & Docs: Codebase indexing (progress, Sync, Delete), Index new folders toggle, .cursorignore; Docs empty state + Add Doc
-- [x] Network: HTTP Compatibility Mode (HTTP/1.1, HTTP/2) persisted; Run Diagnostic button
 - [x] Beta: Update Access (Stable/Early), Agent Autocomplete, Extension RPC Tracer — persisted via `/api/settings`
 - [x] Docs: left nav link only (external)
 
 **Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-009: Network settings tab (backlog)
+**Priority:** P3  
+**Effort:** Small  
+**Impact:** Low
+
+Re-add Network access tab and settings. Removed from UI 2025-02; deferred to backlog.
+
+**Tasks:**
+- [ ] Add "Network" section back to settings nav (icon: Globe)
+- [ ] Network panel: HTTP Compatibility Mode (HTTP/1.1, HTTP/2) with persistence via `/api/settings`
+- [ ] "Run Diagnostic" button: check network connectivity to backend AI services (toast + optional Slack/alert)
+- [ ] Wire panel to settings dialog and `/settings` page
+
+**Reference:** Previous implementation in `components/settings/panels/network-panel.tsx` (deleted); [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
+
+---
+
+#### SET-010: Guest settings (try before signup) ✅
+**Priority:** P2  
+**Effort:** Small  
+**Impact:** High
+
+Support unauthenticated users: settings toggles work without 401; preferences stored in localStorage for guests.
+
+**Tasks:**
+- [x] UserSettingsProvider: when unauthenticated, load/save preferences from localStorage (`etna_guest_preferences`); same shape as API
+- [x] Expose `updatePreferences(updates)` that uses API when signed in, localStorage when guest
+- [x] Beta panel (and other panels) use `updatePreferences` so toggles never call PATCH when guest
+- [x] Chat page uses `useUserSettings().preferences` for agentAutocomplete (works for guest from localStorage)
+- [x] Settings layout: show "Sign in to sync these settings across devices" banner when guest, with Sign in link
+- [x] Document guest experience in SETTINGS_PLAN.md
+
+**Acceptance Criteria:**
+- Guest can open settings and toggle Beta (Early access, Agent Autocomplete) without error; preferences persist in localStorage for the session
+- Signed-in users continue to use API; no behavior change
+
+**Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md) — Unauthenticated (guest) experience
 
 ---
 

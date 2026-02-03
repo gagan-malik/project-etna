@@ -1,117 +1,25 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
-import {
-  SettingsLayout,
-  SettingsPageTitle,
-  DEFAULT_SECTION,
-  getSectionById,
-  GeneralSettingsPanel,
-  RulesPanel,
-  SkillsPanel,
-  WorkersPanel,
-  HooksPanel,
-  TabSettingsPanel,
-  ModelsSettingsPanel,
-  AgentsSettingsPanel,
-  CloudAgentsPanel,
-  ToolsMcpPanel,
-  IndexingDocsPanel,
-  NetworkPanel,
-  BetaPanel,
-  PlaceholderPanel,
-} from "@/components/settings";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useSettingsModal } from "@/components/settings-modal-context";
 
-function SettingsPageContent() {
+/**
+ * /settings redirects to chat and opens the settings modal.
+ * There is no full-page settings; everything uses the modal.
+ */
+export default function SettingsRedirectPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sectionParam = searchParams.get("section");
-  const [activeSection, setActiveSection] = useState(DEFAULT_SECTION);
+  const { openSettings } = useSettingsModal();
 
   useEffect(() => {
-    const id = sectionParam ?? DEFAULT_SECTION;
-    const section = getSectionById(id);
-    if (section && !section.external) {
-      setActiveSection(id);
-    }
-  }, [sectionParam]);
+    openSettings();
+    router.replace("/chat");
+  }, [router, openSettings]);
 
-  const handleSetSection = useCallback(
-    (id: string) => {
-      setActiveSection(id);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("section", id);
-      router.replace(`/settings?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
-
-  const renderContent = useCallback(() => {
-    switch (activeSection) {
-      case "general":
-        return <GeneralSettingsPanel />;
-      case "rules":
-        return <RulesPanel />;
-      case "skills":
-        return <SkillsPanel />;
-      case "workers":
-        return <WorkersPanel />;
-      case "hooks":
-        return <HooksPanel />;
-      case "tab":
-        return <TabSettingsPanel />;
-      case "models":
-        return <ModelsSettingsPanel />;
-      case "agents":
-        return <AgentsSettingsPanel />;
-      case "cloud-agents":
-        return <CloudAgentsPanel />;
-      case "tools-mcp":
-        return <ToolsMcpPanel />;
-      case "indexing-docs":
-        return <IndexingDocsPanel />;
-      case "network":
-        return <NetworkPanel />;
-      case "beta":
-        return <BetaPanel />;
-      default: {
-        const section = getSectionById(activeSection);
-        return (
-          <PlaceholderPanel
-            sectionLabel={section?.label ?? activeSection}
-          />
-        );
-      }
-    }
-  }, [activeSection]);
-
-  return (
-    <SettingsLayout
-      activeSection={activeSection}
-      setActiveSection={handleSetSection}
-      basePath="/settings"
-    >
-      <SettingsPageTitle sectionId={activeSection} />
-      {renderContent()}
-    </SettingsLayout>
-  );
-}
-
-function SettingsPageFallback() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-sm text-muted-foreground">Loading settings…</p>
-    </div>
-  );
-}
-
-export default function SettingsPage() {
-  return (
-    <div className="min-h-screen w-full bg-background flex flex-col">
-      <Suspense fallback={<SettingsPageFallback />}>
-        <SettingsPageContent />
-      </Suspense>
+      <p className="text-sm text-muted-foreground">Opening settings…</p>
     </div>
   );
 }
