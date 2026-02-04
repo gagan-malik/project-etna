@@ -2,13 +2,13 @@
 
 ## ✅ Completed
 
-1. ✅ Core dependencies installed (Prisma, Auth.js, AI models, API clients)
+1. ✅ Core dependencies installed (Prisma, Clerk, AI models, API clients)
 2. ✅ Prisma schema created (User, Space, Conversation, Message, Integration, DocumentIndex)
 3. ✅ Database utilities and helpers created
 4. ✅ Environment setup scripts and documentation
 5. ✅ UI components rebuilt with Shadcn
 6. ✅ Settings dialog implemented
-7. ✅ **Step 2: Authentication Setup** - Auth.js v5 configured with Credentials, GitHub, Google providers
+7. ✅ **Step 2: Authentication Setup** - Clerk implemented (replaces Auth.js); sign-in/sign-up at /login and /signup
 8. ✅ **Step 3: API Routes** - All core API routes created:
    - Conversations API (list, create, get, update, delete)
    - Messages API (create, get, update, delete, stream)
@@ -17,15 +17,15 @@
 
 ## 🎯 Next Steps
 
-### ✅ Step 2: Authentication Setup (Auth.js v5) - COMPLETED
+### ✅ Step 2: Authentication Setup (Clerk) - COMPLETED
 
 **Status: ✅ Done**
 
-- ✅ `auth.ts` configured with Prisma adapter
-- ✅ Credentials, GitHub, Google providers set up
-- ✅ API routes created (`app/api/auth/[...nextauth]/route.ts`, `app/api/auth/signup/route.ts`)
-- ✅ Middleware for route protection
-- ✅ Login/signup forms connected to Auth.js
+- ✅ Clerk integrated via `@clerk/nextjs`; Prisma users linked with `clerkId`
+- ✅ `lib/auth.ts` and `auth.ts` provide session with Prisma user id for API routes
+- ✅ Middleware uses `clerkMiddleware`; protection handled client-side via `<AuthGuard>` to avoid redirect loops
+- ✅ Login/signup pages at `/login` and `/signup` use Clerk `<SignIn />` and `<SignUp />`
+- ✅ Optional `POST /api/auth/signup` retained for programmatic use; primary flow is Clerk
 
 ---
 

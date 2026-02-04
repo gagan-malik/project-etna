@@ -248,9 +248,11 @@ DELETE /api/documents/[id]
 
 ---
 
-## 🔑 Authentication API
+## 🔑 Authentication (Clerk)
 
-### Sign Up
+Sign-in and sign-up are handled by Clerk at `/login` and `/signup`. API routes use `auth()` from `@/auth` for session (Prisma user id). See [docs/api/authentication](docs/api/authentication.md) and [docs/CLERK_SETUP](docs/CLERK_SETUP.md).
+
+### Optional: Programmatic sign-up
 ```http
 POST /api/auth/signup
 Content-Type: application/json
@@ -261,12 +263,7 @@ Content-Type: application/json
   "password": "secure-password"
 }
 ```
-
-### Auth.js Routes
-```http
-GET /api/auth/[...nextauth]  // Auth.js handler
-POST /api/auth/[...nextauth] // Auth.js handler
-```
+Primary user creation is via Clerk; this endpoint is optional for headless or migration use.
 
 ---
 

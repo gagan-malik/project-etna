@@ -48,7 +48,7 @@ npm run dev
 |:-----------|:--------|
 | Next.js 15 | React framework |
 | PostgreSQL | Database with pgvector |
-| Auth.js v5 | Authentication |
+| Clerk | Authentication |
 | Prisma | Database ORM |
 | shadcn/ui | UI components |
 | Tailwind CSS | Styling |

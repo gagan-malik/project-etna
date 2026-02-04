@@ -44,14 +44,19 @@ Required environment variables:
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/etna"
 
-# Authentication
-AUTH_SECRET="your-auth-secret-here"
+# Authentication (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=http://localhost:3000/chat
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=http://localhost:3000/chat
 
 # AI Providers (at least one required)
 OPENAI_API_KEY="sk-..."
 GOOGLE_AI_API_KEY="..."
 DEEPSEEK_API_KEY="..."
 ```
+
+For full Clerk setup (redirect URLs, sign-in/sign-up paths), see [Clerk Setup](CLERK_SETUP.md).
 
 ### 4. Set Up Database
 

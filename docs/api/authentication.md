@@ -9,209 +9,103 @@ description: User authentication and session management
 
 ## Overview
 
-Project Etna uses [Auth.js](https://authjs.dev/) (NextAuth.js v5) for authentication. The API supports:
+Project Etna uses [Clerk](https://clerk.com) for authentication. NextAuth has been removed.
 
-- Email/password credentials
-- Session-based authentication
-- Secure cookie management
+- **Sign-in**: `/login` (Clerk `<SignIn />` component)
+- **Sign-up**: `/signup` (Clerk `<SignUp />` component)
+- **Session**: Cookie-based; Prisma user is linked via `clerkId` and created on first sign-in
+- **API**: Routes use `auth()` from `@/auth`, which returns a session with `session.user.id` = Prisma user id
 
----
-
-## Sign Up
-
-Create a new user account.
-
-```http
-POST /api/auth/signup
-```
-
-### Request Body
-
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `name` | string | Yes | User's display name |
-| `email` | string | Yes | Email address |
-| `password` | string | Yes | Password (min 8 characters) |
-
-### Request
-
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "secure-password"
-}
-```
-
-### Response (Success)
-
-```json
-{
-  "user": {
-    "id": "user_123",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "createdAt": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-### Response (Error)
-
-```json
-{
-  "error": "Email already registered"
-}
-```
-
-### Validation Rules
-
-- **Email**: Must be a valid email format
-- **Password**: Minimum 8 characters
-- **Name**: Required, 1-100 characters
+For environment setup and redirect URLs, see [Clerk Setup](/CLERK_SETUP).
 
 ---
 
-## Sign In
+## Sign In & Sign Out (Clerk)
 
-Authenticate and create a session.
+Sign-in and sign-up are handled by Clerk’s hosted UI at `/login` and `/signup`. There is no custom credentials API; configure Email/Password or OAuth in the [Clerk Dashboard](https://dashboard.clerk.com).
 
-```http
-POST /api/auth/callback/credentials
-```
-
-### Request Body
-
-| Field | Type | Required | Description |
-|:------|:-----|:---------|:------------|
-| `email` | string | Yes | Email address |
-| `password` | string | Yes | Password |
-
-### Example
+### Client: check auth and sign out
 
 ```javascript
-// Using Auth.js client
-import { signIn } from 'next-auth/react';
-
-await signIn('credentials', {
-  email: 'john@example.com',
-  password: 'secure-password',
-  redirect: false
-});
-```
-
-### Response
-
-On success, sets an HTTP-only session cookie and returns:
-
-```json
-{
-  "url": "/chat"
-}
-```
-
----
-
-## Get Session
-
-Retrieve the current user's session.
-
-```http
-GET /api/auth/session
-```
-
-### Response (Authenticated)
-
-```json
-{
-  "user": {
-    "id": "user_123",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "image": null
-  },
-  "expires": "2024-02-01T00:00:00Z"
-}
-```
-
-### Response (Not Authenticated)
-
-```json
-{}
-```
-
-### Example
-
-```javascript
-import { useSession } from 'next-auth/react';
+import { useAuth, useUser, useClerk } from '@clerk/nextjs';
 
 function MyComponent() {
-  const { data: session, status } = useSession();
-  
-  if (status === 'loading') return <p>Loading...</p>;
-  if (status === 'unauthenticated') return <p>Not signed in</p>;
-  
-  return <p>Welcome, {session.user.name}</p>;
+  const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
+
+  if (!isLoaded) return <p>Loading…</p>;
+  if (!isSignedIn) return <p>Not signed in</p>;
+
+  return (
+    <>
+      <p>Welcome, {user?.fullName ?? user?.primaryEmailAddress?.emailAddress}</p>
+      <button onClick={() => signOut({ redirectUrl: '/login' })}>Sign out</button>
+    </>
+  );
 }
 ```
 
----
+### Redirects
 
-## Sign Out
-
-End the current session.
-
-```http
-POST /api/auth/signout
-```
-
-### Example
-
-```javascript
-import { signOut } from 'next-auth/react';
-
-await signOut({ redirect: true, callbackUrl: '/login' });
-```
+- After sign-in: `afterSignInUrl="/chat"` (configured in `ClerkProvider` and env).
+- After sign-up: `afterSignUpUrl="/chat"`.
+- Sign-out: use `signOut({ redirectUrl: '/login' })` to send users to `/login`.
 
 ---
 
-## Auth.js Handler
+## Session (server-side)
 
-All other authentication routes are handled by Auth.js:
+Session is provided by `auth()` from `@/auth` (which uses Clerk + Prisma under the hood). Use it in API routes and server components.
 
-```http
-GET /api/auth/[...nextauth]
-POST /api/auth/[...nextauth]
-```
-
-This includes:
-
-- `/api/auth/signin` - Sign in page
-- `/api/auth/signout` - Sign out handler
-- `/api/auth/session` - Session data
-- `/api/auth/csrf` - CSRF token
-- `/api/auth/providers` - Available auth providers
-
----
-
-## Protecting API Routes
-
-To protect your API routes, check for authentication:
+### Get current session
 
 ```typescript
 import { auth } from '@/auth';
 
 export async function GET() {
   const session = await auth();
-  
+
   if (!session?.user) {
     return Response.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
-  
-  // User is authenticated
+
+  const userId = session.user.id;  // Prisma user id
+  const email = session.user.email;
+  // ...
+}
+```
+
+### Session shape
+
+- `session.user.id` — Prisma user id (use this for DB relations)
+- `session.user.email` — string
+- `session.user.name` — string | null
+- `session.user.image` — string | null
+- `session.user.plan` — string (e.g. `"free"`)
+
+---
+
+## Protecting API Routes
+
+Use the same pattern for any protected route:
+
+```typescript
+import { auth } from '@/auth';
+
+export async function GET() {
+  const session = await auth();
+
+  if (!session?.user) {
+    return Response.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   const userId = session.user.id;
   // ...
 }
@@ -219,11 +113,14 @@ export async function GET() {
 
 ---
 
-## Security Notes
+## Optional: Programmatic sign-up API
 
-::: important
-- Passwords are hashed using bcrypt before storage
-:::
-> - Session tokens are HTTP-only cookies (not accessible via JavaScript)
-> - CSRF protection is enabled by default
-> - Sessions expire after 30 days of inactivity
+`POST /api/auth/signup` still exists for creating users with email/password without Clerk (e.g. headless or migration). For normal app flows, users sign up via Clerk at `/signup`; Prisma users are then created on first sign-in in `lib/auth.ts`. If you rely on Clerk only, you can ignore this endpoint.
+
+---
+
+## Security notes
+
+- Clerk manages session cookies and CSRF; do not expose `CLERK_SECRET_KEY` or publishable key misuse.
+- Passwords (if using the optional signup API) are hashed with bcrypt.
+- All protected API routes must call `auth()` and check `session?.user`; do not trust client-supplied user ids.
