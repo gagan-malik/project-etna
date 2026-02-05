@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Cloud Agents settings panel — BACKLOG (removed from Settings UI Feb 2026).
+ * See docs/product/BACKLOG.md CLD-001 and UX_MASTER_FILE.md "Future: Cloud Agents (North Star)".
+ * Panel code retained for when Cloud Agents is re-enabled.
+ */
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +32,7 @@ export function CloudAgentsPanel() {
         <p className="text-xs text-muted-foreground mb-3">
           Connect GitHub, manage team and user settings, and more.
         </p>
-        <Button variant="outline" size="xs" asChild>
+        <Button variant="secondary" size="xs" asChild>
           <Link href="/integrations">Open ↗</Link>
         </Button>
       </SettingsSection>

@@ -6,7 +6,7 @@
 
 ## Overview
 
-Single settings experience (dialog + full page `/settings`) with full information architecture: General, Agents, Tab, Models, Cloud Agents, Tools & MCP, Rules/Skills/Workers, Hooks, Indexing & Docs, Network, Beta, Docs. Privacy Mode is **paid plans only**. P1 scope: layout, General, Rules/Skills/Workers, Hooks.
+Single settings experience (dialog + full page `/settings`) with full information architecture: General, Agents, Tab, Models, Tools & MCP, Rules/Skills/Workers, Hooks, Indexing & Docs, Network, Beta, Docs. **Cloud Agents** is deferred (removed from UI Feb 2026); see [BACKLOG.md](./BACKLOG.md) CLD-001. Privacy Mode is **paid plans only**. P1 scope: layout, General, Rules/Skills/Workers, Hooks.
 
 ## Priorities (locked)
 
@@ -28,7 +28,7 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 | **P0** | Schema + GET/PATCH `/api/settings`; auth; persisted keys |
 | **P1** | Layout (user block, search ⌘F, nav) + General + Rules/Skills/Workers + Hooks + persistence + entry (dialog + page) |
 | **P2** | Tab, Models, Agents panels |
-| **P3** | Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta |
+| **P3** | Tools & MCP, Indexing & Docs, Network, Beta (Cloud Agents deferred → BACKLOG CLD-001) |
 
 ---
 
@@ -46,13 +46,12 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 │ ┌────────────────┐   │                                                          │
 │ │                │   │  ─── Preferences ───                                     │
 │ └────────────────┘   │  Sync layouts...                          [====ON]       │
-│ ⚙️ General           │  Editor Settings                           [Open]        │
+│ ⚙️ General           │  Keyboard Shortcuts                       [Open]        │
 │ ∞ Agents             │  ...                                                      │
 │ → Tab                │                                                          │
 │ 📦 Models             │  ─── Notifications ───                                   │
 │ ─────────────────     │  System Notifications                    [====ON]       │
-│ ☁️ Cloud Agents       │  ...                                                      │
-│ 🛠️ Tools & MCP       │                                                          │
+│ 🛠️ Tools & MCP       │  (Cloud Agents: deferred — see BACKLOG CLD-001)          │
 │ ─────────────────     │  ─── Privacy ─── (paid only)                             │
 │ 📄 Rules, Skills, Workers      │  🔒 Privacy Mode                          [Mode ▼]       │
 │ 🔗 Hooks              │                                                          │
@@ -69,7 +68,7 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 ## Wireframe 1: General
 
 - **Manage Account:** description + [Open ↗] → Settings → Account
-- **Preferences:** Sync layouts (toggle), Editor Settings (Open), Keyboard Shortcuts (Open), Import VS Code (Import), Reset "Don't Ask Again" (Show)
+- **Preferences:** Sync layouts (toggle), Keyboard Shortcuts (Open), Reset "Don't Ask Again" (Show)
 - **Notifications:** System Notifications, Menu Bar Icon, Completion Sound (toggles)
 - **Privacy:** Privacy Mode (lock icon) — dropdown, **paid only**
 - **Log Out** at bottom
@@ -99,7 +98,7 @@ Single settings experience (dialog + full page `/settings`) with full informatio
 - **Tab:** Cursor Tab, Partial Accepts, Suggestions While Commenting, Whitespace-Only, Imports, Auto Import Python (BETA) — toggles
 - **Models:** Add/search + model list toggles + API Keys (OpenAI, Anthropic, Google, Azure, AWS)
 - **Agents:** General agent, Agent Review, Context, Applying Changes, Auto-Run, Protection, Inline & Terminal, Voice, Attribution
-- **Cloud Agents:** Manage Settings, Connect Slack, Workspace Config, Personal Configuration (Sharing, Pricing, GitHub, Base Env, Runtime, Secrets)
+- **Cloud Agents:** *(Deferred — BACKLOG CLD-001)* Manage Settings, Connect Slack, Workspace Config, Personal Configuration (Sharing, Pricing, GitHub, Base Env, Runtime, Secrets)
 - **Tools & MCP:** Browser automation, Show localhost links, Installed MCP servers + Add custom
 - **Indexing & Docs:** Codebase indexing (progress, Sync, Delete), Index new folders, .cursorignore; Docs empty state + Add Doc
 - **Network:** HTTP Compatibility Mode dropdown, Run Diagnostic button
@@ -155,8 +154,6 @@ These controls have no backend or flow yet; they show an **“Upgrade”** badge
 
 | Panel | Button / control | File |
 |-------|------------------|------|
-| **General** | Keyboard Shortcuts “Open” | general-settings-panel.tsx |
-| **General** | Import Settings from VS Code “Import” | general-settings-panel.tsx |
 | **Rules** | Context: All, User, project-etna | rules-panel.tsx |
 | **Rules** | Rules “+ New” | rules-panel.tsx |
 | **Rules** | Commands “+ New”, “New Command” | rules-panel.tsx |
@@ -172,13 +169,13 @@ These controls have no backend or flow yet; they show an **“Upgrade”** badge
 | **Indexing & Docs** | View included files, Edit (.cursorignore) | indexing-docs-panel.tsx |
 | **Indexing & Docs** | “+ Add Doc” | indexing-docs-panel.tsx |
 | **Hooks** | Clear log | hooks-panel.tsx |
-| **Cloud Agents** | Connect Slack “Connect ↗” | cloud-agents-panel.tsx |
+| **Cloud Agents** | *(Deferred)* BACKLOG CLD-001 | cloud-agents-panel.tsx |
 
 ---
 
 ## References
 
-- [BACKLOG.md](./BACKLOG.md) — SET-001–SET-008
+- [BACKLOG.md](./BACKLOG.md) — SET-001–SET-010; Cloud Agents deferred (CLD-001)
 - [ROADMAP.md](./ROADMAP.md) — Phase 2
 - [UX_MASTER_FILE.md](./UX_MASTER_FILE.md) — Settings IA (Profile, AI Models, Preferences, Integrations, API Keys)
 - [WORKERS_UX.md](../../.cursor/WORKERS_UX.md) — Workers UX

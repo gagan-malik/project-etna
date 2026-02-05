@@ -16,6 +16,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import { formatRelativeTime } from "@/lib/format";
 
 interface Message {
   id: string;
@@ -78,21 +79,7 @@ export function ChatMessage({ message, onEdit, onRegenerate, onDelete }: ChatMes
     }
   };
 
-  const formatTimestamp = (dateString?: string) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
+  const formattedTime = message.createdAt ? formatRelativeTime(message.createdAt) : null;
 
   if (message.role === "user") {
     return (
@@ -161,8 +148,8 @@ export function ChatMessage({ message, onEdit, onRegenerate, onDelete }: ChatMes
           </Card>
           {!isEditing && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {formatTimestamp(message.createdAt) && (
-                <span>{formatTimestamp(message.createdAt)}</span>
+              {formattedTime && (
+                <span>{formattedTime}</span>
               )}
               {onEdit && (
                 <Button
@@ -232,8 +219,8 @@ export function ChatMessage({ message, onEdit, onRegenerate, onDelete }: ChatMes
           </div>
         </Card>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {formatTimestamp(message.createdAt) && (
-            <span>{formatTimestamp(message.createdAt)}</span>
+          {formattedTime && (
+            <span>{formattedTime}</span>
           )}
           <Button
             variant="ghost"

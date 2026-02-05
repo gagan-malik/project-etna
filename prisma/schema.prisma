@@ -116,6 +116,7 @@ model spaces {
 
 model users {
   id                    String             @id @default(cuid())
+  clerkId               String?            @unique // Clerk user id; set when user signs in via Clerk
   email                 String             @unique
   emailVerified         DateTime?
   name                  String?
@@ -136,6 +137,61 @@ model users {
   design_files          design_files[]
   debug_sessions        debug_sessions[]
   waveform_files        waveform_files[]
+  user_commands         user_commands[]
+  skills                skills[]
+  workers               workers[]
+}
+
+// Commands: user-defined slash commands with prompt template; optional quick action
+model user_commands {
+  id                 String   @id @default(cuid())
+  userId             String
+  spaceId            String?
+  name               String
+  slug               String   // e.g. "debug-rtl"; unique per user (and space if set)
+  promptTemplate     String   // may contain {{user_input}}
+  showAsQuickAction  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  users              users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([spaceId])
+}
+
+// Skills: system-prompt fragments; built-in (userId null) or user-created
+model skills {
+  id                   String   @id @default(cuid())
+  userId               String?  // null = built-in
+  name                 String
+  description          String?
+  systemPromptFragment String
+  isBuiltIn            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  users                users?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isBuiltIn])
+}
+
+// Workers: named subagents with own system prompt and optional model
+model workers {
+  id           String   @id @default(cuid())
+  userId       String
+  spaceId      String?
+  name         String
+  slug         String   // unique per user (and space if set)
+  systemPrompt String
+  modelId      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  users        users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([spaceId])
 }
 
 model verification_tokens {

@@ -1,19 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
+import { useUserSettings } from "@/components/user-settings-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { SettingsSection } from "../settings-section";
-import { ChevronDown, Info } from "lucide-react";
+import {
+  MessageSquare,
+  FolderOpen,
+  FileCode,
+  Activity,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface ConversationSummary {
+  id: string;
+  title?: string | null;
+  updatedAt: Date;
+  messages?: { id: string }[];
+}
+
 export function OverviewSettingsPanel() {
-  const { data: session } = useSession();
-  const [analyticsRange, setAnalyticsRange] = useState<"D" | "W" | "M">("M");
-  const planLabel = (session?.user as { plan?: string })?.plan ?? "free";
+  const { isSignedIn } = useAuth();
+  const { plan } = useUserSettings();
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const planLabel = plan ?? "free";
   const planDisplay =
     planLabel === "pro"
       ? "Pro+"
@@ -25,39 +42,126 @@ export function OverviewSettingsPanel() {
             ? "Free"
             : `${planLabel.charAt(0).toUpperCase()}${planLabel.slice(1)}`;
 
+  useEffect(() => {
+    if (!isSignedIn) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/conversations", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { conversations: [] }))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data.conversations)) {
+          setConversations(
+            data.conversations.slice(0, 5).map((c: { id: string; title?: string | null; updatedAt: string; messages?: { id: string }[] }) => ({
+              id: c.id,
+              title: c.title ?? null,
+              updatedAt: new Date(c.updatedAt),
+              messages: c.messages,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setConversations([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn]);
+
+  function formatRelative(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  }
+
   return (
     <div className="w-full px-8 py-5 space-y-6">
-      {/* Ultra Plan */}
-      <SettingsSection title="Ultra">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p className="text-lg font-semibold text-foreground">$200/mo.</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Get maximum value with 20x usage limits and early access to advanced features.
-            </p>
-          </div>
-          <Button size="sm" asChild>
-            <Link href="/overview">Upgrade to Ultra</Link>
+      {/* Quick actions — match UX_MASTER_FILE Dashboard */}
+      <SettingsSection title="Quick actions">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Button variant="outline" className="h-auto justify-start gap-3 py-3 px-3" asChild>
+            <Link href="/chat">
+              <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>New chat</span>
+              <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto justify-start gap-3 py-3 px-3" asChild>
+            <Link href="/sessions">
+              <Activity className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Debug sessions</span>
+              <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto justify-start gap-3 py-3 px-3" asChild>
+            <Link href="/files">
+              <FileCode className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Design files</span>
+              <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto justify-start gap-3 py-3 px-3" asChild>
+            <Link href="/waveforms">
+              <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Waveforms</span>
+              <ChevronRight className="h-4 w-4 ml-auto opacity-50" />
+            </Link>
           </Button>
         </div>
       </SettingsSection>
 
-      {/* Pro Plan */}
-      <SettingsSection title="Pro">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p className="text-lg font-semibold text-foreground">$60/mo.</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              MAX Mode, multiple models, higher usage limits, and FST waveform support.
-            </p>
-          </div>
-          <Button size="sm" asChild>
-            <Link href="/overview">Upgrade to Pro</Link>
+      {/* Recent conversations */}
+      <SettingsSection title="Recent conversations">
+        {loading ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : conversations.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No conversations yet. Start a chat to debug RTL, waveforms, or design files.
+          </p>
+        ) : (
+          <ul className="space-y-1">
+            {conversations.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/chat?conversation=${c.id}`}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground",
+                    "hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 truncate flex-1">
+                    {c.title || "Untitled conversation"}
+                  </span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {formatRelative(c.updatedAt)}
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!loading && conversations.length > 0 && (
+          <Button variant="ghost" size="sm" className="mt-2" asChild>
+            <Link href="/chat">View all</Link>
           </Button>
-        </div>
+        )}
       </SettingsSection>
 
-      {/* Current Plan (Pro+) */}
+      {/* Current plan + upgrade CTA */}
       <SettingsSection title={planDisplay}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -72,69 +176,26 @@ export function OverviewSettingsPanel() {
           </div>
           <p className="text-xs text-muted-foreground">
             {planLabel === "ultra"
-              ? "Get maximum value with 20x usage limits and early access to advanced features."
+              ? "Maximum usage limits and early access to advanced features."
               : planLabel === "pro"
-                ? "Get 3x more usage than Pro, unlock higher limits on Agent, and more."
+                ? "MAX Mode, multiple models, higher usage limits, FST waveform support."
                 : planLabel === "free"
-                  ? "Perfect for getting started."
+                  ? "Perfect for getting started. Upgrade for more queries and features."
                   : "For teams and organizations."}
           </p>
+          {planLabel === "free" && (
+            <Button size="sm" asChild>
+              <Link href="/overview" className="gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                Upgrade for more
+              </Link>
+            </Button>
+          )}
           {planLabel !== "free" && (
-            <Button variant="outline" size="sm">
-              Manage Subscription
+            <Button variant="secondary" size="sm" asChild>
+              <Link href="/overview">Manage plan</Link>
             </Button>
           )}
-          {(planLabel === "pro" || planLabel === "ultra") && (
-            <div className="rounded-[var(--radius)] border bg-muted/50 p-2.5 space-y-1.5 mt-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium">$68 / Unlimited</span>
-                <Button variant="ghost" size="sm" className="h-7 text-xs">
-                  Edit Limit
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                On-Demand Usage this Month (Unlimited)
-              </p>
-              <Progress value={20} className="h-1.5" />
-            </div>
-          )}
-        </div>
-      </SettingsSection>
-
-      {/* Your Analytics */}
-      <SettingsSection title="Your Analytics">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-1.5">
-            <Button variant="outline" size="sm" className="h-6 gap-0.5 text-xs px-2">
-              Jan 05 - Feb 03
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-            <div className="flex items-center gap-0.5">
-              {(["D", "W", "M"] as const).map((range) => (
-                <Button
-                  key={range}
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-6 min-w-6 px-1.5 text-[11px] focus-visible:ring-0 focus-visible:ring-offset-0",
-                    analyticsRange === range && "bg-muted"
-                  )}
-                  onClick={() => setAnalyticsRange(range)}
-                  title={range === "D" ? "Day" : range === "W" ? "Week" : "Month"}
-                >
-                  {range}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span className="text-muted-foreground">Lines of Agent Edits:</span>
-            <span className="font-medium">170,379 / 1,065,295</span>
-            <Info className="h-3 w-3 text-muted-foreground shrink-0" aria-hidden />
-          </div>
-          <div className="h-[140px] rounded border bg-muted/30 flex items-center justify-center">
-            <span className="text-[11px] text-muted-foreground">Lines of Agent Edits (chart)</span>
-          </div>
         </div>
       </SettingsSection>
     </div>

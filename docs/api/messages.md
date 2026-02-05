@@ -53,7 +53,7 @@ POST /api/messages
 
 ## Stream AI Response
 
-Send a message and receive a streaming AI response.
+Send a message and receive a streaming AI response. Supports commands (expanded prompts), workers (subagents), and per-message skills.
 
 ```http
 POST /api/messages/stream
@@ -64,16 +64,64 @@ POST /api/messages/stream
 | Field | Type | Required | Description |
 |:------|:-----|:---------|:------------|
 | `conversationId` | string | Yes | Conversation ID |
-| `content` | string | Yes | User message |
+| `content` | string | Conditional | User message. Optional if `expandedContent` or `workerSlug` is provided (worker path uses a placeholder when content is empty). |
 | `model` | string | No | AI model (default: `gpt-4`) |
 | `provider` | string | No | AI provider (default: `openai`) |
+| `sources` | string[] | No | Data sources (e.g. `web`, `my_files`, `org_files`) |
+| `maxMode` | boolean | No | Use highest-quality model (premium) |
+| `useMultipleModels` | boolean | No | Combine multiple models (premium) |
+| `expandedContent` | string | No | When the client has resolved a **command**, send the expanded prompt here; stored as the user message content. |
+| `workerSlug` | string | No | When invoking a **worker** (subagent), send its slug; the route uses the worker’s system prompt and optional model. |
+| `additionalSkillIds` | string[] | No | Skill IDs to apply for **this message only** (in addition to user’s enabled skills). Used when the user picks a skill from the `/` menu. |
 
-### Request
+### Request (basic)
 
 ```json
 {
   "conversationId": "conv_123",
   "content": "Analyze this Verilog module for bugs",
+  "model": "gpt-4",
+  "provider": "openai"
+}
+```
+
+### Request (with command expansion)
+
+When the user triggers a slash command, the client expands the template and sends the result as `expandedContent`:
+
+```json
+{
+  "conversationId": "conv_123",
+  "content": "debug-rtl",
+  "expandedContent": "Analyze this RTL for bugs, timing issues, and best practices. Focus on: my FIFO module",
+  "model": "gpt-4",
+  "provider": "openai"
+}
+```
+
+### Request (with worker)
+
+When the user invokes a worker (subagent), send `workerSlug`; the worker’s system prompt and optional model are used for this turn:
+
+```json
+{
+  "conversationId": "conv_123",
+  "content": "Check this design for CDC issues",
+  "workerSlug": "worker-cdc",
+  "model": "gpt-4",
+  "provider": "openai"
+}
+```
+
+### Request (with per-message skills)
+
+When the user adds skills from the `/` menu, send their IDs as `additionalSkillIds` (merged with the user’s enabled skills for this request):
+
+```json
+{
+  "conversationId": "conv_123",
+  "content": "Review this RTL",
+  "additionalSkillIds": ["skill-rtl-uninitialized", "skill-cdc-awareness"],
   "model": "gpt-4",
   "provider": "openai"
 }

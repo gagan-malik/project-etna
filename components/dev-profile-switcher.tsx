@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   Select,
   SelectContent,
@@ -22,7 +21,8 @@ const OTHER_VALUE = "__other__";
 
 export function DevProfileSwitcher() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
 
   if (!isDev) {
@@ -30,16 +30,15 @@ export function DevProfileSwitcher() {
   }
 
   // Close when window loses focus so Cursor's "Select element" tool isn't blocked
-  // by the portaled dropdown staying on top (no "click outside" when using the tool).
   useEffect(() => {
     const handleBlur = () => setOpen(false);
     window.addEventListener("blur", handleBlur);
     return () => window.removeEventListener("blur", handleBlur);
   }, []);
 
-  const currentEmail = session?.user?.email ?? "";
+  const currentEmail = user?.primaryEmailAddress?.emailAddress ?? "";
   const currentProfile = DEV_TIER_PROFILES.find((p) => p.email === currentEmail);
-  const isAuthenticated = !!session?.user;
+  const isAuthenticated = !!user;
 
   const selectValue = currentProfile
     ? currentProfile.email
@@ -53,7 +52,7 @@ export function DevProfileSwitcher() {
 
     if (value === DEMO_VALUE) {
       try {
-        await signOut({ redirect: false });
+        await signOut();
         const target = pathname ?? "/";
         setTimeout(() => {
           window.location.href = target;
@@ -64,24 +63,8 @@ export function DevProfileSwitcher() {
       return;
     }
 
-    if (!devSecret) return;
-    try {
-      const result = await signIn("credentials", {
-        email: value,
-        password: devSecret,
-        redirect: false,
-      });
-      if (result?.ok) {
-        const target = pathname ?? "/";
-        setTimeout(() => {
-          window.location.href = target;
-        }, 50);
-      } else if (result?.error) {
-        console.error("Dev profile switch failed:", result.error);
-      }
-    } catch (err) {
-      console.error("Dev profile switch error:", err);
-    }
+    // With Clerk, switching to another dev profile requires signing in via Clerk UI
+    window.location.href = "/login";
   }
 
   return (

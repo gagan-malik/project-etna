@@ -7,11 +7,11 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { isAuthPath } from "@/lib/layout";
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Hide sidebar on auth pages only (settings opens as modal)
-  const hideSidebar = pathname === "/login" || pathname === "/signup" || pathname === "/auth";
+  const hideSidebar = isAuthPath(pathname);
 
   if (hideSidebar) {
     return <>{children}</>;

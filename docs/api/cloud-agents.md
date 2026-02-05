@@ -5,7 +5,9 @@ description: Programmatically launch and manage cloud agents that work on your r
 
 # Cloud Agents API
 
-The Cloud Agents API lets you programmatically launch and manage cloud agents that work on your repositories.
+> **Status: Backlog (not implemented).** Cloud Agents are deferred as of Feb 2026. Product focus is in-app only. This document describes the **planned** API contract. When implemented, agents will be Etna silicon-aware (RTL/debug). See [BACKLOG.md](../product/BACKLOG.md) CLD-001 and [UX_MASTER_FILE.md](../product/UX_MASTER_FILE.md) — Future: Cloud Agents.
+
+The Cloud Agents API (when implemented) will let you programmatically launch and manage cloud agents that work on your repositories with **Etna's silicon-debug context** (RTL, testbench, protocol awareness).
 
 - The Cloud Agents API uses **Basic Authentication**. You can obtain an API key from your [Etna Dashboard](https://your-domain.vercel.app/settings) (or Cursor Dashboard if integrating with Cursor).
 - For details on authentication methods, rate limits, and best practices, see the [API Overview](/docs/api).

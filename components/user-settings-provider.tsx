@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 
 const GUEST_PREFERENCES_KEY = "etna_guest_preferences";
 
@@ -61,13 +61,13 @@ const defaultState: UserSettingsState = {
 const UserSettingsContext = createContext<UserSettingsState>(defaultState);
 
 export function UserSettingsProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { isSignedIn, isLoaded } = useAuth();
   const [preferences, setPreferences] = useState<Record<string, unknown>>({});
   const [plan, setPlan] = useState("free");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
-    if (!session?.user?.id) {
+    if (!isSignedIn) {
       setPreferences({});
       setPlan("free");
       setIsLoading(false);
@@ -85,11 +85,11 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [isSignedIn]);
 
   const updatePreferences = useCallback(
     async (updates: Record<string, unknown>): Promise<{ success: boolean; error?: string }> => {
-      if (session?.user?.id) {
+      if (isSignedIn) {
         try {
           const res = await fetch("/api/settings", {
             method: "PATCH",
@@ -113,23 +113,23 @@ export function UserSettingsProvider({ children }: { children: ReactNode }) {
       saveGuestPreferences(next);
       return { success: true };
     },
-    [session?.user?.id, preferences, fetchSettings]
+    [isSignedIn, preferences, fetchSettings]
   );
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (status === "unauthenticated") {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
       setPreferences(loadGuestPreferences());
       setPlan("free");
       setIsLoading(false);
       return;
     }
     fetchSettings();
-  }, [status, fetchSettings]);
+  }, [isLoaded, isSignedIn, fetchSettings]);
 
   const updateAccess = (preferences.updateAccess as UpdateAccess) ?? "stable";
   const isEarlyAccess = updateAccess === "early";
-  const isAuthenticated = Boolean(session?.user?.id);
+  const isAuthenticated = Boolean(isSignedIn);
 
   const value: UserSettingsState = {
     preferences,

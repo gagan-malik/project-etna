@@ -1,16 +1,19 @@
 /**
  * Unified AI Service
- * Provides a single interface to all AI providers
+ * Provides a single interface to all AI providers.
+ * When AI_GATEWAY_API_KEY is set, Vercel AI Gateway is used for all models (one key).
  */
 
+import { GatewayProvider } from "./gateway";
 import { OpenAIProvider } from "./openai";
 import { GeminiProvider } from "./gemini";
 import { DeepSeekProvider } from "./deepseek";
 import { LlamaProvider } from "./llama";
 import type { AIRequest, AIResponse, AIStreamChunk, AIProvider, ModelInfo } from "./types";
 
-// Initialize providers
+// Gateway first so when configured it is preferred (one key for all models)
 const providers: AIProvider[] = [
+  new GatewayProvider(),
   new OpenAIProvider(),
   new GeminiProvider(),
   new DeepSeekProvider(),
@@ -32,26 +35,24 @@ export function getProvider(name: string): AIProvider | null {
 }
 
 /**
- * Get provider for a specific model
+ * Get provider for a specific model.
+ * When Vercel AI Gateway is configured (AI_GATEWAY_API_KEY), it is used for all models.
  */
 export function getProviderForModel(modelId: string): AIProvider | null {
-  // Map model IDs to providers
+  const gateway = getProvider("gateway");
+  if (gateway) {
+    return gateway;
+  }
+
   const modelToProvider: Record<string, string> = {
-    // OpenAI models
     "gpt-4-turbo": "openai",
     "gpt-4": "openai",
     "gpt-3.5-turbo": "openai",
     "gpt-4-turbo-preview": "openai",
-    
-    // Gemini models
     "gemini-pro": "google",
     "gemini-pro-vision": "google",
-    
-    // DeepSeek models
     "deepseek-chat": "deepseek",
     "deepseek-coder": "deepseek",
-    
-    // Llama models (Together AI)
     "llama-3-70b": "llama",
     "llama-3-8b": "llama",
     "meta-llama/Llama-3-70b-chat-hf": "llama",
@@ -60,7 +61,6 @@ export function getProviderForModel(modelId: string): AIProvider | null {
 
   const providerName = modelToProvider[modelId];
   if (!providerName) {
-    // Default to OpenAI if unknown
     return getProvider("openai");
   }
 
@@ -119,38 +119,36 @@ export const DEFAULT_CHAT_MODELS: ModelInfo[] = [
 ];
 
 /**
- * Get available models
- * Always returns all models, but marks availability based on configured providers
+ * Get available models.
+ * When AI Gateway is configured, all models are available through it.
  */
 export function getAvailableModels(): ModelInfo[] {
+  const gatewayAvailable = getProvider("gateway")?.isAvailable() ?? false;
+  const openaiAvailable = getProvider("openai")?.isAvailable() ?? false;
+  const googleAvailable = getProvider("google")?.isAvailable() ?? false;
+  const deepseekAvailable = getProvider("deepseek")?.isAvailable() ?? false;
+  const llamaAvailable = getProvider("llama")?.isAvailable() ?? false;
+
   const models: ModelInfo[] = [];
 
-  // Always include OpenAI models (mark availability based on provider)
-  const openaiAvailable = getProvider("openai")?.isAvailable() ?? false;
   models.push(
-    { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai", category: "General", available: openaiAvailable },
-    { id: "gpt-4", name: "GPT-4", provider: "openai", category: "General", available: openaiAvailable },
-    { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai", category: "General", available: openaiAvailable }
+    { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai", category: "General", available: gatewayAvailable || openaiAvailable },
+    { id: "gpt-4", name: "GPT-4", provider: "openai", category: "General", available: gatewayAvailable || openaiAvailable },
+    { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai", category: "General", available: gatewayAvailable || openaiAvailable }
   );
 
-  // Always include Gemini models
-  const googleAvailable = getProvider("google")?.isAvailable() ?? false;
   models.push(
-    { id: "gemini-pro", name: "Gemini Pro", provider: "google", category: "General", available: googleAvailable }
+    { id: "gemini-pro", name: "Gemini Pro", provider: "google", category: "General", available: gatewayAvailable || googleAvailable }
   );
 
-  // Always include DeepSeek models
-  const deepseekAvailable = getProvider("deepseek")?.isAvailable() ?? false;
   models.push(
-    { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", category: "General", available: deepseekAvailable },
-    { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", category: "Code", available: deepseekAvailable }
+    { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", category: "General", available: gatewayAvailable || deepseekAvailable },
+    { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", category: "Code", available: gatewayAvailable || deepseekAvailable }
   );
 
-  // Always include Llama models
-  const llamaAvailable = getProvider("llama")?.isAvailable() ?? false;
   models.push(
-    { id: "llama-3-70b", name: "Llama 3 70B", provider: "llama", category: "Open Source", available: llamaAvailable },
-    { id: "llama-3-8b", name: "Llama 3 8B", provider: "llama", category: "Open Source", available: llamaAvailable }
+    { id: "llama-3-70b", name: "Llama 3 70B", provider: "llama", category: "Open Source", available: gatewayAvailable || llamaAvailable },
+    { id: "llama-3-8b", name: "Llama 3 8B", provider: "llama", category: "Open Source", available: gatewayAvailable || llamaAvailable }
   );
 
   return models;

@@ -10,7 +10,9 @@ export const DEV_TIER_PROFILES = [
   { email: "ultraplan-user@example.com", name: "ultraplan user", plan: "ultra" as const },
 ] as const;
 
-const DEV_TIER_EMAILS = new Set(DEV_TIER_PROFILES.map((p) => p.email));
+const DEV_TIER_EMAILS = new Set<string>(
+  DEV_TIER_PROFILES.map((p) => p.email)
+);
 
 export function isDevTierProfileEmail(email: string): boolean {
   return DEV_TIER_EMAILS.has(email);

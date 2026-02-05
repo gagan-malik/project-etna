@@ -56,6 +56,9 @@ const userPreferencesSchema = z
     mcpServers: z.array(z.object({ id: z.string(), name: z.string(), enabled: z.boolean() })).optional(),
     // Indexing & Docs
     indexNewFolders: z.boolean().optional(),
+    // Commands, Skills, Workers
+    enabledSkillIds: z.array(z.string()).optional(),
+    commandsEnabled: z.boolean().optional(),
   })
   .strict();
 

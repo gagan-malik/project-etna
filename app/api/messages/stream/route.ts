@@ -27,14 +27,37 @@ export async function POST(req: Request) {
       sources = [],
       maxMode = false,
       useMultipleModels = false,
+      workerSlug,
+      expandedContent,
+      additionalSkillIds = [],
     } = body;
 
-    if (!conversationId || !content) {
+    if (!conversationId) {
       return NextResponse.json(
-        { error: "Missing required fields: conversationId, content" },
+        { error: "Missing required field: conversationId" },
         { status: 400 }
       );
     }
+
+    // Allow empty content when worker or expanded content is provided
+    const hasWorker = workerSlug && typeof workerSlug === "string" && workerSlug.trim();
+    const hasExpanded = typeof expandedContent === "string" && expandedContent.trim().length > 0;
+    const hasContent = typeof content === "string" && content.trim().length > 0;
+    if (!hasContent && !hasExpanded && !hasWorker) {
+      return NextResponse.json(
+        { error: "Missing required field: content (or expandedContent / workerSlug with content)" },
+        { status: 400 }
+      );
+    }
+
+    const effectiveContent =
+      hasExpanded
+        ? (expandedContent as string).trim()
+        : hasContent
+          ? (content as string).trim()
+          : hasWorker
+            ? "Please proceed."
+            : "";
 
     // Check premium access for premium features
     const userHasPremium = await hasPremiumAccess(session.user.id);
@@ -98,6 +121,45 @@ export async function POST(req: Request) {
       console.log(`[RPC] POST /api/messages/stream ${new Date().toISOString()}`);
     }
 
+    // Worker path: load worker by slug (user-scoped, optional space)
+    let worker: { id: string; systemPrompt: string; modelId: string | null } | null = null;
+    if (workerSlug && typeof workerSlug === "string") {
+      const w = await prisma.workers.findFirst({
+        where: {
+          slug: workerSlug.trim(),
+          userId: session.user.id,
+          ...(conversation.spaceId ? { spaceId: conversation.spaceId } : {}),
+        },
+      });
+      if (w) worker = { id: w.id, systemPrompt: w.systemPrompt, modelId: w.modelId };
+      else {
+        return NextResponse.json(
+          { error: "Worker not found" },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Load enabled skills + any additional skill IDs for this message (Cursor-style / skill)
+    const prefsSkillIds = (prefs.enabledSkillIds as string[] | undefined) ?? [];
+    const extraIds = Array.isArray(additionalSkillIds) ? (additionalSkillIds as string[]) : [];
+    const allSkillIds = [...new Set([...prefsSkillIds, ...extraIds])];
+    let skillsContext = "";
+    if (allSkillIds.length > 0) {
+      const skillRows = await prisma.skills.findMany({
+        where: {
+          id: { in: allSkillIds },
+          OR: [{ userId: null }, { userId: session.user.id }],
+        },
+        select: { systemPromptFragment: true },
+      });
+      if (skillRows.length > 0) {
+        skillsContext =
+          "\n\n## Additional guidelines (enabled skills)\n" +
+          skillRows.map((s) => s.systemPromptFragment).join("\n\n");
+      }
+    }
+
     // Get conversation messages for context
     const previousMessages = await prisma.messages.findMany({
       where: { conversationId },
@@ -105,13 +167,13 @@ export async function POST(req: Request) {
       take: 20, // Limit to last 20 messages for context
     });
 
-    // Create user message
-    const userMessage = await prisma.messages.create({
+    // Create user message (store effective content)
+    await prisma.messages.create({
       data: {
         conversationId,
         role: "user",
-        content,
-        metadata: {},
+        content: effectiveContent,
+        metadata: worker ? { workerSlug } : {},
       },
     });
 
@@ -121,15 +183,20 @@ export async function POST(req: Request) {
       data: { updatedAt: new Date() },
     });
 
-    // RAG: Search for relevant documents based on selected sources
+    // Worker path: override model if worker has modelId
+    if (worker?.modelId) {
+      modelToUse = worker.modelId;
+      providerToUse = null;
+    }
+
+    // RAG: Search for relevant documents (skip for worker path)
     let relevantContext = "";
-    
-    // Only search documents if "my_files" or "org_files" sources are selected
-    const shouldSearchFiles = sources.includes("my_files") || sources.includes("org_files");
-    
+    const shouldSearchFiles =
+      !worker && (sources.includes("my_files") || sources.includes("org_files"));
+
     if (shouldSearchFiles) {
       try {
-        const embeddingResponse = await generateEmbedding(content, "openai");
+        const embeddingResponse = await generateEmbedding(effectiveContent, "openai");
         const similarDocs = await findSimilarDocuments(
           embeddingResponse.embedding,
           3, // Get top 3 relevant documents
@@ -172,14 +239,21 @@ export async function POST(req: Request) {
     }
 
     // Search external sources (web, academic, news, finance)
-    let externalSearchContext = "";
-    const externalSources: SourceType[] = sources.filter((s: SourceType) => 
+    // Respect user preference: agentWebSearchTool OFF = never search web; ON = include web when selected or always for this request
+    const agentWebSearchEnabled = prefs.agentWebSearchTool !== false;
+    let externalSources: SourceType[] = sources.filter((s: SourceType) =>
       ["web", "academic", "news", "finance"].includes(s)
     ) as SourceType[];
+    if (!agentWebSearchEnabled) {
+      externalSources = externalSources.filter((s) => s !== "web");
+    } else if (!externalSources.includes("web")) {
+      externalSources = ["web", ...externalSources];
+    }
 
-    if (externalSources.length > 0) {
+    let externalSearchContext = "";
+    if (!worker && externalSources.length > 0) {
       try {
-        const searchResults = await searchMultipleSources(content, externalSources);
+        const searchResults = await searchMultipleSources(effectiveContent, externalSources);
         
         const contextParts: string[] = [];
         searchResults.forEach((result) => {
@@ -214,21 +288,20 @@ export async function POST(req: Request) {
       ["github", "gmail", "google_drive", "slack", "confluence", "microsoft_graph"].includes(s)
     ) as SourceType[];
 
-    if (thirdPartySources.length > 0) {
+    if (!worker && thirdPartySources.length > 0) {
       // TODO: Fetch data from integrations based on selected sources
       // For now, add a note that integrations are enabled
       integrationContext = `\n\nUser has enabled the following integrations: ${thirdPartySources.join(", ")}. Search these sources for relevant information.`;
     }
 
-    // Prepare messages for AI (include previous messages for context + RAG context + source context + external search)
-    const systemMessage = `You are an AI assistant. Answer the user's question based on the provided context and conversation history.${sourceContext}${integrationContext}`;
-    
-    // Combine all context for the user message
-    const userMessageContent = [
-      content,
-      relevantContext,
-      externalSearchContext,
-    ].filter(Boolean).join("\n");
+    // Prepare messages for AI
+    const systemMessage = worker
+      ? worker.systemPrompt + skillsContext
+      : `You are an AI assistant. Answer the user's question based on the provided context and conversation history.${sourceContext}${integrationContext}${skillsContext}`;
+
+    const userMessageContent = worker
+      ? effectiveContent
+      : [effectiveContent, relevantContext, externalSearchContext].filter(Boolean).join("\n");
     
     const aiMessages = [
       {

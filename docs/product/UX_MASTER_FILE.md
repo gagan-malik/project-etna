@@ -76,6 +76,8 @@ Etna's UX is built on five foundational principles that differentiate it from le
 | After signup | "That was instant, and my session is preserved" |
 | Sharing with team | "My colleagues need to see this" |
 
+**Current product focus:** All value is delivered **in-app** (chat, paste code, upload waveform, streaming responses). Cloud Agents (async, team, API/Slack) are planned for the near future; see [Future: Cloud Agents (North Star)](#future-cloud-agents-north-star) and [BACKLOG.md](./BACKLOG.md) CLD-001.
+
 ---
 
 ## Unauthenticated Experience
@@ -1871,6 +1873,24 @@ Etna runs simulations in the browser using Verilator compiled to WebAssembly:
 
 ---
 
+### Future: Cloud Agents (North Star)
+
+**Current focus:** All core value is delivered **in-app** (conversation-first, paste code/upload waveform, get answers in the same session). No cloud agent execution in the product today.
+
+**North star (near future):** Cloud Agents will extend the same Etna “brain” (RTL-aware, silicon debug, testbench generation) to **async, team, and automation** contexts. The north star persona (Maya) leads; all personas benefit as follows.
+
+| Persona | What they can achieve with Cloud Agents (near future) |
+|----------|------------------------------------------------------|
+| **Maya** (Primary) | Run Etna-style RTL analysis on a PR or branch from Slack or API; get a summary in channel or email so the team sees it without opening Etna. Trigger “analyze this repo for common RTL bugs” from CI or nightly. Share findings via “Run in cloud → notify team” instead of only share links. |
+| **Shivam** (Student) | Optional: “Run analysis overnight” on a class repo and get results in the morning; or run from a “Run from GitHub” action for larger projects. In-app remains primary for quick paste-and-debug. |
+| **Sam** (Hobbyist) | Run “generate testbench for module X” or “review this RISC-V RTL” from API or a simple “Run in cloud” from the app; get result via webhook or in-app when done. Fits evening/weekend async workflow. |
+
+**Design principle:** Cloud Agents = “Etna in the cloud” — same silicon-aware capabilities, triggered from API, Slack, or “Run in cloud” from chat/session; results delivered async (notification, PR, webhook). In-app stays the primary path to immediate value; cloud extends that value to team and automation.
+
+**Status:** Cloud Agents is **backlog**. Settings panel and nav entry are removed; full scope is documented in [BACKLOG.md](./BACKLOG.md) (CLD-001). When implemented, Cloud Agents will be Pro+ and aligned with the flows and patterns in this document.
+
+---
+
 ## Information Architecture
 
 ### Site Map
@@ -1949,8 +1969,7 @@ etna.dev
 │   │   └── Model Recommendations per Mode
 │   ├── Preferences
 │   │   ├── Theme (Light/Dark)
-│   │   ├── Keyboard Shortcuts
-│   │   └── Editor Settings
+│   │   └── Keyboard Shortcuts
 │   ├── Integrations
 │   └── API Keys
 │

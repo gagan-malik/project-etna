@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 import { SettingsSection } from "../settings-section";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ function getProvider(modelId: string): string {
 
 export function ModelsSettingsPanel() {
   const { toast } = useToast();
-  const { data: session } = useSession();
+  const { isSignedIn } = useAuth();
   const { preferences, plan, isLoading: prefsLoading, updatePreferences } = useUserSettings();
   const hasPremiumAccess = isPaidPlan(plan);
   const [models, setModels] = useState<ModelInfo[]>([]);
@@ -172,7 +172,7 @@ export function ModelsSettingsPanel() {
   };
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!isSignedIn) {
       setModels(DEFAULT_MODELS);
       setModelsLoading(false);
       return;
@@ -194,7 +194,7 @@ export function ModelsSettingsPanel() {
       }
     };
     fetchModels();
-  }, [session?.user]);
+  }, [isSignedIn]);
 
   const enabledIds = useMemo(() => {
     const ids = (preferences.enabledModelIds as string[] | undefined) ?? [];

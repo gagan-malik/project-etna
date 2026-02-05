@@ -3,20 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { 
-  Bug, 
-  History, 
-  Settings, 
-  Home, 
-  Cpu,
-  HelpCircle,
-  Plus,
-  Loader2,
-  Wrench,
-  FileCode,
-  Activity,
-} from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { Bug, Cpu, Plus, Loader2, FlaskConical, ExternalLink } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -30,74 +18,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { FlaskConical } from "lucide-react";
-import { DevProfileSwitcher } from "@/components/dev-profile-switcher";
-import { UserMenu } from "@/components/user-menu";
 import { useUserSettings } from "@/components/user-settings-provider";
 import { useSettingsModal } from "@/components/settings-modal-context";
 import { SettingsDialog } from "@/components/settings-dialog";
-
-interface NavItem {
-  title: string;
-  url: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-}
-
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
-const navigation: NavSection[] = [
-  {
-    title: "Main",
-    items: [
-      {
-        title: "Home",
-        url: "/",
-        icon: Home,
-      },
-      {
-        title: "Debug Assistant",
-        url: "/chat",
-        icon: Bug,
-      },
-      {
-        title: "Debug Sessions",
-        url: "/activity",
-        icon: History,
-      },
-      {
-        title: "EDA Tools",
-        url: "/integrations",
-        icon: Wrench,
-      },
-      {
-        title: "Design Files",
-        url: "/files",
-        icon: FileCode,
-      },
-      {
-        title: "Waveforms",
-        url: "/waveforms",
-        icon: Activity,
-      },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings,
-      },
-    ],
-  },
-];
+import { SIDEBAR_NAV } from "@/lib/layout";
+import { formatRelativeTime } from "@/lib/format";
 
 interface Conversation {
   id: string;
@@ -109,7 +35,8 @@ interface Conversation {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { user, isLoaded: userLoaded } = useUser();
+  const sessionStatus = userLoaded ? (user ? "authenticated" : "unauthenticated") : "loading";
   const { isEarlyAccess } = useUserSettings();
   const { open: settingsOpen, setOpen: setSettingsOpen, openSettings } = useSettingsModal();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -158,19 +85,6 @@ export function AppSidebar() {
     router.push(`/chat?conversation=${id}`);
   };
 
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   return (
     <>
       <Sidebar collapsible="icon" className="border-r">
@@ -195,15 +109,15 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* New Debug Session Button - Show on chat page */}
+        {/* New Session Button - Show on chat page */}
         {pathname === "/chat" && (
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton variant="primary" onClick={handleNewChat} tooltip="New Debug Session">
+                  <SidebarMenuButton variant="primary" onClick={handleNewChat} tooltip="New Session">
                     <Plus className="h-4 w-4" />
-                    <span>New Debug Session</span>
+                    <span>New Session</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -240,7 +154,7 @@ export function AppSidebar() {
                             {conv.title || "Untitled Debug Session"}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {formatTimestamp(conv.updatedAt)}
+                            {formatRelativeTime(conv.updatedAt)}
                             {conv.messages && conv.messages.length > 0 && (
                               <> • {conv.messages.length} msg</>
                             )}
@@ -256,7 +170,7 @@ export function AppSidebar() {
         )}
 
         {/* Main Navigation */}
-        {navigation.map((section) => (
+        {SIDEBAR_NAV.map((section) => (
           <SidebarGroup key={section.title}>
             <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -267,8 +181,7 @@ export function AppSidebar() {
                     pathname === item.url || 
                     (item.url !== "/" && pathname?.startsWith(item.url));
                   
-                  // Handle Settings as a dialog instead of navigation
-                  if (item.title === "Settings") {
+                  if (item.openSettings) {
                     return (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton 
@@ -316,20 +229,27 @@ export function AppSidebar() {
 
       <SidebarFooter className="mt-auto border-t border-sidebar-border">
         <div className="flex flex-col gap-2 px-1.5 py-2">
-          <div className="flex items-center gap-1.5">
-            <DevProfileSwitcher />
-            {isEarlyAccess && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1 shrink-0">
-                <FlaskConical className="h-3.5 w-3.5" />
-                Beta access
-              </Badge>
-            )}
-          </div>
-          <UserMenu
-            name={session?.user?.name || session?.user?.email || "User"}
-            email={session?.user?.email || undefined}
-            image={session?.user?.image || undefined}
-          />
+          {process.env.NODE_ENV === "development" && (
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.open(window.location.href, "_blank", "noopener,noreferrer");
+                }
+              }}
+              className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              title="Open in default browser (right-click and Select element work there)"
+            >
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Open in browser</span>
+            </button>
+          )}
+          {isEarlyAccess && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1 shrink-0 w-fit">
+              <FlaskConical className="h-3.5 w-3.5" />
+              Beta access
+            </Badge>
+          )}
         </div>
       </SidebarFooter>
 
@@ -338,7 +258,7 @@ export function AppSidebar() {
     <SettingsDialog
       open={settingsOpen}
       onOpenChange={setSettingsOpen}
-      session={session}
+      session={user ? { user: { id: user.id, name: user.fullName ?? undefined, email: user.primaryEmailAddress?.emailAddress ?? undefined, image: user.imageUrl ?? undefined, plan: undefined } } : null}
       status={sessionStatus}
     />
     </>

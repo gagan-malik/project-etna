@@ -24,6 +24,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/format";
 import { QUICK_PROMPTS } from "@/lib/ai/prompts/silicon-debug";
 
 interface DebugSession {
@@ -115,11 +116,6 @@ export function DebugSessionPanel({
   onStatusChange,
   className,
 }: DebugSessionPanelProps) {
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
   const formatDuration = (startDate: string, endDate?: string) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date();
@@ -180,7 +176,7 @@ export function DebugSessionPanel({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="h-4 w-4" />
-            <span>Started: {formatTimestamp(session.createdAt)}</span>
+            <span>Started: {formatRelativeTime(session.createdAt)}</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="h-4 w-4" />

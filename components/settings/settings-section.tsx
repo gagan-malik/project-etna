@@ -29,18 +29,18 @@ export function SettingsSection({
   contentClassName,
 }: SettingsSectionProps) {
   return (
-    <section className={cn("space-y-1", className)}>
+    <section className={cn("space-y-4", className)}>
       {(title || titleBadge) && (
-        <div className="flex items-center justify-between gap-4 mb-1">
+        <div className="flex items-center justify-between gap-4">
           {title && (
-            <h2 className="text-xs font-medium text-foreground">{title}</h2>
+            <h2 className="text-xs font-medium text-foreground leading-none">{title}</h2>
           )}
           {titleBadge}
         </div>
       )}
       <div
         className={cn(
-          "rounded-[var(--radius)] bg-card p-4",
+          "rounded-[var(--radius)] bg-gray-100 dark:bg-card p-4",
           list &&
             "divide-y divide-border/50 [&>div]:px-4 [&>div]:py-2 [&>div:first-child]:pt-0 [&>div:last-child]:pb-0",
           contentClassName

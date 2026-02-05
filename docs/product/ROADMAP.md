@@ -101,7 +101,7 @@ prisma/migrations/20260128000000_add_waveform_files/
 - [x] Configured Hooks (0) + Execution Log + empty states
 
 #### 2.4 Later panels (P2+) ✅
-- [x] Tab, Models, Agents, Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta (see BACKLOG SET-005–SET-008)
+- [x] Tab, Models, Agents, Tools & MCP, Indexing & Docs, Network, Beta (see BACKLOG SET-005–SET-008). Cloud Agents deferred → BACKLOG CLD-001.
 
 ---
 

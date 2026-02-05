@@ -53,7 +53,10 @@ export function IndexingDocsPanel() {
           <Switch checked={false} disabled={!paid} aria-label="Codebase Indexing" />
         </div>
         <p className="text-xs text-muted-foreground mb-3">
-          Embed codebase for improved contextual understanding. Embeddings and metadata are stored in the cloud; all code is stored locally.
+          Embed codebase for improved contextual understanding (RTL, design files). Embeddings and metadata are stored in the cloud; all code is stored locally.
+        </p>
+        <p className="text-xs text-muted-foreground mb-2" role="status">
+          Coming soon. Progress and file count will appear here when indexing is available.
         </p>
         <div className="space-y-2 mb-3">
           <div className="flex justify-between text-xs">
@@ -111,9 +114,9 @@ export function IndexingDocsPanel() {
         <p className="text-xs text-muted-foreground mb-2">
           Crawl and index custom resources and developer docs.
         </p>
-        <p className="text-sm text-muted-foreground mb-3">No Docs Added</p>
+        <p className="text-sm text-muted-foreground mb-2">No docs added</p>
         <p className="text-xs text-muted-foreground mb-3">
-          Add documentation to use as context. You can also use @Add in Chat or while editing to add a doc.
+          Coming soon. Add documentation (e.g. spec sheets, protocol docs) to use as context for RTL and hardware questions.
         </p>
       </SettingsSection>
     </div>

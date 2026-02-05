@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useClerk } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, Monitor, Cookie, User, FileText, HelpCircle, LogOut, Copy } from "lucide-react";
+import { Sun, Moon, Monitor, User, LogOut, Copy, Settings, CreditCard, Mail } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
@@ -27,6 +27,7 @@ interface UserMenuProps {
 
 export function UserMenu({ name, email, image }: UserMenuProps) {
   const router = useRouter();
+  const { signOut } = useClerk();
   const { openSettings } = useSettingsModal();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
@@ -47,7 +48,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
   }, []);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ redirectUrl: "/login" });
   };
 
   const handleCopyEmail = async () => {
@@ -83,19 +84,26 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{name || "User"}</p>
-            <div className="flex items-center gap-2">
-              <p className="text-xs leading-none text-muted-foreground">{email || "No email"}</p>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4"
-                onClick={handleCopyEmail}
-                title="Copy email"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
+          <div className="flex items-start gap-3">
+            <Avatar className="h-10 w-10 shrink-0">
+              <AvatarImage src={image || undefined} alt={name || "User"} />
+              <AvatarFallback>{getInitials(name)}</AvatarFallback>
+            </Avatar>
+            <div className="flex min-w-0 flex-1 flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{name || "User"}</p>
+              <div className="flex items-center gap-2">
+                <p className="truncate text-xs leading-none text-muted-foreground">{email || "No email"}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 shrink-0"
+                  onClick={handleCopyEmail}
+                  title="Copy email"
+                  aria-label="Copy email"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -138,22 +146,22 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => openSettings("account")}>
           <User className="mr-2 h-4 w-4" />
-          <span>Your profile</span>
+          <span>Account</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/help")}>
-          <HelpCircle className="mr-2 h-4 w-4" />
-          <span>Help</span>
+        <DropdownMenuItem onClick={() => openSettings("overview")}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/terms")}>
-          <FileText className="mr-2 h-4 w-4" />
-          <span>Terms & policies</span>
+        <DropdownMenuItem onClick={() => openSettings("billing-invoices")}>
+          <CreditCard className="mr-2 h-4 w-4" />
+          <span>Billing</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/cookies")}>
-          <Cookie className="mr-2 h-4 w-4" />
-          <span>Manage cookies</span>
+        <DropdownMenuItem onClick={() => openSettings("contact")}>
+          <Mail className="mr-2 h-4 w-4" />
+          <span>Contact Us</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

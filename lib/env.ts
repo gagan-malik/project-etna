@@ -10,11 +10,12 @@ const requiredEnvVars = {
   // Database
   DATABASE_URL: process.env.DATABASE_URL,
   
-  // Auth
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL || "http://localhost:3000",
+  // Auth (Clerk)
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   
-  // Optional - AI Providers
+  // Optional - AI Providers (use AI_GATEWAY_API_KEY for Vercel AI Gateway = one key for all models)
+  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
   DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
@@ -48,13 +49,20 @@ export function validateEnv(): { valid: boolean; missing: string[]; warnings: st
     missing.push("DATABASE_URL");
   }
 
-  if (!requiredEnvVars.NEXTAUTH_SECRET) {
-    missing.push("NEXTAUTH_SECRET");
+  if (!requiredEnvVars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    missing.push("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY");
+  }
+  if (!requiredEnvVars.CLERK_SECRET_KEY) {
+    missing.push("CLERK_SECRET_KEY");
   }
 
   // Warnings for recommended variables
-  if (!requiredEnvVars.OPENAI_API_KEY && !requiredEnvVars.GOOGLE_GENERATIVE_AI_API_KEY) {
-    warnings.push("No AI provider API keys found. AI features will not work.");
+  if (
+    !requiredEnvVars.AI_GATEWAY_API_KEY &&
+    !requiredEnvVars.OPENAI_API_KEY &&
+    !requiredEnvVars.GOOGLE_GENERATIVE_AI_API_KEY
+  ) {
+    warnings.push("No AI provider API keys found. Set AI_GATEWAY_API_KEY (Vercel AI Gateway) or provider keys. AI features will not work.");
   }
 
   if (!requiredEnvVars.BLOB_READ_WRITE_TOKEN) {

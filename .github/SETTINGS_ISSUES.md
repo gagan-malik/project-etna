@@ -72,9 +72,10 @@ Add these issues to the Project Etna Roadmap board (Backlog or Ready column). Ne
 **Title:** `[Settings] P2: Agents settings panel (full)`  
 **Labels:** `enhancement`, `settings`, `priority/p2`  
 
-### SET-008: Remaining panels
-**Title:** `[Settings] P2–P3: Cloud Agents, Tools & MCP, Indexing & Docs, Network, Beta panels`  
+### SET-008: Remaining panels (Cloud Agents deferred)
+**Title:** `[Settings] P2–P3: Tools & MCP, Indexing & Docs, Network, Beta panels`  
 **Labels:** `enhancement`, `settings`, `priority/p2`  
+**Note:** Cloud Agents removed from UI Feb 2026; full scope in BACKLOG.md CLD-001.
 
 ### SET-009: Network settings tab (backlog)
 **Title:** `[Settings] P3: Re-add Network settings tab`  

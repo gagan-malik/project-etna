@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Building2, LogOut, Trash2 } from "lucide-react";
+import { LogOut, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { isPaidPlan } from "../settings-config";
 import { useUserSettings } from "@/components/user-settings-provider";
+import { cn } from "@/lib/utils";
 
 const SUPPORT_EMAIL = "hi@projectetna.com";
 
@@ -49,13 +50,13 @@ function AccountRow({
     <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">
         {label && (
-          <Label className="text-sm font-medium text-muted-foreground">
+          <Label className="text-xs font-medium text-foreground">
             {label}
           </Label>
         )}
-        <div className="mt-0.5 text-sm text-foreground">{value}</div>
+        <div className="mt-0.5 text-[11px] text-muted-foreground">{value}</div>
         {description && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground leading-snug">{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -64,7 +65,8 @@ function AccountRow({
 }
 
 export function AccountSettingsPanel() {
-  const { data: session, update } = useSession();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const router = useRouter();
   const { toast } = useToast();
   const { plan } = useUserSettings();
@@ -77,25 +79,26 @@ export function AccountSettingsPanel() {
   const [usernameOpen, setUsernameOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [signOutAllOpen, setSignOutAllOpen] = useState(false);
 
   const [editName, setEditName] = useState("");
   const [editUsername, setEditUsername] = useState("");
 
-  const email = session?.user?.email ?? "";
+  const email = user?.primaryEmailAddress?.emailAddress ?? "";
   const displayUsername =
-    username.trim() || session?.user?.email?.split("@")[0] || session?.user?.name || "—";
+    username.trim() || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || user?.fullName || "—";
 
   useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || "");
+    if (user) {
+      setName(user.fullName || "");
       setUsername("");
-      setEditName(session.user.name || "");
-      setEditUsername(session.user.email?.split("@")[0] || session.user.name || "");
+      setEditName(user.fullName || "");
+      setEditUsername(user.primaryEmailAddress?.emailAddress?.split("@")[0] || user.fullName || "");
     }
-  }, [session]);
+  }, [user]);
 
-  const planLabel = (session?.user as { plan?: string })?.plan ?? plan ?? "free";
+  const planLabel = plan ?? "free";
   const planDisplay =
     planLabel === "pro"
       ? "Pro"
@@ -122,7 +125,7 @@ export function AccountSettingsPanel() {
         throw new Error(error.error || "Failed to update profile");
       }
 
-      await update();
+      router.refresh();
       setName(editName);
       setFullNameOpen(false);
       toast({ title: "Success", description: "Profile updated successfully" });
@@ -152,7 +155,7 @@ export function AccountSettingsPanel() {
         throw new Error(error.error || "Failed to update username");
       }
 
-      await update();
+      router.refresh();
       setUsername(editUsername);
       setUsernameOpen(false);
       toast({ title: "Success", description: "Username updated successfully" });
@@ -194,7 +197,7 @@ export function AccountSettingsPanel() {
   };
 
   const handleSignOutAll = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ redirectUrl: "/login" });
     setSignOutAllOpen(false);
   };
 
@@ -207,16 +210,16 @@ export function AccountSettingsPanel() {
           value={
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={session?.user?.image || undefined} />
+                <AvatarImage src={user?.imageUrl || undefined} />
                 <AvatarFallback className="text-xs">
-                  {getInitials(session?.user?.name)}
+                  {getInitials(user?.fullName ?? undefined)}
                 </AvatarFallback>
               </Avatar>
-              <span>{session?.user?.name || displayUsername || "—"}</span>
+              <span>{user?.fullName || displayUsername || "—"}</span>
             </div>
           }
           action={
-            <Button variant="outline" size="sm" onClick={() => setAvatarOpen(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setAvatarOpen(true)}>
               Change avatar
             </Button>
           }
@@ -225,7 +228,7 @@ export function AccountSettingsPanel() {
           label="Full Name"
           value={name || "—"}
           action={
-            <Button variant="outline" size="sm" onClick={() => setFullNameOpen(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setFullNameOpen(true)}>
               Change full name
             </Button>
           }
@@ -234,7 +237,7 @@ export function AccountSettingsPanel() {
           label="Username"
           value={displayUsername}
           action={
-            <Button variant="outline" size="sm" onClick={() => setUsernameOpen(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setUsernameOpen(true)}>
               Change username
             </Button>
           }
@@ -242,56 +245,16 @@ export function AccountSettingsPanel() {
         <AccountRow label="Email" value={email || "—"} />
       </SettingsSection>
 
-      {/* Your Subscription */}
-      <SettingsSection title="Your Subscription" list>
-        <div className="flex flex-col gap-2 py-3 first:pt-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{planDisplay}</span>
-            {isPaid && (
-              <Badge className="bg-emerald-600/90 text-emerald-100 border-0 text-[11px]">
-                Pro
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Explore your Pro features.{" "}
-            <Link
-              href="/overview"
-              className="text-primary underline underline-offset-4 hover:no-underline"
-            >
-              Learn more
-            </Link>
-          </p>
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/overview" className="gap-1.5">
-                <Building2 className="h-4 w-4" />
-                Manage
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </SettingsSection>
-
       {/* System */}
       <SettingsSection title="System" list>
         <AccountRow
-          label="Support"
-          value={null}
-          action={
-            <Button variant="outline" size="sm" onClick={() => setContactOpen(true)}>
-              Contact
-            </Button>
-          }
-        />
-        <AccountRow
           label=""
-          value={`You are signed in as ${session?.user?.name || displayUsername || "—"}`}
+          value={`You are signed in as ${user?.fullName || displayUsername || "—"}`}
           action={
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ redirectUrl: "/login" })}
               className="gap-1.5"
             >
               <LogOut className="h-4 w-4" />
@@ -305,7 +268,7 @@ export function AccountSettingsPanel() {
           description="Devices or browsers where you are signed in"
           action={
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setSignOutAllOpen(true)}
             >
@@ -314,12 +277,31 @@ export function AccountSettingsPanel() {
           }
         />
         <AccountRow
+          label="Support"
+          value={null}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setContactOpen(true)}>
+              Contact
+            </Button>
+          }
+        />
+      </SettingsSection>
+
+      {/* Danger Zone */}
+      <SettingsSection title="Danger Zone">
+        <AccountRow
           label="Delete account"
           value={null}
           description="Permanently delete your account and data"
           action={
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)}>
-              Learn more
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteOpen(true)}
+              className="gap-1.5"
+            >
+              <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
+              Delete account
             </Button>
           }
         />
@@ -336,7 +318,7 @@ export function AccountSettingsPanel() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAvatarOpen(false)}>
+            <Button variant="secondary" onClick={() => setAvatarOpen(false)}>
               Close
             </Button>
           </DialogFooter>
@@ -361,7 +343,7 @@ export function AccountSettingsPanel() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFullNameOpen(false)}>
+            <Button variant="secondary" onClick={() => setFullNameOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleUpdateProfile} disabled={loading}>
@@ -390,7 +372,7 @@ export function AccountSettingsPanel() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUsernameOpen(false)}>
+            <Button variant="secondary" onClick={() => setUsernameOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleUpdateUsername} disabled={loading}>
@@ -432,7 +414,7 @@ export function AccountSettingsPanel() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSignOutAllOpen(false)}>
+            <Button variant="secondary" onClick={() => setSignOutAllOpen(false)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleSignOutAll}>
@@ -442,27 +424,56 @@ export function AccountSettingsPanel() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
-          <DialogHeader>
-            <DialogTitle>Delete account</DialogTitle>
-            <DialogDescription id="delete-desc">
-              Permanently delete your account and all associated data. This action
-              cannot be undone.
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          setDeleteOpen(open);
+          if (!open) setDeleteConfirmText("");
+        }}
+      >
+        <DialogContent className="sm:max-w-md gap-4 p-6" aria-describedby="delete-desc">
+          <DialogHeader className="space-y-4 text-left">
+            <DialogTitle className="text-lg">Delete account</DialogTitle>
+            <DialogDescription id="delete-desc" className="text-sm text-muted-foreground">
+              Are you sure you want to delete your account? This action is irreversible.
             </DialogDescription>
           </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor="delete-confirm" className="sr-only">
+              Type &apos;Delete-my-account&apos; to confirm.
+            </Label>
+            <Input
+              id="delete-confirm"
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="Type 'Delete-my-account' to confirm."
+              autoComplete="off"
+              aria-describedby={deleteConfirmText && deleteConfirmText !== "Delete-my-account" ? "delete-confirm-error" : "delete-desc"}
+              aria-invalid={!!(deleteConfirmText && deleteConfirmText !== "Delete-my-account")}
+              className={cn(
+                deleteConfirmText && deleteConfirmText !== "Delete-my-account" &&
+                  "border-destructive focus-visible:ring-destructive"
+              )}
+            />
+            {deleteConfirmText && deleteConfirmText !== "Delete-my-account" && (
+              <p id="delete-confirm-error" className="text-xs text-destructive" role="alert">
+                Type exactly &apos;Delete-my-account&apos; to confirm.
+              </p>
+            )}
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteAccount}
-              disabled={loading}
+              disabled={loading || deleteConfirmText !== "Delete-my-account"}
               className="gap-1.5"
             >
               <Trash2 className="h-4 w-4" />
-              Delete account
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

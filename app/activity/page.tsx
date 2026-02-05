@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatRelativeTime } from "@/lib/format";
 
 interface DebugSession {
   id: string;
@@ -320,21 +321,6 @@ export default function DebugSessionsPage() {
     }
   };
 
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   const filteredSessions = sessions.filter((session) => {
     // Status filter
     if (statusFilter !== "all" && session.status !== statusFilter) return false;
@@ -531,7 +517,7 @@ export default function DebugSessionsPage() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {formatTimestamp(session.updatedAt)}
+                          {formatRelativeTime(session.updatedAt)}
                         </span>
                         {session.designFile && (
                           <span className="flex items-center gap-1">

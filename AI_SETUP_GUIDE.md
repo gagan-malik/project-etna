@@ -20,7 +20,19 @@ Your AI service layer is ready! Here's how to configure and use it.
 
 Add these to your `.env.local` file:
 
-### OpenAI (Recommended for testing)
+### Vercel AI Gateway (recommended – one key for all models)
+
+If you use [Vercel AI Gateway](https://vercel.com/docs/ai-gateway), set a single key to power all supported models (OpenAI, Anthropic, Google, DeepSeek, etc.):
+
+```env
+AI_GATEWAY_API_KEY="your-vercel-ai-gateway-api-key"
+```
+
+**Get it from:** Vercel Dashboard → your project/team → **AI Gateway** → **API Keys** (or [vercel.com/ai-gateway](https://vercel.com/ai-gateway)).  
+
+When `AI_GATEWAY_API_KEY` is set, the app uses the gateway for chat and no other provider keys are required for AI.
+
+### OpenAI (per-provider key)
 ```env
 OPENAI_API_KEY="sk-your-openai-api-key-here"
 ```

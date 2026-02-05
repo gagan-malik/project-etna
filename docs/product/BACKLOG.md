@@ -376,19 +376,19 @@ Full Agents settings: General agent, Agent Review, Context, Applying Changes, Au
 
 ---
 
-#### SET-008: Cloud Agents, Tools & MCP, Indexing & Docs, Beta (P2–P3) ✅
+#### SET-008: Tools & MCP, Indexing & Docs, Beta (P2–P3) ✅ | Cloud Agents deferred
 **Priority:** P2–P3  
 **Effort:** Medium each  
 **Impact:** Medium
 
-Remaining panels: Cloud Agents, Tools & MCP, Indexing & Docs, Beta. Docs is nav-only (external link). Network tab removed from UI; see SET-009 for backlog.
+Remaining panels: Tools & MCP, Indexing & Docs, Beta. Docs is nav-only (external link). Network tab removed from UI; see SET-009. **Cloud Agents** removed from Settings UI Feb 2026; see [CLD-001](#cld-001-cloud-agents-full-scope-deferred) for full backlog.
 
 **Tasks:**
-- [x] Cloud Agents: Manage Settings (Open → /integrations), Connect Slack, Workspace Config, Personal Configuration (expandable)
 - [x] Tools & MCP: Browser automation dropdown, Show localhost links toggle, Installed MCP servers list + Add custom
 - [x] Indexing & Docs: Codebase indexing (progress, Sync, Delete), Index new folders toggle, .cursorignore; Docs empty state + Add Doc
 - [x] Beta: Update Access (Stable/Early), Agent Autocomplete, Extension RPC Tracer — persisted via `/api/settings`
 - [x] Docs: left nav link only (external)
+- [ ] Cloud Agents: **Deferred** — panel and nav removed; full scope in CLD-001
 
 **Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md)
 
@@ -431,6 +431,55 @@ Support unauthenticated users: settings toggles work without 401; preferences st
 - Signed-in users continue to use API; no behavior change
 
 **Reference:** [SETTINGS_PLAN.md](./SETTINGS_PLAN.md) — Unauthenticated (guest) experience
+
+---
+
+### Cloud Agents (Deferred)
+
+Cloud Agents are **removed from the product UI** as of Feb 2026. Current focus is **in-app only** (conversation-first, streaming responses). This section backlogs the full scope for when Cloud Agents are re-enabled. See [UX_MASTER_FILE.md](./UX_MASTER_FILE.md) — "Future: Cloud Agents (North Star)" for persona-led use cases.
+
+---
+
+#### CLD-001: Cloud Agents — full scope (deferred)
+**Priority:** P3 (backlog)  
+**Effort:** Large  
+**Impact:** High (Pro/Team differentiation when shipped)
+
+**Summary:** Run Etna-style silicon-debug agents in the cloud: same RTL/waveform-aware capabilities as in-app, triggerable via API, Slack, or "Run in cloud" from chat/session; results delivered async (notification, PR, webhook). Pro+ only.
+
+**Persona alignment (north star):**
+- **Maya:** Run RTL analysis on PR/branch from Slack or API; team sees summary without opening Etna. CI trigger for "analyze repo for common RTL bugs."
+- **Shivam:** Optional overnight run on class repo; in-app remains primary.
+- **Sam:** "Run in cloud" from app or API for testbench/RTL review; result via webhook or in-app.
+
+**Product / UX (when implemented):**
+- **Settings:** Re-add "Cloud Agents" to settings nav. Panel: Manage Settings (→ /integrations), Connect Slack (Pro, OAuth), Workspace configuration (env/secrets), Personal configuration (sharing, pricing visibility, GitHub, base env, runtime, secrets) — all persisted, no placeholders.
+- **Discovery and run:** "Run in cloud" CTA from chat/session when context is repo/PR or RTL; ⌘K "New cloud agent" / "Cloud agents." Simple form: prompt, repo/PR, [Run], "Advanced options…" (branch, auto-PR, webhook).
+- **Monitoring:** List view (Activity or /agents): name, repo/PR, status, summary, [View] [Stop]. Detail: status, summary, conversation, PR link. Toasts: agent started, progress, finished, error (with [View] [Cancel]).
+- **Principles (from UX_MASTER_FILE):** Conversation first (trigger from chat); progressive disclosure (advanced options collapsed); keyboard (⌘K); delightful speed (toasts, no blocking spinners); accessibility (labels, aria-live, focus).
+
+**Backend / API:**
+- Implement or proxy **`/v0/agents`** (or equivalent): list, create, status, conversation, follow-up, stop, delete, recommended models. Contract documented in [docs/api/cloud-agents.md](../api/cloud-agents.md).
+- **Silicon-aware runs:** New agents get Etna system context (RTL/silicon debug, testbench, protocol awareness); repo/PR as context. Optional templates: "Analyze repo for RTL bugs," "Generate testbench for module X," "Review PR for protocol/FSM."
+- **Webhooks:** Optional webhook URL + secret on create; call on status change for CI/notifications.
+- **Slack:** OAuth "Connect Slack"; slash command or app action to create agent with same silicon context.
+
+**Tasks (high level):**
+- [ ] Re-add Cloud Agents to `SETTINGS_SECTIONS` and settings dialog; restore `CloudAgentsPanel` export and route.
+- [ ] Replace placeholder content in Cloud Agents panel with real controls and persistence (Slack connect, workspace config, personal config).
+- [ ] Implement or proxy `/v0/agents` API (auth, validation, silicon context injection).
+- [ ] Add "Run in cloud" entry point from chat/session (CTA + simple form); ⌘K commands for new agent and list.
+- [ ] Implement agent list and detail views; toasts for start/progress/done/error.
+- [ ] Slack OAuth and "Run from Slack" flow.
+- [ ] Webhook delivery on agent status change.
+- [ ] Document in UX_MASTER_FILE as Task Flow 5 (Run cloud agent), Task Flow 6 (Configure cloud agents); update IA and persona scenarios.
+
+**Acceptance criteria (when shipped):**
+- Pro user can connect Slack and run an Etna-style RTL analysis from Slack or from "Run in cloud" in app; result visible to team or via webhook.
+- Agent runs use silicon-aware prompts/context; not generic "run any agent on repo."
+- Settings panel has no placeholder-only sections; all toggles and links functional.
+
+**Reference:** [UX_MASTER_FILE.md](./UX_MASTER_FILE.md) (Future: Cloud Agents, Design Philosophy), [SETTINGS_PLAN.md](./SETTINGS_PLAN.md), [docs/api/cloud-agents.md](../api/cloud-agents.md). Panel code: `components/settings/panels/cloud-agents-panel.tsx` (retained, not in nav).
 
 ---
 

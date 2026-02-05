@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageTitle } from "@/components/ui/page-title";
 import { PageSection } from "@/components/ui/page-section";
 import { Check, Sparkles, Zap } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 import { useToast } from "@/hooks/use-toast";
 
 interface Plan {
@@ -64,14 +64,14 @@ const PLANS: Plan[] = [
 ];
 
 export default function OverviewPage() {
-  const { data: session } = useSession();
+  const { isSignedIn } = useAuth();
   const { toast } = useToast();
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserPlan = async () => {
-      if (!session?.user?.id) return;
+      if (!isSignedIn) return;
 
       try {
         const response = await fetch("/api/account/profile", {
@@ -89,7 +89,7 @@ export default function OverviewPage() {
     };
 
     fetchUserPlan();
-  }, [session]);
+  }, [isSignedIn]);
 
   const handleUpgrade = async (planId: string) => {
     if (planId === "free") {

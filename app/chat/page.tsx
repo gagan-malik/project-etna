@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2, Bug, Cpu, Zap } from "lucide-react";
+import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2, Bug, Cpu, Zap, Bot, ChevronDown, FileText, MessageSquare, FileCode } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
@@ -27,11 +27,17 @@ import { getBestModelForQuery, getHighestQualityModel, getModelMetadata } from "
 import { DEFAULT_CHAT_MODELS } from "@/lib/ai";
 import type { ModelInfo } from "@/lib/ai/types";
 import { hasPremiumAccess as checkPremiumAccess } from "@/lib/subscription";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@clerk/nextjs";
 import { QUICK_PROMPTS, getSystemPrompt } from "@/lib/ai/prompts/silicon-debug";
 import { isHardwareDebugQuery } from "@/lib/ai/model-ranking";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUserSettings } from "@/components/user-settings-provider";
 
 interface MessageDisplay {
@@ -64,9 +70,10 @@ const DEBUG_SUGGESTIONS = [
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { data: session } = useSession();
+  const { isSignedIn: hasSession } = useAuth();
   const { preferences, updatePreferences } = useUserSettings();
   const {
+    conversations,
     currentConversation,
     messages: dbMessages,
     loading: conversationLoading,
@@ -128,30 +135,30 @@ function ChatPageContent() {
     }
     return false;
   });
-  const autoMode = (session?.user && (preferences.autoMode as boolean | undefined) != null)
+  const autoMode = (hasSession && (preferences.autoMode as boolean | undefined) != null)
     ? (preferences.autoMode as boolean)
     : autoModeState;
-  const maxMode = (session?.user && (preferences.maxMode as boolean | undefined) != null)
+  const maxMode = (hasSession && (preferences.maxMode as boolean | undefined) != null)
     ? (preferences.maxMode as boolean)
     : maxModeState;
-  const useMultipleModels = (session?.user && (preferences.useMultipleModels as boolean | undefined) != null)
+  const useMultipleModels = (hasSession && (preferences.useMultipleModels as boolean | undefined) != null)
     ? (preferences.useMultipleModels as boolean)
     : useMultipleModelsState;
   const setAutoMode = useCallback((v: boolean) => {
     setAutoModeState(v);
-    if (session?.user) void updatePreferences({ autoMode: v });
+    if (hasSession) void updatePreferences({ autoMode: v });
     if (typeof window !== "undefined") localStorage.setItem("auto-mode", String(v));
-  }, [session?.user, updatePreferences]);
+  }, [hasSession, updatePreferences]);
   const setMaxMode = useCallback((v: boolean) => {
     setMaxModeState(v);
-    if (session?.user) void updatePreferences({ maxMode: v });
+    if (hasSession) void updatePreferences({ maxMode: v });
     if (typeof window !== "undefined") localStorage.setItem("max-mode", String(v));
-  }, [session?.user, updatePreferences]);
+  }, [hasSession, updatePreferences]);
   const setUseMultipleModels = useCallback((v: boolean) => {
     setUseMultipleModelsState(v);
-    if (session?.user) void updatePreferences({ useMultipleModels: v });
+    if (hasSession) void updatePreferences({ useMultipleModels: v });
     if (typeof window !== "undefined") localStorage.setItem("use-multiple-models", String(v));
-  }, [session?.user, updatePreferences]);
+  }, [hasSession, updatePreferences]);
   const [charCount, setCharCount] = useState(0);
   const [debugMode, setDebugMode] = useState(() => {
     if (typeof window !== "undefined") {
@@ -164,15 +171,95 @@ function ChatPageContent() {
   const [inputFocused, setInputFocused] = useState(false);
   const [autocompleteSelectedIndex, setAutocompleteSelectedIndex] = useState(0);
   const [autocompleteJustAccepted, setAutocompleteJustAccepted] = useState(false);
+  const [userCommands, setUserCommands] = useState<Array<{ id: string; name: string; slug: string; promptTemplate: string; showAsQuickAction: boolean }>>([]);
+  const [workers, setWorkers] = useState<Array<{ id: string; name: string; slug: string }>>([]);
+  const [skillsForSlash, setSkillsForSlash] = useState<Array<{ id: string; name: string; description: string | null }>>([]);
+  const [additionalSkillIdsForMessage, setAdditionalSkillIdsForMessage] = useState<string[]>([]);
+  const [additionalSkillNames, setAdditionalSkillNames] = useState<Record<string, string>>({});
+  const [slashOpen, setSlashOpen] = useState(false);
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
+  const [atMentionDocs, setAtMentionDocs] = useState<{ path: string; title: string }[]>([]);
+  const [atMentionFiles, setAtMentionFiles] = useState<{ id: string; title: string; source?: string | null }[]>([]);
+  const [atSelectedIndex, setAtSelectedIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingMessageRef = useRef<string>("");
 
+  // Load commands, workers, and skills for slash menu (Skills / Subagents / Actions)
+  useEffect(() => {
+    if (!hasSession) {
+      setUserCommands([]);
+      setWorkers([]);
+      setSkillsForSlash([]);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([
+      fetch("/api/commands", { credentials: "include" }).then((r) => (r.ok ? r.json() : { commands: [] })),
+      fetch("/api/workers", { credentials: "include" }).then((r) => (r.ok ? r.json() : { workers: [] })),
+      fetch("/api/skills", { credentials: "include" }).then((r) => (r.ok ? r.json() : { skills: [] })),
+    ]).then(([cmdRes, workerRes, skillsRes]) => {
+      if (cancelled) return;
+      setUserCommands(Array.isArray(cmdRes.commands) ? cmdRes.commands : []);
+      setWorkers(Array.isArray(workerRes.workers) ? workerRes.workers : []);
+      const skills = Array.isArray(skillsRes.skills) ? skillsRes.skills : [];
+      setSkillsForSlash(skills.map((s: { id: string; name: string; description?: string | null }) => ({ id: s.id, name: s.name, description: s.description ?? null })));
+      setAdditionalSkillNames((prev) => {
+        const next = { ...prev };
+        skills.forEach((s: { id: string; name: string }) => {
+          next[s.id] = s.name;
+        });
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSession]);
+
+  // Load docs list for @-mention (public)
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/docs/list")
+      .then((r) => (r.ok ? r.json() : { docs: [] }))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data.docs)) setAtMentionDocs(data.docs);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Load indexed documents (files) for @-mention when signed in
+  useEffect(() => {
+    if (!hasSession) {
+      setAtMentionFiles([]);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/documents", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { documents: [] }))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data.documents)) {
+          setAtMentionFiles(
+            data.documents.slice(0, 50).map((d: { id: string; title: string; source?: string | null }) => ({
+              id: d.id,
+              title: d.title,
+              source: d.source,
+            }))
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSession]);
+
   // Load premium access status
   useEffect(() => {
     const checkPremiumAccess = async () => {
-      if (!session?.user?.id) return;
+      if (!hasSession) return;
       try {
         const response = await fetch("/api/account/profile", {
           credentials: "include",
@@ -203,13 +290,13 @@ function ChatPageContent() {
       }
     };
     checkPremiumAccess();
-  }, [session]);
+  }, [hasSession]);
 
   // Load available models: from API when authenticated, static list for guests
   const enabledModelIds = (preferences.enabledModelIds as string[] | undefined) ?? [];
   const enabledModelIdsKey = enabledModelIds.join(",");
   useEffect(() => {
-    if (!session?.user?.id) {
+    if (!hasSession) {
       // Guest: use static list; filter by enabledModelIds from localStorage when set
       const base = DEFAULT_CHAT_MODELS;
       setAllModels(base);
@@ -253,11 +340,11 @@ function ChatPageContent() {
       }
     };
     loadModels();
-  }, [session?.user?.id, enabledModelIdsKey]);
+  }, [hasSession, enabledModelIdsKey]);
 
   // Restrict reasoning models to paid users: recompute available list when premium status or enabled list changes
   useEffect(() => {
-    if (!session?.user || allModels.length === 0) return;
+    if (!hasSession || allModels.length === 0) return;
     let list =
       enabledModelIds.length > 0
         ? allModels.filter((m) => enabledModelIds.includes(m.id))
@@ -269,7 +356,7 @@ function ChatPageContent() {
     if (selectedModel && !list.some((m) => m.id === selectedModel.id)) {
       setSelectedModel(list[0] ?? null);
     }
-  }, [session?.user, allModels, enabledModelIdsKey, hasPremiumAccess, selectedModel]);
+  }, [hasSession, allModels, enabledModelIdsKey, hasPremiumAccess, selectedModel]);
 
   // Load saved model preference
   useEffect(() => {
@@ -311,16 +398,16 @@ function ChatPageContent() {
 
   // Sync local state from preferences when they load (e.g. after login)
   useEffect(() => {
-    if (session?.user && (preferences.autoMode as boolean | undefined) != null) {
+    if (hasSession && (preferences.autoMode as boolean | undefined) != null) {
       setAutoModeState(preferences.autoMode as boolean);
     }
-    if (session?.user && (preferences.maxMode as boolean | undefined) != null) {
+    if (hasSession && (preferences.maxMode as boolean | undefined) != null) {
       setMaxModeState(preferences.maxMode as boolean);
     }
-    if (session?.user && (preferences.useMultipleModels as boolean | undefined) != null) {
+    if (hasSession && (preferences.useMultipleModels as boolean | undefined) != null) {
       setUseMultipleModelsState(preferences.useMultipleModels as boolean);
     }
-  }, [session?.user, preferences.autoMode, preferences.maxMode, preferences.useMultipleModels]);
+  }, [hasSession, preferences.autoMode, preferences.maxMode, preferences.useMultipleModels]);
 
   // Persist toggle states to localStorage (for guests)
   useEffect(() => {
@@ -348,6 +435,134 @@ function ChatPageContent() {
       .filter((s) => s.toLowerCase().includes(trimmed) || s.toLowerCase().startsWith(trimmed))
       .slice(0, 6);
   }, [inputValue]);
+
+  // Slash autocomplete: Cursor-style Skills, Subagents, Actions (with descriptions)
+  type SlashItem = {
+    section: "Skills" | "Subagents" | "Actions";
+    type: "skill" | "worker" | "command";
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+  };
+  const slashSuggestions = useMemo(() => {
+    const raw = inputValue.trim();
+    if (!raw.startsWith("/")) return [];
+    const after = raw.slice(1).trim().toLowerCase();
+    const match = (name: string, slug: string, desc: string) =>
+      !after ||
+      name.toLowerCase().includes(after) ||
+      slug.toLowerCase().includes(after) ||
+      desc.toLowerCase().includes(after);
+    const list: SlashItem[] = [];
+    skillsForSlash.forEach((s) => {
+      const desc = s.description || "";
+      if (match(s.name, s.name.toLowerCase().replace(/\s+/g, "-"), desc)) {
+        list.push({
+          section: "Skills",
+          type: "skill",
+          id: s.id,
+          slug: s.name.toLowerCase().replace(/\s+/g, "-"),
+          name: s.name,
+          description: desc.slice(0, 60) + (desc.length > 60 ? "…" : ""),
+        });
+      }
+    });
+    workers.forEach((w) => {
+      if (match(w.name, w.slug, "")) {
+        list.push({
+          section: "Subagents",
+          type: "worker",
+          id: w.id,
+          slug: w.slug,
+          name: w.name,
+          description: "Run this subagent for this message",
+        });
+      }
+    });
+    userCommands.forEach((c) => {
+      const desc = c.promptTemplate.slice(0, 60) + (c.promptTemplate.length > 60 ? "…" : "");
+      if (match(c.name, c.slug, c.promptTemplate)) {
+        list.push({
+          section: "Actions",
+          type: "command",
+          id: c.id,
+          slug: c.slug,
+          name: c.name,
+          description: desc,
+        });
+      }
+    });
+    return list.slice(0, 15);
+  }, [inputValue, skillsForSlash, workers, userCommands]);
+
+  const showSlashAutocomplete = inputValue.startsWith("/") && slashSuggestions.length > 0;
+  const acceptSlashSelection = useCallback(
+    (item: SlashItem) => {
+      if (item.type === "skill") {
+        setAdditionalSkillIdsForMessage((ids) =>
+          ids.includes(item.id) ? ids : [...ids, item.id]
+        );
+        setAdditionalSkillNames((names) => ({ ...names, [item.id]: item.name }));
+        const beforeSlash = inputValue.slice(0, inputValue.indexOf("/"));
+        setInputValue(beforeSlash);
+        setCharCount(beforeSlash.length);
+      } else {
+        setInputValue(`/${item.slug} `);
+        setCharCount(item.slug.length + 2);
+      }
+      setSlashSelectedIndex(0);
+    },
+    [inputValue]
+  );
+  const removeSkillFromMessage = useCallback((skillId: string) => {
+    setAdditionalSkillIdsForMessage((ids) => ids.filter((id) => id !== skillId));
+  }, []);
+  const quickActionCommands = useMemo(
+    () => userCommands.filter((c) => c.showAsQuickAction),
+    [userCommands]
+  );
+
+  // @-mention: parse query after last @ and build flat list with sections
+  const atMentionQuery = useMemo(() => {
+    const i = inputValue.lastIndexOf("@");
+    if (i === -1) return "";
+    return inputValue.slice(i + 1).trim().toLowerCase();
+  }, [inputValue]);
+
+  const atMentionItems = useMemo(() => {
+    const q = atMentionQuery;
+    const match = (label: string, value: string) =>
+      !q || label.toLowerCase().includes(q) || value.toLowerCase().includes(q);
+    const out: { type: "doc" | "chat" | "file"; section: string; label: string; value: string; subtitle?: string }[] = [];
+    atMentionDocs.forEach((d) => {
+      if (match(d.title, d.path)) out.push({ type: "doc", section: "Docs", label: d.title, value: `@doc:${d.path}`, subtitle: d.path });
+    });
+    (conversations || []).slice(0, 20).forEach((c) => {
+      const label = c.title || "Untitled chat";
+      const value = `@chat:${c.id}`;
+      if (match(label, value)) out.push({ type: "chat", section: "Past Chats", label, value, subtitle: "Chat" });
+    });
+    atMentionFiles.forEach((f) => {
+      if (match(f.title, f.id)) out.push({ type: "file", section: "Files & Folders", label: f.title, value: `@file:${f.id}`, subtitle: f.source || "File" });
+    });
+    return out;
+  }, [atMentionQuery, atMentionDocs, conversations, atMentionFiles]);
+
+  const showAtMention = inputValue.includes("@") && !showSlashAutocomplete;
+  const acceptAtMention = useCallback(
+    (item: (typeof atMentionItems)[0]) => {
+      const i = inputValue.lastIndexOf("@");
+      if (i === -1) return;
+      const before = inputValue.slice(0, i);
+      const next = before + item.value + " ";
+      setInputValue(next);
+      setCharCount(next.length);
+      setAtSelectedIndex(0);
+      textareaRef.current?.focus();
+    },
+    [inputValue]
+  );
 
   // Save selected sources to localStorage
   useEffect(() => {
@@ -475,8 +690,55 @@ function ChatPageContent() {
     });
   };
 
-  const handleSend = async () => {
-    if (!inputValue.trim() && selectedFiles.length === 0) return;
+  type SendPayload = { content?: string; expandedContent?: string; workerSlug?: string } | undefined;
+
+  const handleSend = async (payload?: SendPayload) => {
+    const rawContent = payload?.content ?? inputValue.trim();
+    if (!rawContent && selectedFiles.length === 0 && !payload) return;
+
+    if (!hasSession) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to use the AI.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Resolve slash command or worker when not using explicit payload
+    let content = rawContent;
+    let expandedContent: string | undefined = payload?.expandedContent;
+    let workerSlug: string | undefined = payload?.workerSlug;
+
+    if (!payload && content.startsWith("/")) {
+      const afterSlash = content.slice(1).trim();
+      const firstSpace = afterSlash.indexOf(" ");
+      const slug = firstSpace >= 0 ? afterSlash.slice(0, firstSpace) : afterSlash;
+      const rest = firstSpace >= 0 ? afterSlash.slice(firstSpace + 1).trim() : "";
+
+      const cmd = userCommands.find((c) => c.slug === slug);
+      const worker = workers.find((w) => w.slug === slug);
+
+      if (cmd) {
+        expandedContent = cmd.promptTemplate.includes("{{user_input}}")
+          ? cmd.promptTemplate.replace(/\{\{user_input\}\}/g, rest)
+          : rest
+            ? `${cmd.promptTemplate}\n${rest}`
+            : cmd.promptTemplate;
+      } else if (worker) {
+        workerSlug = worker.slug;
+        content = rest || content;
+      } else if (slug) {
+        toast({
+          title: "Unknown command",
+          description: `No command or worker "${slug}". Create one in Settings → Rules or Workers.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (!content && !expandedContent && !workerSlug) return;
 
     // Determine which model(s) to use
     let modelToUse = selectedModel;
@@ -496,7 +758,7 @@ function ChatPageContent() {
     // Apply Auto Mode if enabled and MAX Mode is not
     if (autoMode && !maxMode && availableModels.length > 0) {
       const modelsWithAvailable = availableModels.map(m => ({ ...m, available: true }));
-      const bestModel = getBestModelForQuery(inputValue.trim(), modelsWithAvailable);
+      const bestModel = getBestModelForQuery(content || expandedContent || "", modelsWithAvailable);
       if (bestModel) {
         const foundModel = availableModels.find(m => m.id === bestModel.id);
         if (foundModel) {
@@ -514,9 +776,6 @@ function ChatPageContent() {
       return;
     }
 
-    const content = inputValue.trim();
-    if (!content) return;
-
     // Ensure we have a conversation
     let conversationId = currentConversation?.id;
     if (!conversationId) {
@@ -532,20 +791,23 @@ function ChatPageContent() {
       conversationId = newConv.id;
     }
 
-    // Add user message to UI immediately
+    // Add user message to UI immediately (show what user sent)
+    const displayContent = payload?.content ?? inputValue.trim();
     const userMessage: MessageDisplay = {
       id: `user-${Date.now()}`,
       role: "user",
-      content,
+      content: displayContent,
       files: selectedFiles.length > 0 ? [...selectedFiles] : undefined,
       repository: selectedRepository,
       model: modelToUse,
     };
 
     setMessagesDisplay((prev) => [...prev, userMessage]);
-    setInputValue("");
-    setSelectedFiles([]);
-    setCharCount(0);
+    if (!payload) {
+      setInputValue("");
+      setSelectedFiles([]);
+      setCharCount(0);
+    }
 
     // Create assistant message placeholder for streaming
     const assistantMessageId = `assistant-${Date.now()}`;
@@ -568,11 +830,10 @@ function ChatPageContent() {
         content,
         modelToUse.id,
         modelToUse.provider,
-        selectedSources, // Pass selected sources
-        maxMode && hasPremiumAccess, // Pass MAX Mode flag
-        useMultipleModels && hasPremiumAccess, // Pass Multiple Models flag
+        selectedSources,
+        maxMode && hasPremiumAccess,
+        useMultipleModels && hasPremiumAccess,
         (chunk: string) => {
-          // Update streaming message
           streamingMessageRef.current += chunk;
           setMessagesDisplay((prev) =>
             prev.map((msg) =>
@@ -583,7 +844,7 @@ function ChatPageContent() {
           );
         },
         async (fullContent: string) => {
-          // Reload messages from database to get the saved assistant message
+          setAdditionalSkillIdsForMessage([]);
           if (currentConversation) {
             const response = await fetch(
               `/api/conversations/${conversationId}`,
@@ -594,7 +855,8 @@ function ChatPageContent() {
               setMessages(data.conversation.messages || []);
             }
           }
-        }
+        },
+        { workerSlug, expandedContent, additionalSkillIds: additionalSkillIdsForMessage.length > 0 ? additionalSkillIdsForMessage : undefined }
       );
     } catch (error: any) {
       const errorMessage = error.message || "Failed to send message";
@@ -649,6 +911,12 @@ function ChatPageContent() {
       Math.min(Math.max(0, i), autocompleteSuggestions.length - 1)
     );
   }, [autocompleteSuggestions.length]);
+  useEffect(() => {
+    setSlashSelectedIndex((i) => Math.min(Math.max(0, i), slashSuggestions.length - 1));
+  }, [slashSuggestions.length]);
+  useEffect(() => {
+    setAtSelectedIndex((i) => Math.min(Math.max(0, i), atMentionItems.length - 1));
+  }, [atMentionItems.length]);
 
   return (
     <main className="flex-1 flex flex-col items-center w-full max-w-3xl mx-auto px-4 py-8 md:py-16 overflow-hidden">
@@ -910,6 +1178,30 @@ function ChatPageContent() {
           </ScrollArea>
         )}
 
+            {/* Quick actions (commands with showAsQuickAction) */}
+            {quickActionCommands.length > 0 && (
+              <div className="w-full flex-shrink-0 flex flex-wrap gap-2 pb-2">
+                {quickActionCommands.map((cmd) => (
+                  <Button
+                    key={cmd.id}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs"
+                    onClick={() =>
+                      handleSend({
+                        content: cmd.name,
+                        expandedContent:
+                          cmd.promptTemplate.replace(/\{\{user_input\}\}/g, "").trim() || cmd.name,
+                      })
+                    }
+                    disabled={streaming || !selectedModel}
+                  >
+                    {cmd.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+
             {/* Input Container */}
             <div className="w-full flex-shrink-0 pt-4">
               <Card className="bg-muted border border-border rounded-[var(--radius)] p-3">
@@ -924,6 +1216,29 @@ function ChatPageContent() {
                     />
                   )}
 
+                  {/* Skills for this message (from / menu) */}
+                  {additionalSkillIdsForMessage.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {additionalSkillIdsForMessage.map((skillId) => (
+                        <Badge
+                          key={skillId}
+                          variant="secondary"
+                          className="pl-2 pr-1 py-0.5 text-xs font-normal gap-1"
+                        >
+                          {additionalSkillNames[skillId] ?? "Skill"}
+                          <button
+                            type="button"
+                            onClick={() => removeSkillFromMessage(skillId)}
+                            className="rounded-full p-0.5 hover:bg-muted-foreground/20"
+                            aria-label={`Remove ${additionalSkillNames[skillId] ?? "skill"}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Text Input with contextual autocomplete */}
                   <div className="flex items-center gap-2 relative">
                     <Textarea
@@ -933,6 +1248,8 @@ function ChatPageContent() {
                         setInputValue(e.target.value);
                         setCharCount(e.target.value.length);
                         setAutocompleteSelectedIndex(0);
+                        setSlashSelectedIndex(0);
+                        setAtSelectedIndex(0);
                       }}
                       onFocus={() => setInputFocused(true)}
                       onBlur={() => {
@@ -940,6 +1257,57 @@ function ChatPageContent() {
                         setTimeout(() => setInputFocused(false), 150);
                       }}
                       onKeyDown={(e) => {
+                        if (showAtMention) {
+                          if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setAtSelectedIndex((i) => Math.min(i + 1, Math.max(0, atMentionItems.length - 1)));
+                            return;
+                          }
+                          if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setAtSelectedIndex((i) => Math.max(0, i - 1));
+                            return;
+                          }
+                          if (e.key === "Enter" || e.key === "Tab") {
+                            e.preventDefault();
+                            const item = atMentionItems[atSelectedIndex];
+                            if (item) acceptAtMention(item);
+                            return;
+                          }
+                          if (e.key === "Escape") {
+                            e.preventDefault();
+                            const i = inputValue.lastIndexOf("@");
+                            if (i !== -1) setInputValue(inputValue.slice(0, i));
+                            setAtSelectedIndex(0);
+                            return;
+                          }
+                        }
+                        if (showSlashAutocomplete) {
+                          if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setSlashSelectedIndex((i) =>
+                              Math.min(i + 1, slashSuggestions.length - 1)
+                            );
+                            return;
+                          }
+                          if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setSlashSelectedIndex((i) => Math.max(0, i - 1));
+                            return;
+                          }
+                          if (e.key === "Enter" || e.key === "Tab") {
+                            e.preventDefault();
+                            const sel = slashSuggestions[slashSelectedIndex];
+                            if (sel) acceptSlashSelection(sel);
+                            return;
+                          }
+                          if (e.key === "Escape") {
+                            e.preventDefault();
+                            setInputValue("");
+                            setSlashSelectedIndex(0);
+                            return;
+                          }
+                        }
                         if (showAutocomplete) {
                           if (e.key === "ArrowDown") {
                             e.preventDefault();
@@ -1011,6 +1379,100 @@ function ChatPageContent() {
                         ))}
                       </div>
                     )}
+                    {showSlashAutocomplete && (
+                      <div
+                        role="listbox"
+                        aria-label="Skills, Subagents, Actions"
+                        className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[320px] overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md min-w-[280px]"
+                      >
+                        {(() => {
+                          let lastSection = "";
+                          return slashSuggestions.map((item, idx) => {
+                            const showSection = item.section !== lastSection;
+                            if (showSection) lastSection = item.section;
+                            return (
+                              <div key={`${item.type}-${item.id}-${idx}`}>
+                                {showSection && (
+                                  <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50 bg-muted/30">
+                                    {item.section}
+                                  </div>
+                                )}
+                                <button
+                                  role="option"
+                                  aria-selected={idx === slashSelectedIndex ? "true" : "false"}
+                                  type="button"
+                                  className={`w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5 transition-colors ${
+                                    idx === slashSelectedIndex
+                                      ? "bg-accent text-accent-foreground"
+                                      : "hover:bg-muted"
+                                  }`}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    acceptSlashSelection(item);
+                                  }}
+                                >
+                                  <span className="font-medium">/{item.slug}</span>
+                                  {item.description && (
+                                    <span className="text-xs text-muted-foreground line-clamp-2">
+                                      {item.description}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    )}
+                    {showAtMention && (
+                      <div
+                        role="listbox"
+                        aria-label="Reference docs, chats, or files"
+                        className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[280px] overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+                      >
+                        {atMentionItems.length === 0 ? (
+                          <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                            No references found. Type to search docs, past chats, or files.
+                          </div>
+                        ) : (
+                          atMentionItems.map((item, idx) => {
+                            const Icon =
+                              item.type === "doc"
+                                ? FileText
+                                : item.type === "chat"
+                                  ? MessageSquare
+                                  : FileCode;
+                            return (
+                              <button
+                                key={`${item.type}-${item.value}`}
+                                role="option"
+                                aria-selected={idx === atSelectedIndex ? "true" : "false"}
+                                type="button"
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
+                                  idx === atSelectedIndex
+                                    ? "bg-accent text-accent-foreground"
+                                    : "hover:bg-muted"
+                                }`}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  acceptAtMention(item);
+                                }}
+                              >
+                                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                <div className="min-w-0 flex-1">
+                                  <span className="font-medium truncate block">{item.label}</span>
+                                  {item.subtitle && (
+                                    <span className="text-xs text-muted-foreground truncate block">
+                                      {item.subtitle}
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Bottom Bar */}
@@ -1040,6 +1502,40 @@ function ChatPageContent() {
                         <Plus className="h-5 w-5" />
                         Attach
                       </Button>
+
+                      {workers.length > 0 && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex items-center gap-1 text-sm font-semibold text-muted-foreground"
+                              disabled={streaming || !selectedModel}
+                              aria-label="Run a worker"
+                            >
+                              <Bot className="h-4 w-4" />
+                              Run worker
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="min-w-[180px]">
+                            {workers.map((w) => (
+                              <DropdownMenuItem
+                                key={w.id}
+                                onSelect={() =>
+                                  handleSend({
+                                    content: inputValue.trim() || "Please proceed.",
+                                    workerSlug: w.slug,
+                                  })
+                                }
+                              >
+                                <span className="font-medium">/{w.slug}</span>
+                                <span className="text-muted-foreground ml-2 truncate">{w.name}</span>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                       
                       <GitHubRepoSelector
                         selected={selectedRepository}
@@ -1088,7 +1584,7 @@ function ChatPageContent() {
                         </span>
                       )}
                       <Button
-                        onClick={handleSend}
+                        onClick={() => handleSend()}
                         disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
                         className="rounded-full"
                       >

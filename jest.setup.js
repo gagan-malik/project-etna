@@ -19,13 +19,15 @@ jest.mock("next/navigation", () => ({
   },
 }));
 
-// Mock next-auth
-jest.mock("next-auth/react", () => ({
-  useSession: () => ({
-    data: null,
-    status: "unauthenticated",
-  }),
-  signIn: jest.fn(),
-  signOut: jest.fn(),
+// Mock Clerk
+jest.mock("@clerk/nextjs", () => ({
+  useAuth: () => ({ isSignedIn: false, isLoaded: true }),
+  useUser: () => ({ user: null, isLoaded: true }),
+  useClerk: () => ({ signOut: jest.fn() }),
+  ClerkProvider: ({ children }) => children,
+  SignIn: () => null,
+  SignUp: () => null,
+  auth: () => Promise.resolve({ userId: null }),
+  currentUser: () => Promise.resolve(null),
 }));
 

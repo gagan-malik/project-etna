@@ -81,10 +81,8 @@ All settings require sign-in (no Demo access). Below, **Pro** means the feature 
 | Manage subscription | — | ✅ | ✅ |
 | **General** | | | |
 | Theme (light / dark / system) | ✅ | ✅ | ✅ |
-| Editor Settings (link) | ✅ | ✅ | ✅ |
 | System / email / push notifications | ✅ | ✅ | ✅ |
-| Keyboard Shortcuts | Pro (badge) | ✅ | ✅ |
-| Import from VS Code | Pro (badge) | ✅ | ✅ |
+| Keyboard Shortcuts | ✅ | ✅ | ✅ |
 | Privacy Mode (off / standard / strict) | ❌ | ✅ | ✅ |
 | **Account** | | | |
 | Profile (name, email, bio, avatar) | ✅ | ✅ | ✅ |
@@ -109,7 +107,7 @@ All settings require sign-in (no Demo access). Below, **Pro** means the feature 
 | MAX Mode | ❌ | ✅ | ✅ |
 | Reasoning models | ❌ | ✅ | ✅ |
 | Bring your own keys (BYOK) | ❌ | ✅ | ✅ |
-| **Cloud Agents** | Pro (badge) | ✅ | ✅ |
+| **Cloud Agents** | Backlog (Pro when shipped) | — | — |
 | **Tools & MCP** | Pro (badge) | ✅ | ✅ |
 
 ### Billing & usage

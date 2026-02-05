@@ -15,11 +15,8 @@ import {
   RulesPanel,
   SkillsPanel,
   WorkersPanel,
-  HooksPanel,
-  TabSettingsPanel,
   ModelsSettingsPanel,
   AgentsSettingsPanel,
-  CloudAgentsPanel,
   UsagePanel,
   BillingInvoicesPanel,
   ToolsMcpPanel,
@@ -30,13 +27,16 @@ import {
 } from "@/components/settings";
 import { useSettingsModal } from "@/components/settings-modal-context";
 import type { SessionStatus } from "@/components/settings/settings-layout";
-import type { Session } from "next-auth";
+
+export interface SettingsSession {
+  user: { id: string; name?: string | null; email?: string | null; image?: string | null; plan?: string };
+}
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Pass session from parent (e.g. AppSidebar) so portaled dialog content shows correct auth state */
-  session?: Session | null;
+  session?: SettingsSession | null;
   status?: SessionStatus;
 }
 
@@ -57,16 +57,10 @@ export function SettingsDialog({ open, onOpenChange, session, status }: Settings
         return <SkillsPanel />;
       case "workers":
         return <WorkersPanel />;
-      case "hooks":
-        return <HooksPanel />;
-      case "tab":
-        return <TabSettingsPanel />;
       case "models":
         return <ModelsSettingsPanel />;
       case "agents":
         return <AgentsSettingsPanel />;
-      case "cloud-agents":
-        return <CloudAgentsPanel />;
       case "usage":
         return <UsagePanel />;
       case "billing-invoices":

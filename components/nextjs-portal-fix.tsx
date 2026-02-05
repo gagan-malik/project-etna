@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 /**
  * Fix nextjs-portal 0x0 size in Cursor/Next dev overlay.
  * Next.js injects the element with inline position:absolute and no dimensions;
- * we force dimensions via inline style (wins over injected styles) so layout/accessibility don't flag it.
+ * we force dimensions via inline style with "important" (wins over injected styles).
  * z-index: -1 so "Select element" (elementFromPoint) hits the page, not this node.
  */
 function applyPortalFix(el: HTMLElement) {
@@ -23,32 +23,54 @@ function applyPortalFix(el: HTMLElement) {
   el.style.setProperty("z-index", "-1", "important");
 }
 
+function runFix() {
+  if (typeof document === "undefined") return;
+  document.querySelectorAll("nextjs-portal").forEach((el) => {
+    applyPortalFix(el as HTMLElement);
+  });
+}
+
 export function NextjsPortalFix() {
-  useEffect(() => {
-    const fix = () => {
-      document.querySelectorAll("nextjs-portal").forEach((el) => {
-        applyPortalFix(el as HTMLElement);
+  useLayoutEffect(() => {
+    runFix();
+    const rafId = requestAnimationFrame(runFix);
+    const t1 = setTimeout(runFix, 0);
+    const t2 = setTimeout(runFix, 50);
+    const t3 = setTimeout(runFix, 200);
+    const t4 = setTimeout(runFix, 1000);
+    // Reapply frequently so we win over Next.js dev overlay re-injecting styles
+    const intervalId = setInterval(runFix, 150);
+
+    const observer = new MutationObserver((mutations) => {
+      const hasPortal = mutations.some((m) => {
+        if (m.type === "childList") {
+          return (
+            Array.from(m.addedNodes).some(
+              (n) => n.nodeName?.toLowerCase() === "nextjs-portal"
+            ) ||
+            Array.from(m.target.childNodes).some(
+              (n) => n.nodeName?.toLowerCase() === "nextjs-portal"
+            )
+          );
+        }
+        return m.type === "attributes" && (m.target as Element).nodeName?.toLowerCase() === "nextjs-portal";
       });
-    };
-
-    fix();
-    const rafId = requestAnimationFrame(fix);
-    const t1 = setTimeout(fix, 50);
-    const t2 = setTimeout(fix, 200);
-    const t3 = setTimeout(fix, 1000);
-    // Reapply every 500ms so we win over any re-injected styles (e.g. Cursor/Next dev overlay)
-    const intervalId = setInterval(fix, 500);
-
-    const observer = new MutationObserver(() => {
-      requestAnimationFrame(fix);
+      if (hasPortal) runFix();
+      else requestAnimationFrame(runFix);
     });
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style"],
+    });
 
     return () => {
       cancelAnimationFrame(rafId);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
       clearInterval(intervalId);
       observer.disconnect();
     };

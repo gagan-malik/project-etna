@@ -106,6 +106,149 @@ async function main() {
 
   console.log('✅ Created test conversation:', conversation.id)
 
+  // Built-in skills (silicon-focused system-prompt fragments)
+  const builtInSkills = [
+    {
+      id: 'skill-rtl-uninitialized',
+      name: 'RTL uninitialized check',
+      description: 'Always flag uninitialized registers and latches in RTL',
+      systemPromptFragment:
+        'When reviewing RTL or Verilog/SystemVerilog code, always check for and flag: uninitialized registers, inferred latches, and signals that may be undefined at reset or in simulation.',
+      isBuiltIn: true,
+    },
+    {
+      id: 'skill-cdc-awareness',
+      name: 'Clock domain crossing awareness',
+      description: 'Highlight CDC issues and synchronization requirements',
+      systemPromptFragment:
+        'When analyzing RTL with multiple clocks, identify clock domain crossings and comment on proper synchronization (e.g. synchronizers, handshakes). Flag potential metastability and timing issues.',
+      isBuiltIn: true,
+    },
+    {
+      id: 'skill-assertion-suggestions',
+      name: 'Assertion suggestions',
+      description: 'Suggest SVA or assertions for verification coverage',
+      systemPromptFragment:
+        'When reviewing RTL or testbenches, suggest SystemVerilog assertions (SVA) or checks that would improve verification coverage: protocol compliance, data integrity, FSM transitions, and reset behavior.',
+      isBuiltIn: true,
+    },
+  ]
+  for (const s of builtInSkills) {
+    await prisma.skills.upsert({
+      where: { id: s.id },
+      update: { name: s.name, description: s.description ?? undefined, systemPromptFragment: s.systemPromptFragment, isBuiltIn: true },
+      create: {
+        id: s.id,
+        userId: null,
+        name: s.name,
+        description: s.description ?? undefined,
+        systemPromptFragment: s.systemPromptFragment,
+        isBuiltIn: true,
+      },
+    })
+  }
+  console.log('✅ Seeded built-in skills:', builtInSkills.length)
+
+  // Dummy user commands for test user (try in chat: /debug-rtl, /review-code, /explain)
+  const testCommands = [
+    {
+      slug: 'debug-rtl',
+      name: 'Debug RTL',
+      promptTemplate: 'Analyze this RTL for bugs, timing issues, and best practices. Focus on: {{user_input}}',
+      showAsQuickAction: true,
+    },
+    {
+      slug: 'review-code',
+      name: 'Review code',
+      promptTemplate: 'Review the following code for correctness, style, and potential bugs. Context: {{user_input}}',
+      showAsQuickAction: false,
+    },
+    {
+      slug: 'explain',
+      name: 'Explain',
+      promptTemplate: 'Explain the following in simple terms, step by step: {{user_input}}',
+      showAsQuickAction: true,
+    },
+  ]
+  for (const c of testCommands) {
+    await prisma.user_commands.upsert({
+      where: { userId_slug: { userId: user.id, slug: c.slug } },
+      update: { name: c.name, promptTemplate: c.promptTemplate, showAsQuickAction: c.showAsQuickAction },
+      create: {
+        userId: user.id,
+        name: c.name,
+        slug: c.slug,
+        promptTemplate: c.promptTemplate,
+        showAsQuickAction: c.showAsQuickAction,
+      },
+    })
+  }
+  console.log('✅ Seeded test commands:', testCommands.length)
+
+  // Dummy workers for test user (try in chat: /worker-cdc, /worker-summarize or "Run worker" dropdown)
+  const testWorkers = [
+    {
+      slug: 'worker-cdc',
+      name: 'CDC checker',
+      systemPrompt:
+        'You are a clock domain crossing (CDC) verification expert. Analyze the design or code the user provides for CDC issues: unsynchronized signals crossing clock domains, missing synchronizers, metastability risks, and recommend fixes. Be concise and list issues by severity.',
+      modelId: null as string | null,
+    },
+    {
+      slug: 'worker-summarize',
+      name: 'Summarizer',
+      systemPrompt:
+        'You are a summarization assistant. Summarize the user\'s input clearly and concisely. Use bullet points for long content. Preserve key facts and decisions.',
+      modelId: null as string | null,
+    },
+  ]
+  for (const w of testWorkers) {
+    await prisma.workers.upsert({
+      where: { userId_slug: { userId: user.id, slug: w.slug } },
+      update: { name: w.name, systemPrompt: w.systemPrompt, modelId: w.modelId },
+      create: {
+        userId: user.id,
+        slug: w.slug,
+        name: w.name,
+        systemPrompt: w.systemPrompt,
+        modelId: w.modelId,
+      },
+    })
+  }
+  console.log('✅ Seeded test workers:', testWorkers.length)
+
+  // Same dummies for free-tier profile user (freeplan-user@example.com)
+  const freeUser = await prisma.users.findUnique({ where: { email: 'freeplan-user@example.com' } })
+  if (freeUser) {
+    for (const c of testCommands) {
+      await prisma.user_commands.upsert({
+        where: { userId_slug: { userId: freeUser.id, slug: c.slug } },
+        update: { name: c.name, promptTemplate: c.promptTemplate, showAsQuickAction: c.showAsQuickAction },
+        create: {
+          userId: freeUser.id,
+          name: c.name,
+          slug: c.slug,
+          promptTemplate: c.promptTemplate,
+          showAsQuickAction: c.showAsQuickAction,
+        },
+      })
+    }
+    for (const w of testWorkers) {
+      await prisma.workers.upsert({
+        where: { userId_slug: { userId: freeUser.id, slug: w.slug } },
+        update: { name: w.name, systemPrompt: w.systemPrompt, modelId: w.modelId },
+        create: {
+          userId: freeUser.id,
+          slug: w.slug,
+          name: w.name,
+          systemPrompt: w.systemPrompt,
+          modelId: w.modelId,
+        },
+      })
+    }
+    console.log('✅ Seeded commands & workers for freeplan-user')
+  }
+
   console.log('🎉 Seeding completed!')
 }
 

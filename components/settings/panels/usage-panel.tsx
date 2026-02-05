@@ -52,8 +52,8 @@ export function UsagePanel() {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          Session usage data will appear here once tracking is enabled and you have activity.
+        <p className="text-xs text-muted-foreground mt-3" role="status">
+          Tracking not yet active. Session usage (requests, tokens, agent runs) will appear here when available.
         </p>
       </SettingsSection>
     </div>

@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Gem, Sun, Moon, Monitor } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -17,18 +24,94 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useUserSettings } from "@/components/user-settings-provider";
-import { useSettingsModal } from "@/components/settings-modal-context";
 import { cn } from "@/lib/utils";
 import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 import { Lock } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const KEYBOARD_SHORTCUTS: { category: string; shortcuts: { key: string; action: string }[] }[] = [
+  {
+    category: "Global",
+    shortcuts: [
+      { key: "⌘K", action: "Open command palette" },
+      { key: "⌘/", action: "Toggle AI chat panel" },
+      { key: "⌘,", action: "Open settings" },
+      { key: "⌘⇧P", action: "Open keyboard shortcuts" },
+      { key: "Esc", action: "Close modal / Cancel" },
+    ],
+  },
+  {
+    category: "Modes",
+    shortcuts: [
+      { key: "⌘.", action: "Open mode switcher" },
+      { key: "⌘. A", action: "Switch to Ask mode" },
+      { key: "⌘. G", action: "Switch to Agent mode" },
+      { key: "⌘. D", action: "Switch to Debug mode" },
+      { key: "⌘. M", action: "Switch to Manual mode" },
+    ],
+  },
+  {
+    category: "Voice",
+    shortcuts: [
+      { key: "⌘⇧V", action: "Start voice input (push-to-talk)" },
+      { key: "V (in chat)", action: "Quick voice input" },
+      { key: "Esc", action: "Cancel voice recording" },
+    ],
+  },
+  {
+    category: "Navigation",
+    shortcuts: [
+      { key: "⌘1", action: "Go to Chat" },
+      { key: "⌘2", action: "Go to Sessions" },
+      { key: "⌘3", action: "Go to Files" },
+      { key: "⌘[", action: "Go back" },
+      { key: "⌘]", action: "Go forward" },
+    ],
+  },
+  {
+    category: "AI Actions",
+    shortcuts: [
+      { key: "⌘Enter", action: "Send message" },
+      { key: "⌘E", action: "Explain selection" },
+      { key: "⌘D", action: "Debug selection" },
+      { key: "⌘G", action: "Generate testbench" },
+      { key: "⌘⇧C", action: "Copy AI response" },
+    ],
+  },
+  {
+    category: "File Actions",
+    shortcuts: [
+      { key: "⌘N", action: "New session" },
+      { key: "⌘U", action: "Upload file" },
+      { key: "⌘S", action: "Save (where applicable)" },
+      { key: "⌘W", action: "Close tab/panel" },
+    ],
+  },
+  {
+    category: "Waveform",
+    shortcuts: [
+      { key: "← / →", action: "Pan waveform" },
+      { key: "+ / -", action: "Zoom in/out" },
+      { key: "F", action: "Fit to view" },
+      { key: "Space", action: "Toggle measurement cursor" },
+    ],
+  },
+];
 
 export function GeneralSettingsPanel() {
   const { toast } = useToast();
-  const { openSettings } = useSettingsModal();
   const { theme, setTheme } = useTheme();
   const { preferences, plan, isLoading, updatePreferences } = useUserSettings();
   const [saving, setSaving] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
 
@@ -64,27 +147,17 @@ export function GeneralSettingsPanel() {
 
   return (
     <div className="w-full px-8 py-5 space-y-6">
-      {/* Account */}
-      <SettingsSection title="Account">
-        <p className="text-xs text-muted-foreground mb-2">
-          Profile, password, theme, notifications, and security
-        </p>
-        <Button variant="outline" size="xs" onClick={() => openSettings("account")}>
-          Open Account
-        </Button>
-      </SettingsSection>
-
       {/* Preferences */}
       <SettingsSection title="Preferences" list>
-          <div className="flex items-center justify-between gap-2.5">
+          <div className="flex items-center justify-between gap-2.5 !pt-2">
             <div>
-              <Label className="text-xs font-medium">Theme</Label>
+              <Label className="text-xs font-medium text-foreground">Theme</Label>
               <p className="text-[11px] text-muted-foreground leading-snug">
                 Light, dark, or follow system
               </p>
             </div>
             <div
-              className="inline-flex h-8 rounded-md bg-muted p-0.5 gap-0.5"
+              className="inline-flex h-10 rounded-md bg-muted p-1 gap-0.5"
               role="tablist"
               aria-label="Theme"
             >
@@ -92,7 +165,7 @@ export function GeneralSettingsPanel() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-6 w-6 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "h-8 w-8 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
                   theme === "light" &&
                     "bg-background text-foreground shadow-sm hover:bg-background"
                 )}
@@ -103,13 +176,13 @@ export function GeneralSettingsPanel() {
                 aria-pressed={theme === "light"}
                 role="tab"
               >
-                <Sun className="h-3.5 w-3.5" />
+                <Sun className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-6 w-6 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "h-8 w-8 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
                   theme === "dark" &&
                     "bg-background text-foreground shadow-sm hover:bg-background"
                 )}
@@ -120,13 +193,13 @@ export function GeneralSettingsPanel() {
                 aria-pressed={theme === "dark"}
                 role="tab"
               >
-                <Moon className="h-3.5 w-3.5" />
+                <Moon className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-6 w-6 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "h-8 w-8 shrink-0 rounded focus-visible:ring-0 focus-visible:ring-offset-0",
                   theme === "system" &&
                     "bg-background text-foreground shadow-sm hover:bg-background"
                 )}
@@ -137,51 +210,25 @@ export function GeneralSettingsPanel() {
                 aria-pressed={theme === "system"}
                 role="tab"
               >
-                <Monitor className="h-3.5 w-3.5" />
+                <Monitor className="h-4 w-4" />
               </Button>
             </div>
           </div>
           <div className="flex items-center justify-between gap-2.5">
             <div>
-              <div className="flex items-center gap-1">
-                <Label className="text-xs font-medium">Editor Settings</Label>
-                {!paid && (
-                  <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
-                )}
-              </div>
+              <Label className="text-xs font-medium text-foreground">Keyboard Shortcuts</Label>
               <p className="text-[11px] text-muted-foreground leading-snug">
-                Configure font, formatting, minimap and more
+                View all keyboard shortcuts
               </p>
             </div>
-            <Switch checked={false} disabled aria-label="Editor Settings" />
-          </div>
-          <div className="flex items-center justify-between gap-2.5">
-            <div>
-              <div className="flex items-center gap-1">
-                <Label className="text-xs font-medium">Keyboard Shortcuts</Label>
-                {!paid && (
-                  <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
-                )}
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-snug">
-                Configure keyboard shortcuts
-              </p>
-            </div>
-            <Switch checked={false} disabled aria-label="Keyboard Shortcuts" />
-          </div>
-          <div className="flex items-center justify-between gap-2.5">
-            <div>
-              <div className="flex items-center gap-1">
-                <Label className="text-xs font-medium">Import Settings from VS Code</Label>
-                {!paid && (
-                  <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
-                )}
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-snug">
-                Import settings, extensions, and keybindings from VS Code
-              </p>
-            </div>
-            <Switch checked={false} disabled aria-label="Import from VS Code" />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShortcutsOpen(true)}
+              aria-label="Keyboard Shortcuts"
+            >
+              Open
+            </Button>
           </div>
       </SettingsSection>
 
@@ -189,20 +236,20 @@ export function GeneralSettingsPanel() {
       <SettingsSection title="Notifications" list>
         <div className="flex items-center justify-between gap-2.5">
           <div>
-            <Label className="text-xs font-medium">System Notifications</Label>
+            <Label className="text-xs font-medium text-foreground">System Notifications</Label>
             <p className="text-[11px] text-muted-foreground leading-snug">
               Show system notifications when Agent completes or needs attention
             </p>
           </div>
           <Switch
-            checked={preferences.systemNotifications ?? true}
+            checked={preferences.systemNotifications === true}
             onCheckedChange={(v) => updatePreference({ systemNotifications: v })}
             disabled={saving}
           />
         </div>
         <div className="flex items-center justify-between gap-2.5">
           <div>
-            <Label className="text-xs font-medium">Email Notifications</Label>
+            <Label className="text-xs font-medium text-foreground">Email Notifications</Label>
             <p className="text-[11px] text-muted-foreground leading-snug">
               Receive notifications via email
             </p>
@@ -214,7 +261,7 @@ export function GeneralSettingsPanel() {
         </div>
         <div className="flex items-center justify-between gap-2.5">
           <div>
-            <Label className="text-xs font-medium">Push Notifications</Label>
+            <Label className="text-xs font-medium text-foreground">Push Notifications</Label>
             <p className="text-[11px] text-muted-foreground leading-snug">
               Receive push notifications in your browser
             </p>
@@ -231,7 +278,7 @@ export function GeneralSettingsPanel() {
         <SettingsSection title="Privacy">
           <div className="flex items-center justify-between gap-2.5">
             <div>
-              <Label className="text-xs font-medium flex items-center gap-1.5">
+              <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
                 <Lock className="h-3.5 w-3.5" />
                 Privacy Mode
               </Label>
@@ -240,7 +287,12 @@ export function GeneralSettingsPanel() {
               </p>
             </div>
             <Select
-              value={preferences.privacyMode ?? "off"}
+              value={
+                typeof preferences.privacyMode === "string" &&
+                ["off", "standard", "strict"].includes(preferences.privacyMode)
+                  ? preferences.privacyMode
+                  : "off"
+              }
               onValueChange={(v: "off" | "standard" | "strict") =>
                 updatePreference({ privacyMode: v })
               }
@@ -259,6 +311,51 @@ export function GeneralSettingsPanel() {
         </SettingsSection>
       )}
 
+      {/* Keyboard shortcuts modal */}
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent className="max-h-[85vh] max-w-lg grid-rows-[auto_1fr]" aria-describedby="keyboard-shortcuts-desc">
+          <DialogHeader>
+            <DialogTitle>Keyboard shortcuts</DialogTitle>
+            <DialogDescription id="keyboard-shortcuts-desc">
+              Use Ctrl instead of ⌘ on Windows and Linux.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 overflow-y-auto -mx-1 pl-1 pr-3 scrollbar-thin-light" role="region" aria-label="Shortcut list">
+            <Table className="[&_tr]:border-b-0">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60%]">Action</TableHead>
+                  <TableHead className="text-right">Shortcut</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {KEYBOARD_SHORTCUTS.map(({ category, shortcuts }) => (
+                  <React.Fragment key={category}>
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={2} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-1.5 pt-3 first:pt-3">
+                        {category}
+                      </TableCell>
+                    </TableRow>
+                    {shortcuts.map(({ key: k, action }) => (
+                      <TableRow
+                        key={`${category}-${k}-${action}`}
+                        className="hover:bg-muted"
+                      >
+                        <TableCell className="text-sm text-foreground">{action}</TableCell>
+                        <TableCell className="text-right">
+                          <kbd className="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-xs">
+                            {k}
+                          </kbd>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

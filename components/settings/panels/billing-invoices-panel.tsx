@@ -2,257 +2,268 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUserSettings } from "@/components/user-settings-provider";
 import { isPaidPlan } from "../settings-config";
 import { SettingsSection } from "../settings-section";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ChevronDown, ExternalLink, Gem, Info } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { ExternalLink, FileText, Sparkles, CreditCard, AlertCircle } from "lucide-react";
 
-const INCLUDED_PERIOD = "27 Jan 2026 - 27 Feb 2026";
-const ON_DEMAND_PERIOD = "27 Jan 2026 - 27 Feb 2026";
+// Placeholder until billing API is connected — use generic copy so we don't imply live data
 
-const INCLUDED_ROWS = [
-  { item: "claude-4.5-opus-high (Included in Pro Plus)", tokens: "205.6M tokens", cost: "US$192.58 Included" },
-  { item: "Auto", tokens: "213.1M tokens", cost: "US$73.04 Included" },
-  { item: "gpt-5.2", tokens: "1.7M tokens", cost: "US$0.57 Included" },
-];
-const INCLUDED_TOTAL = { tokens: "420.4M", cost: "US$266.18 Included" };
-
-const ON_DEMAND_ROWS = [
-  { type: "non-max-claude-4.5-opus-high", tokens: "79.1M", cost: "US$0.09", qty: "756", total: "US$68.19" },
-  { type: "Mid-month usage paid for cycle starting January 27, 2026", tokens: "—", cost: "-US$62.90", qty: "1", total: "-US$62.90" },
-];
-const ON_DEMAND_SUBTOTAL = "US$5.29";
-const ON_DEMAND_SUMMARY = "US$68.19 / US$100.00";
-const SHOW_UNPAID_WARNING = true;
-
-const INVOICE_ROWS = [
-  { date: "28 Jan 2026", description: "", status: "Void", amount: "0.00 USD", viewHref: "#" },
-  { date: "28 Jan 2026", description: "Cursor Usage for cycle starting January 27, 2026 (Mid-Month Invoice)", status: "Open", amount: "42.53 USD", viewHref: "#" },
-  { date: "28 Jan 2026", description: "Cursor Usage for cycle starting January 27, 2026 (Mid-Month Invoice)", status: "Paid", amount: "20.37 USD", viewHref: "#" },
-  { date: "28 Jan 2026", description: "", status: "Void", amount: "0.00 USD", viewHref: "#" },
-  { date: "27 Jan 2026", description: "", status: "Paid", amount: "39.66 USD", viewHref: "#" },
-  { date: "27 Jan 2026", description: "", status: "Paid", amount: "20.00 USD", viewHref: "#" },
-  { date: "16 Jan 2026", description: "", status: "Uncollectible", amount: "0.00 USD", viewHref: "#" },
-  { date: "09 Jan 2026", description: "", status: "Paid", amount: "30.88 USD", viewHref: "#" },
-];
-
-function StatusBadge({ status }: { status: string }) {
+function BillingRow({
+  label,
+  value,
+  action,
+}: {
+  label: string;
+  value: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
-    <span
-      className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium"
-      data-status={status.toLowerCase()}
-    >
-      {status}
-    </span>
+    <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+      <div className="min-w-0 flex-1">
+        <Label className="text-xs font-medium text-foreground">{label}</Label>
+        <div className="mt-0.5 text-[11px] text-muted-foreground leading-snug">{value}</div>
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
   );
 }
 
 export function BillingInvoicesPanel() {
   const { plan } = useUserSettings();
   const hasPremiumAccess = isPaidPlan(plan);
-  const [cycle, setCycle] = useState("27 Jan 2026");
-  const [month, setMonth] = useState("January 2026");
+  const [comparePlansOpen, setComparePlansOpen] = useState(false);
+  const [cancelPlanOpen, setCancelPlanOpen] = useState(false);
+  const [compareTab, setCompareTab] = useState<"pro" | "business">("pro");
+
+  const planLabel =
+    plan === "pro"
+      ? "Pro"
+      : plan === "ultra"
+        ? "Ultra"
+        : plan === "enterprise"
+          ? "Enterprise"
+          : "Free";
 
   return (
     <div className="w-full px-8 py-5 space-y-6">
-      {/* Top right: Upgrade (Free) or Manage subscription (Pro/Ultra) */}
-      <div className="flex justify-end">
-        {hasPremiumAccess ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                Manage subscription
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                  Manage in Stripe
+      <SettingsSection title="Billing" list>
+        <BillingRow
+          label="Your plan"
+          value={`You're on the ${planLabel} plan.`}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setComparePlansOpen(true)}>
+              Compare plans
+            </Button>
+          }
+        />
+        <BillingRow
+          label="AI credits"
+          value={hasPremiumAccess ? "View and top up from the overview page when billing is connected." : "Upgrade to get AI credits and usage-based options."}
+          action={
+            <Button variant="secondary" size="sm" asChild>
+              <Link href="/overview">Top up credits</Link>
+            </Button>
+          }
+        />
+        <BillingRow
+          label="Billing"
+          value={
+            hasPremiumAccess
+              ? "Your plan renews monthly. Manage payment and invoices when billing is connected."
+              : "Upgrade to manage billing and payment."
+          }
+          action={
+            hasPremiumAccess ? (
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="#" target="_blank" rel="noopener noreferrer" className="gap-1.5">
+                  Manage payment
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>Downgrade plan</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button variant="default" size="sm" asChild>
-            <Link href="/overview">Upgrade to Pro</Link>
-          </Button>
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/overview">Upgrade</Link>
+              </Button>
+            )
+          }
+        />
+        {hasPremiumAccess && (
+          <BillingRow
+            label="Cancel your plan"
+            value="You will lose access to all paid features."
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setCancelPlanOpen(true)}
+              >
+                Cancel plan
+              </Button>
+            }
+          />
         )}
-      </div>
+      </SettingsSection>
 
-      {/* Included Usage */}
-      <SettingsSection title="Included Usage" className="space-y-2">
-        <div className="flex items-center justify-between gap-4 mb-2">
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-medium">Included Usage</span>
-            {!hasPremiumAccess && (
-              <Badge variant="upgrade" className="gap-1"><Gem className="h-3 w-3" />Paid</Badge>
-            )}
+      <p className="text-sm">
+        <Link
+          href="/overview"
+          className="text-primary underline underline-offset-4 hover:no-underline"
+        >
+          Need help with billing?
+        </Link>
+      </p>
+
+      {/* Compare plans modal */}
+      <Dialog open={comparePlansOpen} onOpenChange={setComparePlansOpen}>
+        <DialogContent className="sm:max-w-[540px]" aria-describedby="compare-plans-description">
+          <DialogHeader>
+            <DialogTitle>Compare plans</DialogTitle>
+            <DialogDescription id="compare-plans-description">
+              Choose the plan that fits your usage.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex rounded-lg bg-muted/50 p-0.5">
+              <button
+                type="button"
+                onClick={() => setCompareTab("pro")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  compareTab === "pro"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Pro
+              </button>
+              <button
+                type="button"
+                onClick={() => setCompareTab("business")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  compareTab === "business"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Business
+              </button>
+            </div>
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Everything in Free, plus:
+              </p>
+              <ul className="mt-2 space-y-1.5 text-sm text-foreground">
+                {compareTab === "pro" ? (
+                  <>
+                    <li className="flex items-center gap-2">• Separate tracks & exports</li>
+                    <li className="flex items-center gap-2">• AI credits</li>
+                    <li className="flex items-center gap-2">• Priority support</li>
+                    <li className="flex items-center gap-2">• Advanced models</li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-center gap-2">• Everything in Pro</li>
+                    <li className="flex items-center gap-2">• Team seats & SSO</li>
+                    <li className="flex items-center gap-2">• Usage-based billing</li>
+                    <li className="flex items-center gap-2">• Dedicated support</li>
+                  </>
+                )}
+              </ul>
+            </div>
           </div>
-          <Switch checked={false} disabled={!hasPremiumAccess} aria-label="Included Usage" />
-        </div>
-        <p className="text-xs text-muted-foreground">{INCLUDED_PERIOD}</p>
-        <div className="rounded-md border border-border/50 overflow-hidden">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border/50">
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Item</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Tokens</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {INCLUDED_ROWS.map((row, i) => (
-                <tr key={i} className="border-b border-border/50">
-                  <td className="text-sm px-2.5 py-1.5">{row.item}</td>
-                  <td className="text-sm text-muted-foreground px-2.5 py-1.5">{row.tokens}</td>
-                  <td className="text-sm px-2.5 py-1.5">{row.cost}</td>
-                </tr>
-              ))}
-              <tr className="border-border/50 font-medium">
-                <td className="text-sm px-2.5 py-1.5">Total</td>
-                <td className="text-sm px-2.5 py-1.5">{INCLUDED_TOTAL.tokens}</td>
-                <td className="text-sm px-2.5 py-1.5">{INCLUDED_TOTAL.cost}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </SettingsSection>
+          <DialogFooter className="sm:justify-end">
+            <Button asChild>
+              <Link href="/overview">See pricing</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* On-Demand Usage */}
-      <SettingsSection
-        title="On-Demand Usage"
-        className="space-y-2"
-      >
-        <p className="text-xs text-muted-foreground">{ON_DEMAND_PERIOD}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={cycle} onValueChange={setCycle}>
-            <SelectTrigger className="w-[220px] h-8 text-sm">
-              <SelectValue placeholder="Cycle" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="27 Jan 2026">Cycle starting 27 Jan 2026</SelectItem>
-              <SelectItem value="27 Dec 2025">Cycle starting 27 Dec 2025</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-1.5 text-sm">
-          <span className="font-medium">{ON_DEMAND_SUMMARY}</span>
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground rounded p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Info about on-demand credit"
-          >
-            <Info className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="rounded-md border border-border/50 overflow-hidden">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border/50">
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Type</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Tokens</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Cost</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Qty</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ON_DEMAND_ROWS.map((row, i) => (
-                <tr key={i} className="border-b border-border/50">
-                  <td className="text-sm px-2.5 py-1.5">{row.type}</td>
-                  <td className="text-sm text-muted-foreground px-2.5 py-1.5">{row.tokens}</td>
-                  <td className="text-sm px-2.5 py-1.5">{row.cost}</td>
-                  <td className="text-sm px-2.5 py-1.5">{row.qty}</td>
-                  <td className="text-sm px-2.5 py-1.5">{row.total}</td>
-                </tr>
-              ))}
-              <tr className="border-border/50 font-medium">
-                <td colSpan={4} className="text-sm px-2.5 py-1.5 text-right">Subtotal:</td>
-                <td className="text-sm px-2.5 py-1.5">{ON_DEMAND_SUBTOTAL}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        {SHOW_UNPAID_WARNING && (
-          <Alert variant="destructive" className="mt-3 border-destructive/50 bg-destructive/10">
-            <AlertDescription>
-              You may have an unpaid invoice. Please check your billing settings.
-            </AlertDescription>
-          </Alert>
-        )}
-      </SettingsSection>
-
-      {/* Invoices */}
-      <SettingsSection
-        title="Invoices"
-        className="space-y-2"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <Select value={month} onValueChange={setMonth}>
-            <SelectTrigger className="w-[160px] h-8 text-sm">
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="January 2026">January 2026</SelectItem>
-              <SelectItem value="December 2025">December 2025</SelectItem>
-              <SelectItem value="November 2025">November 2025</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="rounded-md border border-border/50 overflow-hidden">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-border/50">
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Date</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Description</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Status</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Amount</th>
-                <th className="text-xs font-medium text-muted-foreground px-2.5 py-1.5">Invoice</th>
-              </tr>
-            </thead>
-            <tbody>
-              {INVOICE_ROWS.map((row, i) => (
-                <tr key={i} className="border-b border-border/50">
-                  <td className="text-sm px-2.5 py-1.5">{row.date}</td>
-                  <td className="text-sm text-muted-foreground px-2.5 py-1.5 max-w-[240px] truncate">{row.description || "—"}</td>
-                  <td className="text-sm px-2.5 py-1.5">
-                    <StatusBadge status={row.status} />
-                  </td>
-                  <td className="text-sm px-2.5 py-1.5">{row.amount}</td>
-                  <td className="text-sm px-2.5 py-1.5">
-                    <Button variant="link" size="sm" className="h-auto p-0 text-xs font-normal" asChild>
-                      <Link href={row.viewHref} target="_blank" rel="noopener noreferrer" className="gap-1">
-                        View
-                        <ExternalLink className="h-3 w-3 inline" />
-                      </Link>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SettingsSection>
+      {/* Cancel plan modal */}
+      <Dialog open={cancelPlanOpen} onOpenChange={setCancelPlanOpen}>
+        <DialogContent className="sm:max-w-[440px]" aria-describedby="cancel-plan-description">
+          <DialogHeader>
+            <DialogTitle>Canceling means losing access to the following</DialogTitle>
+            <DialogDescription id="cancel-plan-description">
+              Your access to these features will be lost at the end of the month.
+            </DialogDescription>
+          </DialogHeader>
+          <ul className="space-y-4 py-2">
+            <li className="flex gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Saved conversations & history</p>
+                <p className="text-xs text-muted-foreground">
+                  Your chat history and exported data may no longer be available.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <Sparkles className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Unused AI credits</p>
+                <p className="text-xs text-muted-foreground">
+                  Any remaining credits will be forfeited.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Paid features</p>
+                <p className="text-xs text-muted-foreground">
+                  Pro models, priority support, and other paid features.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Integrations & workspace settings</p>
+                <p className="text-xs text-muted-foreground">
+                  Some connected apps and team settings may be limited.
+                </p>
+              </div>
+            </li>
+          </ul>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="secondary" onClick={() => setCancelPlanOpen(false)}>
+              Don&apos;t cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setCancelPlanOpen(false);
+                // TODO: wire to cancellation API when billing is connected
+              }}
+            >
+              Continue to cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

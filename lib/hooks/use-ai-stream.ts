@@ -19,30 +19,45 @@ export function useAIStream() {
       maxMode: boolean,
       useMultipleModels: boolean,
       onChunk: (chunk: string) => void,
-      onComplete: (fullContent: string) => void
+      onComplete: (fullContent: string) => void,
+      options?: { workerSlug?: string; expandedContent?: string; additionalSkillIds?: string[] }
     ) => {
       try {
         setStreaming(true);
         setError(null);
 
+        const body: Record<string, unknown> = {
+          conversationId,
+          content,
+          model,
+          provider,
+          sources,
+          maxMode,
+          useMultipleModels,
+        };
+        if (options?.workerSlug) body.workerSlug = options.workerSlug;
+        if (options?.expandedContent !== undefined) body.expandedContent = options.expandedContent;
+        if (options?.additionalSkillIds?.length) body.additionalSkillIds = options.additionalSkillIds;
+
         const response = await fetch("/api/messages/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({
-            conversationId,
-            content,
-            model,
-            provider,
-            sources,
-            maxMode,
-            useMultipleModels,
-          }),
+          body: JSON.stringify(body),
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to stream message");
+          let errorMessage = "Failed to stream message";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.message || errorMessage;
+            if (response.status === 401) {
+              errorMessage = "Please sign in to use the AI.";
+            }
+          } catch {
+            if (response.status === 401) errorMessage = "Please sign in to use the AI.";
+          }
+          throw new Error(errorMessage);
         }
 
         const reader = response.body?.getReader();
@@ -53,6 +68,7 @@ export function useAIStream() {
           throw new Error("No response stream available");
         }
 
+        let streamDone = false;
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -69,18 +85,30 @@ export function useAIStream() {
                   onChunk(data.content);
                 }
                 if (data.done) {
+                  streamDone = true;
                   onComplete(fullContent);
                   setStreaming(false);
                   return;
                 }
                 if (data.error) {
+                  setStreaming(false);
                   throw new Error(data.error);
                 }
               } catch (e) {
-                // Skip invalid JSON
+                if (e instanceof SyntaxError) {
+                  // Skip invalid JSON lines
+                  continue;
+                }
+                setStreaming(false);
+                throw e;
               }
             }
           }
+        }
+
+        if (!streamDone) {
+          setStreaming(false);
+          throw new Error("Response ended before completion. Please try again.");
         }
       } catch (err: any) {
         setError(err.message);

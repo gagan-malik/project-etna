@@ -1,13 +1,19 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 import { UserSettingsProvider } from "@/components/user-settings-provider";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <ClerkProvider
+      signInUrl="/login"
+      signUpUrl="/signup"
+      signInForceRedirectUrl="/chat"
+      signUpForceRedirectUrl="/chat"
+      signInFallbackRedirectUrl="/chat"
+      signUpFallbackRedirectUrl="/chat"
+    >
       <UserSettingsProvider>{children}</UserSettingsProvider>
-    </SessionProvider>
+    </ClerkProvider>
   );
 }
-

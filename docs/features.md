@@ -38,6 +38,18 @@ Specialized prompts for hardware debugging:
 
 Real-time streaming of AI responses for immediate feedback.
 
+### Chat input: @-mentions and slash commands
+
+Cursor-style input features in chat:
+
+- **@-mentions** – Type `@` to reference **docs** (from `docs/`), **past chats**, or **indexed files**. Choose an item to insert a reference (e.g. `@doc:api/messages.md`) into your message.
+- **Slash menu** – Type `/` to open a categorized menu:
+  - **Skills** – Add a system-prompt fragment for this message only (shown as a chip above the input).
+  - **Subagents** – Insert a worker slug (e.g. `/worker-cdc`) to run that subagent for this turn.
+  - **Actions** – Insert a command slug (e.g. `/debug-rtl`) to run a prompt template; use `{{user_input}}` in Settings when creating commands.
+
+See [Chat input: @-mentions and slash commands](/chat-input) for full details and keyboard shortcuts.
+
 ---
 
 ## RTL File Support
