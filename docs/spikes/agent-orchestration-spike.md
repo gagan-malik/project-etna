@@ -1,0 +1,217 @@
+# Technical Spike: Agent Orchestration Layer for Etna
+
+## 1. Objective
+
+Spike a **runtime agent orchestration layer** that receives user intent, classifies it, routes to the right agent(s) (Enterprise or UX), runs multi-step workflows, and persists runs and tasks for observability and replay. Today, the Enterprise Orchestrator is prompt-based; this spike explores a concrete implementation.
+
+**Definition of done:** The spike is complete only when fully implemented end-to-end — API, orchestration logic, and chat UI integration.
+
+## 2. Scope
+
+**In scope**
+
+- API surface for orchestration (create run, stream, get run, list runs)
+- Intent classification (rule-based first)
+- Routing from intent → agent(s)
+- Execution pipeline (single or multi-step)
+- Persistence of runs and tasks (Prisma)
+- Alignment with enterprise-baseline and api-first rules
+- **Chat UI integration** — orchestration mode, run progress, SSE consumer, run history
+
+**Out of scope**
+
+- LLM-based classifier (defer to rule-based)
+- Separate job queue / background workers
+- Full-Stack Engineer / ci-watcher agents (focus on Enterprise + UX)
+
+## 3. Approach
+
+1. **API sketch** — Define routes and request/response shapes (Zod schemas).
+2. **Data model** — Add `agent_runs` and `agent_tasks` to Prisma; migration + rollback notes.
+3. **Classifier** — Rule-based mapping from user input to `Intent` using WORKERS_ENTERPRISE and WORKERS_UX.
+4. **Router** — Map intent → ordered list of `AgentId`; support multi-step (e.g. architect → implement).
+5. **Executor** — Use existing `lib/ai` (`streamAIResponse` / `generateAIResponse`); persist task results.
+6. **API implementation** — Implement `POST /api/orchestration/run`, `POST /api/orchestration/run/stream`, `GET /api/orchestration/runs/[id]`, `GET /api/orchestration/runs`; wire classifier → router → executor.
+7. **Chat UI integration** — Add orchestration mode toggle; run progress display; SSE consumer for streaming; run history in Activity or sidebar.
+
+## 4. Key Decisions
+
+| Decision | Options | Recommendation |
+|----------|---------|----------------|
+| Classifier | Rule-based vs LLM | Rule-based for spike; LLM later if needed |
+| Execution model | Sync vs async | Sync for short runs; async/stream for chat |
+| Agent definitions | In-code vs DB | In-code (`lib/orchestration/agents.ts`) for spike |
+| Chat integration | Same endpoint vs separate | Separate `POST /api/orchestration/run/stream` for chat |
+| Rate limiting | Per-user vs per-run | Reuse `lib/rate-limit.ts` per user |
+
+## 5. Risks & Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Token usage across multi-step runs | Cap pipeline length; track usage per task; apply rate limits |
+| Latency for multi-agent runs | Stream responses; show progress per task |
+| Intent misclassification | Start with explicit keywords; add LLM classifier if needed |
+| Schema evolution | Use JSON for `intentSecondary`, `usage`, `metadata` for flexibility |
+| PII in logs | Log only `runId`, `taskId`, `agentId`; never log user input or outputs |
+
+## 6. Deliverables
+
+**Backend**
+
+1. **docs/spikes/agent-orchestration-spike.md** — This spike document.
+2. **docs/api/orchestration.md** — API contract (routes, shapes, errors).
+3. **Prisma migration** — `agent_runs`, `agent_tasks` with indexes.
+4. **lib/orchestration/** — `types.ts`, `classifier.ts`, `router.ts`, `executor.ts`, `agents.ts`.
+5. **app/api/orchestration/** — `run/route.ts`, `run/stream/route.ts`, `runs/[id]/route.ts`, `runs/route.ts`.
+6. **Zod schemas** — In `lib/validation.ts` or `lib/orchestration/schemas.ts`.
+
+**UI**
+
+7. **Orchestration mode toggle** — Chat input can switch to orchestration mode (or `/orchestrate`); calls `POST /api/orchestration/run/stream` instead of `POST /api/messages/stream`.
+8. **Run progress display** — Show active agent, task list, and streaming output in chat.
+9. **SSE consumer** — Handle `run_start`, `task_start`, `chunk`, `task_end`, `run_end` events in chat client.
+10. **Run history** — List past runs in Activity or sidebar; link to run detail.
+
+## 7. Success Criteria
+
+**API**
+
+- [ ] `POST /api/orchestration/run` accepts input, classifies intent, runs one or more agents, persists run and tasks, returns structured response.
+- [ ] `GET /api/orchestration/runs/[id]` returns run with tasks for the owning user.
+- [ ] Auth and rate limiting applied on all routes.
+- [ ] No PII in logs; responses follow `{ data?, error?, message? }`.
+- [ ] Migration applies cleanly; rollback documented.
+
+**UI**
+
+- [ ] User can trigger orchestration from chat (mode toggle or `/orchestrate`).
+- [ ] User sees agent progress (which agent is running, task list, streaming output).
+- [ ] User can view past runs (Activity or sidebar) and open run detail.
+
+## 8. Time Estimate
+
+**3–5 days** for full implementation (API + data model + classifier + router + executor + chat UI + basic tests).
+
+---
+
+## 9. Persona-Based Orchestration Opportunities
+
+This section maps Etna's personas (from [UX_MASTER_FILE.md](../product/UX_MASTER_FILE.md)) to concrete agent orchestration opportunities. Each persona has distinct workflows, pain points, and goals that orchestration can address.
+
+### Primary Persona: Maya — Professional Verification Engineer
+
+**Profile:** Senior verification engineer, 8 years, time-pressed, values speed over flashy features. Uses Verdi + GTKWave. Pain: 60% of time on debugging; hard to explain bugs to juniors; no AI help for hardware-specific questions.
+
+| Opportunity | User Need | Orchestration Flow | Agents Involved |
+|-------------|-----------|--------------------|-----------------|
+| **Quick debug during code review** | 5-min task; "Is this safe?" | Single intent → Research or Review | Research |
+| **Deep root cause analysis** | 2+ hour task; waveform + RTL | Multi-step: Research → Architect → Implement | Research, Architect, Implement |
+| **Explain protocol issue to junior** | 15 min; educational output | Research + Docs (generate shareable doc) | Research, Docs |
+| **Generate testbench for new module** | 30 min; agent mode | Architect → Implement (plan + generate) | Architect, Implement |
+| **Share findings with team** | "Run in cloud → notify team" | Orchestration run → webhook/email summary | Implement, Docs (when Cloud Agents exist) |
+
+**Voice integration:** Maya's hands-free workflow ("Hey Etna, why is data_valid stuck low at 1500ns?") maps directly to orchestration: voice input → classifier → Debug-mode agent → waveform + RTL tools.
+
+**Cloud Agents (future):** Maya triggers "analyze this repo for common RTL bugs" from CI or Slack. Orchestration layer runs Research → Architect → Implement pipeline async; results delivered to channel or email.
+
+---
+
+### Secondary Persona: Shivam (Alex) — Computer Engineering Student
+
+**Profile:** Senior undergrad, 2 digital design courses. ChatGPT gives generic answers for hardware; cryptic Verilog errors; can't afford professional tools. Needs: paste code, understand what's wrong, learn fast.
+
+| Opportunity | User Need | Orchestration Flow | Agents Involved |
+|-------------|-----------|--------------------|-----------------|
+| **Debug class assignment at 11pm** | Urgent, 30 min; paste code | Single: Research (explain) or Implement (fix) | Research, Implement |
+| **Learn how a FIFO works** | Educational, 1 hour | Ask mode → Research → optional UX Researcher for flow | Research, UX Researcher |
+| **Prepare for technical interview** | Prep, 2 hours | Research + Docs (generate study notes) | Research, Docs |
+| **Show project to professor** | Demo, 10 min | Research (explain) + Docs (summary) | Research, Docs |
+
+**Guest-first flow:** Shivam's first-time debug (no signup) is a single orchestration run: paste code → classify → Research (or Implement) → stream response. Orchestration tracks run for analytics; no persistence for guests.
+
+**Smart mode suggestion:** "This looks like a debugging task. Switch to Debug mode?" → Orchestration classifier suggests intent; UX Designer/Usability Reviewer can improve the prompt UI.
+
+---
+
+### Tertiary Persona: Sam — FPGA Hobbyist
+
+**Profile:** Software engineer by day, FPGA tinkerer by night. 12 years software, 3 years FPGA. Pain: professional tools expensive; hard to find hardware debugging help; simulation vs synthesis mismatches; wants to verify designs but doesn't know UVM.
+
+| Opportunity | User Need | Orchestration Flow | Agents Involved |
+|-------------|-----------|--------------------|-----------------|
+| **Debug weekend project** | Hobby, 2 hours | Debug mode: Research → Implement (hypothesis + fix) | Research, Implement |
+| **Learn SystemVerilog from Verilog** | Educational, ongoing | Research + Docs (conversion guide) | Research, Docs |
+| **Share design on GitHub** | Open-source, 30 min | Implement + Docs (README, API docs) | Implement, Docs |
+| **Verify RISC-V core** | Ambitious, weeks | Multi-step: Architect → Implement → Review | Architect, Implement, Review |
+
+**Async workflow:** Sam's evening/weekend pattern fits "Run in cloud" — orchestration runs overnight; results in morning. Cloud Agents (future) + orchestration = "Run analysis overnight" on class repo.
+
+---
+
+### Cross-Persona: Interaction Modes → Orchestration
+
+Etna's 4 modes (Ask, Agent, Debug, Manual) map to orchestration intent:
+
+| Mode | Primary Intent | Orchestration Behavior |
+|------|----------------|------------------------|
+| **Ask 💬** | Research | Single agent; read-only; no code changes |
+| **Agent 🤖** | Implement + Architect | Multi-step: plan → execute; optional Research |
+| **Debug 🐛** | Research + Implement | Hypothesis generation → targeted fix; waveform tools |
+| **Manual ✏️** | Implement | Single agent; precise, explicit edits only |
+
+**Smart mode detection:** Orchestration classifier can suggest mode before user sends. "Create a testbench for FIFO" → suggest Agent mode; "What does always_comb do?" → suggest Ask.
+
+---
+
+### Cross-Persona: Task Flows → Orchestration
+
+| Task Flow | Persona | Orchestration Opportunity |
+|-----------|---------|---------------------------|
+| **First-time debug (guest)** | Shivam | Single run: classify → Research/Implement; no auth; rate limit by IP |
+| **Deep debug session** | Maya | Multi-run: Research (hypotheses) → Implement (fix) → Review (assertion); persist run for session summary |
+| **Upload and view waveform** | Any | Orchestration not primary; waveform MCP tools; optional "Analyze this waveform" → Research |
+| **Generate testbench** | Sam | Architect → Implement; optional UX Researcher for "best testbench structure for this module" |
+
+---
+
+### Cross-Persona: Voice & Accessibility
+
+| Persona | Voice Use Case | Orchestration |
+|---------|----------------|---------------|
+| **Maya** | Hands-free; "Why is data_valid stuck low at 1500ns?" | Voice → intent → Debug agent → waveform + RTL tools |
+| **Shivam** | Rapid-fire questions; "What's the reset value?" | Voice → intent → Research (single agent) |
+| **Sam** | Mobile/tablet review; voice on touch device | Voice → intent → Research or Implement |
+| **Accessibility** | Motor/RSI; voice-only interaction | Voice → orchestration; TTS for response; full flow without keyboard |
+
+---
+
+### Summary: Persona → Orchestration Priority
+
+| Persona | Priority | Key Orchestration Wins |
+|---------|----------|------------------------|
+| **Maya** | P0 | Multi-step deep debug; team sharing; Cloud Agents (async); voice hands-free |
+| **Shivam** | P0 | Single-step paste-and-debug; guest flow; smart mode suggestion |
+| **Sam** | P1 | Multi-step verify (Architect→Implement→Review); async "Run in cloud" |
+
+---
+
+## Appendix: Architect Design Summary
+
+The Architect proposed:
+
+- **API**: `POST /run`, `POST /run/stream`, `GET /runs/[id]`, `GET /runs`
+- **Lib**: `classifier.ts`, `router.ts`, `executor.ts`, `types.ts`, `agents.ts`
+- **Data**: `agent_runs` (userId, status, intent, input, finalOutput, tasks) and `agent_tasks` (runId, agentId, orderIndex, status, input, output, usage)
+- **Agents**: Research, Architect, Implement, Review, Docs, UX Researcher, UX Designer, Usability, Accessibility
+- **Rules**: Session required; Zod validation; consistent responses; no PII in logs
+- **Chat integration**: Add orchestration mode to chat UI (toggle or `/orchestrate`) that calls `POST /api/orchestration/run/stream` instead of `POST /api/messages/stream`
+
+---
+
+## References
+
+- [UX_MASTER_FILE.md](../product/UX_MASTER_FILE.md) — Personas, modes, task flows, UX metrics
+- [VISION.md](../product/VISION.md) — Product mission and target users
+- [BACKLOG.md](../product/BACKLOG.md) — CLD-001 Cloud Agents
+- [cloud-agents.md](../api/cloud-agents.md) — Planned Cloud Agents API
+- [.cursor/agents/enterprise-orchestrator.md](../../.cursor/agents/enterprise-orchestrator.md) — Current delegation table

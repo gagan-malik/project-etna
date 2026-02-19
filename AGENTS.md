@@ -16,6 +16,7 @@ These roles are also **reference checklists**. To use them without creating work
 | **Review** | "Review for security", "Ready for production?", "Suggest improvements" | [.cursor/WORKERS_ENTERPRISE.md#review](.cursor/WORKERS_ENTERPRISE.md) |
 | **Docs** | "Document this API", "Update README", "Add runbook for…" | [.cursor/WORKERS_ENTERPRISE.md#docs](.cursor/WORKERS_ENTERPRISE.md) |
 | **Enterprise Orchestrator** | Route by intent: "How does X work?", design, implement, review, document | [.cursor/agents/enterprise-orchestrator.md](.cursor/agents/enterprise-orchestrator.md) |
+| **Full-Stack Engineer** | Fix CI, resolve merge conflicts, ship PRs, run smoke tests, deslop code, summarize work | [.cursor/agents/full-stack-engineer.md](.cursor/agents/full-stack-engineer.md) |
 
 Full orchestration: [.cursor/WORKERS_ENTERPRISE.md](.cursor/WORKERS_ENTERPRISE.md)
 
