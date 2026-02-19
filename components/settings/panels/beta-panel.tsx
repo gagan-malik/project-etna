@@ -35,7 +35,7 @@ export function BetaPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Beta" list>
         <div className="flex items-center justify-between gap-2.5">
           <div>

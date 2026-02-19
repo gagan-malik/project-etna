@@ -148,7 +148,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
           <User className="mr-2 h-4 w-4" />
           <span>Account</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => openSettings("overview")}>
+        <DropdownMenuItem onClick={() => openSettings("general")}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

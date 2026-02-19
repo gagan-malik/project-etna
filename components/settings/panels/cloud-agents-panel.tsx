@@ -27,7 +27,7 @@ export function CloudAgentsPanel() {
   const [personalOpen, setPersonalOpen] = useState(true);
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Manage Settings">
         <p className="text-xs text-muted-foreground mb-3">
           Connect GitHub, manage team and user settings, and more.

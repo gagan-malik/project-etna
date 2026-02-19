@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-const DEFAULT_SECTION = "overview";
+const DEFAULT_SECTION = "general";
 
 interface SettingsModalContextValue {
   open: boolean;

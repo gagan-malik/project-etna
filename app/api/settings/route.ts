@@ -59,6 +59,8 @@ const userPreferencesSchema = z
     // Commands, Skills, Workers
     enabledSkillIds: z.array(z.string()).optional(),
     commandsEnabled: z.boolean().optional(),
+    // Onboarding
+    onboardingCompleted: z.boolean().optional(),
   })
   .strict();
 

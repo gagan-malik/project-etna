@@ -9,9 +9,13 @@ import { AuthProvider } from "@/components/auth-provider";
 import { AuthGuard } from "@/components/auth-guard";
 import { NextjsPortalFix } from "@/components/nextjs-portal-fix";
 import { SettingsModalProvider } from "@/components/settings-modal-context";
+import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { Inter } from "next/font/google";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+
+// Avoid prerender so build does not require Clerk env at build time (set on Vercel for runtime).
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Project Etna - Silicon Debug Assistant",
@@ -83,6 +87,7 @@ export default function RootLayout({
             <ErrorBoundary>
               <AuthGuard>
                 <SettingsModalProvider>
+                  <OnboardingWizard />
                   <SidebarLayout>
                     {children}
                   </SidebarLayout>

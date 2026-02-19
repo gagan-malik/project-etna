@@ -7,6 +7,7 @@ import {
   Wrench,
   FileCode,
   Activity,
+  FolderOpen,
 } from "lucide-react";
 
 /** Paths where sidebar and header are hidden (auth / onboarding). */
@@ -36,6 +37,7 @@ export const SIDEBAR_NAV: NavSection[] = [
     items: [
       { title: "Home", url: "/", icon: Home },
       { title: "Debug Assistant", url: "/chat", icon: Bug },
+      { title: "Spaces", url: "/spaces", icon: FolderOpen },
       { title: "History", url: "/activity", icon: History },
       { title: "EDA Tools", url: "/integrations", icon: Wrench },
       { title: "Design Files", url: "/files", icon: FileCode },

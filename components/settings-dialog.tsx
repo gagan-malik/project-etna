@@ -9,7 +9,6 @@ import {
   SettingsLayout,
   SettingsPageTitle,
   getSectionById,
-  OverviewSettingsPanel,
   GeneralSettingsPanel,
   AccountSettingsPanel,
   RulesPanel,
@@ -45,8 +44,6 @@ export function SettingsDialog({ open, onOpenChange, session, status }: Settings
 
   const renderContent = useCallback(() => {
     switch (activeSection) {
-      case "overview":
-        return <OverviewSettingsPanel />;
       case "general":
         return <GeneralSettingsPanel />;
       case "account":

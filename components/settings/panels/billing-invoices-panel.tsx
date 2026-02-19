@@ -57,7 +57,7 @@ export function BillingInvoicesPanel() {
           : "Free";
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Billing" list>
         <BillingRow
           label="Your plan"

@@ -22,7 +22,7 @@ export function HooksPanel() {
   const [logOpen, setLogOpen] = useState(true);
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Configured Hooks">
         <p className="text-sm text-muted-foreground mb-3">
           Configure and manage Etna hooks.

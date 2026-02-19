@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { streamAIResponse, getAvailableModels } from "@/lib/ai";
+import { enqueueStreamEvent } from "@/lib/stream-events";
 import { generateEmbedding } from "@/lib/embeddings";
 import { findSimilarDocuments } from "@/lib/db";
 import { searchMultipleSources } from "@/lib/sources/search";
@@ -114,6 +115,18 @@ export async function POST(req: Request) {
         { error: "Conversation not found" },
         { status: 404 }
       );
+    }
+
+    // Load space instructions when conversation belongs to a space (sticky instructions)
+    let spaceInstructions = "";
+    if (conversation.spaceId) {
+      const space = await prisma.spaces.findUnique({
+        where: { id: conversation.spaceId },
+        select: { instructions: true },
+      });
+      if (space?.instructions?.trim()) {
+        spaceInstructions = "\n\n" + space.instructions.trim() + "\n\n";
+      }
     }
 
     const prefs = (user?.userPreferences as Record<string, unknown> | null) ?? {};
@@ -294,10 +307,11 @@ export async function POST(req: Request) {
       integrationContext = `\n\nUser has enabled the following integrations: ${thirdPartySources.join(", ")}. Search these sources for relevant information.`;
     }
 
-    // Prepare messages for AI
-    const systemMessage = worker
+    // Prepare messages for AI (order: space instructions -> worker/default system -> skills)
+    const baseSystem = worker
       ? worker.systemPrompt + skillsContext
       : `You are an AI assistant. Answer the user's question based on the provided context and conversation history.${sourceContext}${integrationContext}${skillsContext}`;
+    const systemMessage = spaceInstructions + baseSystem;
 
     const userMessageContent = worker
       ? effectiveContent
@@ -425,10 +439,13 @@ export async function POST(req: Request) {
             }
 
             if (chunk.done) {
-              // Send final message
-              controller.enqueue(
-                new TextEncoder().encode(`data: ${JSON.stringify({ done: true })}\n\n`)
-              );
+              // Optional: send block event for new clients (backward compatible)
+              enqueueStreamEvent(controller, {
+                type: "block",
+                kind: "text",
+                content: fullResponse,
+              });
+              enqueueStreamEvent(controller, { done: true });
 
               // Create assistant message in database
               await prisma.messages.create({

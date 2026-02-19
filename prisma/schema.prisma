@@ -101,6 +101,7 @@ model spaces {
   id               String             @id @default(cuid())
   name             String
   description      String?
+  instructions     String?            // Sticky instructions prepended to system prompt in this space
   slug             String             @unique
   ownerId          String
   createdAt        DateTime           @default(now())

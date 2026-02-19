@@ -4,7 +4,7 @@ import { SettingsSection } from "../settings-section";
 
 export function PlaceholderPanel({ sectionLabel }: { sectionLabel: string }) {
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection>
         <p className="text-sm text-muted-foreground">
           {sectionLabel} settings — coming soon. Check back later.

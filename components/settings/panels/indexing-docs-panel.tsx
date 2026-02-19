@@ -41,7 +41,7 @@ export function IndexingDocsPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Codebase Indexing">
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-1">

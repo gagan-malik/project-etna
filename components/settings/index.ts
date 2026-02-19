@@ -8,7 +8,6 @@ export {
   isPaidPlan,
 } from "./settings-config";
 export type { SettingsSectionDef } from "./settings-config";
-export { OverviewSettingsPanel } from "./panels/overview-settings-panel";
 export { GeneralSettingsPanel } from "./panels/general-settings-panel";
 export { AccountSettingsPanel } from "./panels/account-settings-panel";
 export { RulesPanel } from "./panels/rules-panel";

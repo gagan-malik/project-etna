@@ -14,8 +14,8 @@ const requiredEnvVars = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   
-  // Optional - AI Providers (use AI_GATEWAY_API_KEY for Vercel AI Gateway = one key for all models)
-  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
+  // Optional - AI Providers (use AI_GATEWAY_API_KEY or VERCEL_AI_GATEWAY_API_KEY for Vercel AI Gateway)
+  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
   DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,

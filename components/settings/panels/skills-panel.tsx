@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -41,8 +41,35 @@ export function SkillsPanel() {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formFragment, setFormFragment] = useState("");
+  const [installingId, setInstallingId] = useState<string | null>(null);
 
   const enabledSet = new Set(enabledSkillIds);
+
+  const installBuiltIn = async (skillId: string) => {
+    setInstallingId(skillId);
+    try {
+      const res = await fetch("/api/skills/install", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ skillId }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error ?? "Failed to install");
+      }
+      toast({ title: "Skill added to your skills" });
+      loadSkills();
+    } catch (e: unknown) {
+      toast({
+        title: "Error",
+        description: e instanceof Error ? e.message : "Failed to install skill",
+        variant: "destructive",
+      });
+    } finally {
+      setInstallingId(null);
+    }
+  };
 
   const loadSkills = async () => {
     try {
@@ -177,10 +204,10 @@ export function SkillsPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Skills">
         <p className="text-xs text-muted-foreground mb-4">
-          Skills are system-prompt fragments that are appended when enabled. Built-in skills are available to everyone; you can add custom skills and enable or disable any of them.
+          Skills are system-prompt fragments that are appended when enabled. Curated built-in skills can be used as-is or added to your skills to edit. You can also create custom skills.
         </p>
         {skillsLoading ? (
           <p className="text-sm text-muted-foreground">Loading skills…</p>
@@ -188,7 +215,7 @@ export function SkillsPanel() {
           <div className="space-y-4">
             {builtIn.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Built-in skills</h4>
+                <h4 className="text-sm font-medium mb-2">Curated (built-in) skills</h4>
                 <ul className="space-y-2">
                   {builtIn.map((s) => (
                     <li
@@ -201,12 +228,31 @@ export function SkillsPanel() {
                           <p className="text-xs text-muted-foreground truncate">{s.description}</p>
                         )}
                       </div>
-                      <Switch
-                        checked={enabledSet.has(s.id)}
-                        onCheckedChange={(v) => toggleSkill(s.id, v)}
-                        disabled={saving}
-                        aria-label={`Enable ${s.name}`}
-                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Switch
+                          checked={enabledSet.has(s.id)}
+                          onCheckedChange={(v) => toggleSkill(s.id, v)}
+                          disabled={saving}
+                          aria-label={`Enable ${s.name}`}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 text-xs"
+                          onClick={() => installBuiltIn(s.id)}
+                          disabled={installingId === s.id}
+                          aria-label={`Add ${s.name} to my skills`}
+                        >
+                          {installingId === s.id ? (
+                            "Adding…"
+                          ) : (
+                            <>
+                              <Download className="h-3.5 w-3.5" />
+                              Add to my skills
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>

@@ -51,7 +51,7 @@ export default function LoginPage() {
       <SignIn
         signUpUrl="/signup"
         forceRedirectUrl="/chat"
-        signInFallbackRedirectUrl="/chat"
+        signUpFallbackRedirectUrl="/chat"
         appearance={{
           elements: {
             rootBox: "mx-auto",

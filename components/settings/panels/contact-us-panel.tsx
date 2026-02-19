@@ -6,7 +6,7 @@ const SUPPORT_EMAIL = "hi@projectetna.com";
 
 export function ContactUsPanel() {
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Contact Us">
         <p className="text-sm text-muted-foreground">
           For all support inquiries, including billing issues, receipts, and

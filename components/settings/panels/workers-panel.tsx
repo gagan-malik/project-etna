@@ -174,7 +174,7 @@ export function WorkersPanel() {
         toast({ title: "Demo workers added", description: `${added} worker(s) added. Use /worker-cdc or /worker-summarize in chat, or the Run worker menu.` });
         loadWorkers();
       } else {
-        toast({ title: "Demo workers", description: "You already have these workers.", variant: "secondary" });
+        toast({ title: "Demo workers", description: "You already have these workers." });
       }
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed to add demo workers", variant: "destructive" });
@@ -192,7 +192,7 @@ export function WorkersPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Workers">
         <p className="text-xs text-muted-foreground mb-4">
           Workers are subagents with their own system prompt. Invoke them in chat with <code className="text-[10px] bg-muted px-1 rounded">/slug</code> or from the worker menu. Optionally set a model ID to override the default for that worker.

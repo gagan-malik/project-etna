@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  LayoutDashboard,
   Settings,
   User,
   Infinity,
@@ -42,7 +41,6 @@ export const SETTINGS_GROUP_ORDER = [
  * Sections are grouped for sidebar: Core, Integrations, Billing & Usage, Rules & Automation, Data & Beta, Support.
  */
 export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, group: "Core" },
   { id: "general", label: "General", icon: Settings, group: "Core" },
   { id: "account", label: "Account", icon: User, group: "Core" },
   { id: "agents", label: "Agents", icon: Infinity, group: "Integrations" },
@@ -59,7 +57,7 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
   { id: "contact", label: "Contact us", icon: Mail, group: "Support" },
 ];
 
-export const DEFAULT_SECTION = "overview";
+export const DEFAULT_SECTION = "general";
 
 export function getSectionById(id: string) {
   return SETTINGS_SECTIONS.find((s) => s.id === id);

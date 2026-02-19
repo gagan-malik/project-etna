@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { validateInput } from "@/lib/validation";
+import { z } from "zod";
+
+const MAX_INSTRUCTIONS_LENGTH = 4_000;
+const patchSpaceSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  slug: z.string().min(1).max(100).optional(),
+  instructions: z.string().max(MAX_INSTRUCTIONS_LENGTH).optional(),
+});
 
 // GET /api/spaces/[id] - Get a specific space
 export async function GET(
@@ -63,7 +72,11 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, slug } = body;
+    const validation = validateInput(patchSpaceSchema, body);
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+    const { name, slug, instructions } = validation.data;
 
     // Verify ownership
     const existing = await prisma.spaces.findFirst({
@@ -98,8 +111,9 @@ export async function PATCH(
     const space = await prisma.spaces.update({
       where: { id },
       data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
+        ...(name !== undefined && { name }),
+        ...(slug !== undefined && { slug }),
+        ...(instructions !== undefined && { instructions: instructions || null }),
       },
     });
 

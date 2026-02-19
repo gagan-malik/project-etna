@@ -1,9 +1,19 @@
 /**
- * Hook for streaming AI responses
+ * Hook for streaming AI responses.
+ * Supports optional stream event callbacks (onBlock, onToolStart, onToolResult) for richer UX.
  */
 
 import { useState, useCallback } from "react";
 import type { SourceType } from "@/components/chat/source-selector";
+
+export interface StreamMessageOptions {
+  workerSlug?: string;
+  expandedContent?: string;
+  additionalSkillIds?: string[];
+  onBlock?: (block: { kind: "code" | "waveform" | "text"; content: string | object }) => void;
+  onToolStart?: (name: string, id?: string) => void;
+  onToolResult?: (id: string, result: unknown) => void;
+}
 
 export function useAIStream() {
   const [streaming, setStreaming] = useState(false);
@@ -20,7 +30,7 @@ export function useAIStream() {
       useMultipleModels: boolean,
       onChunk: (chunk: string) => void,
       onComplete: (fullContent: string) => void,
-      options?: { workerSlug?: string; expandedContent?: string; additionalSkillIds?: string[] }
+      options?: StreamMessageOptions
     ) => {
       try {
         setStreaming(true);
@@ -79,10 +89,22 @@ export function useAIStream() {
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               try {
-                const data = JSON.parse(line.slice(6));
+                const data = JSON.parse(line.slice(6)) as Record<string, unknown>;
                 if (data.content) {
-                  fullContent += data.content;
-                  onChunk(data.content);
+                  fullContent += data.content as string;
+                  onChunk(data.content as string);
+                }
+                if (data.type === "block" && data.kind && data.content !== undefined) {
+                  options?.onBlock?.({
+                    kind: data.kind as "code" | "waveform" | "text",
+                    content: data.content as string | object,
+                  });
+                }
+                if (data.type === "tool_start" && typeof data.name === "string") {
+                  options?.onToolStart?.(data.name, data.id as string | undefined);
+                }
+                if (data.type === "tool_result" && typeof data.id === "string") {
+                  options?.onToolResult?.(data.id, data.result);
                 }
                 if (data.done) {
                   streamDone = true;
@@ -92,7 +114,7 @@ export function useAIStream() {
                 }
                 if (data.error) {
                   setStreaming(false);
-                  throw new Error(data.error);
+                  throw new Error(data.error as string);
                 }
               } catch (e) {
                 if (e instanceof SyntaxError) {

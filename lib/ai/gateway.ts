@@ -34,7 +34,7 @@ export class GatewayProvider implements AIProvider {
   private client: OpenAI | null = null;
 
   constructor() {
-    const apiKey = process.env.AI_GATEWAY_API_KEY;
+    const apiKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY;
     if (apiKey) {
       this.client = new OpenAI({
         apiKey,
@@ -44,7 +44,8 @@ export class GatewayProvider implements AIProvider {
   }
 
   isAvailable(): boolean {
-    return !!this.client && !!process.env.AI_GATEWAY_API_KEY;
+    const key = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_AI_GATEWAY_API_KEY;
+    return !!this.client && !!key;
   }
 
   async generate(request: AIRequest): Promise<AIResponse> {

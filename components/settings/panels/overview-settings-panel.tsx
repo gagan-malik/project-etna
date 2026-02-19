@@ -87,7 +87,7 @@ export function OverviewSettingsPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       {/* Quick actions — match UX_MASTER_FILE Dashboard */}
       <SettingsSection title="Quick actions">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

@@ -192,7 +192,7 @@ export function RulesPanel() {
         toast({ title: "Demo commands added", description: `${added} command(s) added. Use /debug-rtl, /review-code, /explain in chat.` });
         loadCommands();
       } else {
-        toast({ title: "Demo commands", description: "You already have these commands.", variant: "secondary" });
+        toast({ title: "Demo commands", description: "You already have these commands." });
       }
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed to add demo commands", variant: "destructive" });
@@ -210,7 +210,7 @@ export function RulesPanel() {
   }
 
   return (
-    <div className="w-full px-8 py-5 space-y-6">
+    <div className="w-full px-8 pt-16 pb-5 space-y-6">
       <SettingsSection title="Context">
         <div className="flex items-center justify-between gap-4">
           <div>
