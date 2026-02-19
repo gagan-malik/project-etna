@@ -141,6 +141,7 @@ model users {
   user_commands         user_commands[]
   skills                skills[]
   workers               workers[]
+  agent_runs            agent_runs[]
 }
 
 // Commands: user-defined slash commands with prompt template; optional quick action
@@ -193,6 +194,46 @@ model workers {
   @@unique([userId, slug])
   @@index([userId])
   @@index([spaceId])
+}
+
+// Agent orchestration: runs and tasks for multi-agent pipelines
+model agent_runs {
+  id              String       @id @default(cuid())
+  userId          String
+  conversationId  String?
+  spaceId         String?
+  status          String       @default("pending") // pending, running, completed, failed
+  intent          String       // primary intent (research, architect, implement, etc.)
+  intentSecondary Json?        // flexible metadata
+  input           String       @db.Text
+  finalOutput     String?      @db.Text
+  model           String?
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  users           users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent_tasks     agent_tasks[]
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([status])
+}
+
+model agent_tasks {
+  id         String     @id @default(cuid())
+  runId      String
+  agentId    String     // research, architect, implement, review, docs, ux_researcher, etc.
+  orderIndex Int
+  status     String     @default("pending") // pending, running, completed, failed
+  input      String     @db.Text
+  output     String?    @db.Text
+  usage      Json?      // token counts, etc.
+  metadata   Json?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  agent_runs agent_runs @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
 }
 
 model verification_tokens {

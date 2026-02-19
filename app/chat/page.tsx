@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2, Bug, Cpu, Zap, Bot, ChevronDown, FileText, MessageSquare, FileCode } from "lucide-react";
+import { Copy, Heart, Plus, FolderOpen, Sparkles, Send, X, Loader2, Bug, Cpu, Zap, Bot, ChevronDown, FileText, MessageSquare, FileCode, GitBranch } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { FilePreview } from "@/components/chat/file-preview";
@@ -23,6 +23,7 @@ import { ModelSelector } from "@/components/chat/model-selector";
 import { SourceSelector, type SourceType } from "@/components/chat/source-selector";
 import { useConversation, type Message } from "@/lib/hooks/use-conversation";
 import { useAIStream } from "@/lib/hooks/use-ai-stream";
+import { useOrchestrationStream } from "@/lib/hooks/use-orchestration-stream";
 import { getBestModelForQuery, getHighestQualityModel, getModelMetadata } from "@/lib/ai/model-ranking";
 import { DEFAULT_CHAT_MODELS } from "@/lib/ai";
 import type { ModelInfo } from "@/lib/ai/types";
@@ -82,7 +83,20 @@ function ChatPageContent() {
     setMessages,
   } = useConversation();
   const { streaming, streamMessage } = useAIStream();
+  const {
+    streaming: orchestrationStreaming,
+    runState,
+    streamOrchestration,
+    resetRunState,
+  } = useOrchestrationStream();
 
+  const [orchestrationMode, setOrchestrationMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("orchestration-mode");
+      return saved === "true";
+    }
+    return false;
+  });
   const [messages, setMessagesDisplay] = useState<MessageDisplay[]>([]);
   const [allModels, setAllModels] = useState<
     Array<{ id: string; name: string; provider: string; category: string; available?: boolean }>
@@ -416,8 +430,9 @@ function ChatPageContent() {
       localStorage.setItem("max-mode", String(maxMode));
       localStorage.setItem("use-multiple-models", String(useMultipleModels));
       localStorage.setItem("debug-mode", String(debugMode));
+      localStorage.setItem("orchestration-mode", String(orchestrationMode));
     }
-  }, [autoMode, maxMode, useMultipleModels, debugMode]);
+  }, [autoMode, maxMode, useMultipleModels, debugMode, orchestrationMode]);
 
   // Get appropriate suggestions based on debug mode
   const SUGGESTIONS = debugMode ? DEBUG_SUGGESTIONS : GENERAL_SUGGESTIONS;
@@ -438,8 +453,8 @@ function ChatPageContent() {
 
   // Slash autocomplete: Cursor-style Skills, Subagents, Actions (with descriptions)
   type SlashItem = {
-    section: "Skills" | "Subagents" | "Actions";
-    type: "skill" | "worker" | "command";
+    section: "Skills" | "Subagents" | "Actions" | "Modes";
+    type: "skill" | "worker" | "command" | "orchestrate";
     id: string;
     slug: string;
     name: string;
@@ -455,6 +470,16 @@ function ChatPageContent() {
       slug.toLowerCase().includes(after) ||
       desc.toLowerCase().includes(after);
     const list: SlashItem[] = [];
+    if (match("Orchestration", "orchestrate", "Multi-agent pipeline")) {
+      list.push({
+        section: "Modes",
+        type: "orchestrate",
+        id: "orchestrate",
+        slug: "orchestrate",
+        name: "Orchestration",
+        description: "Run multi-agent pipeline (classify, route, execute)",
+      });
+    }
     skillsForSlash.forEach((s) => {
       const desc = s.description || "";
       if (match(s.name, s.name.toLowerCase().replace(/\s+/g, "-"), desc)) {
@@ -499,7 +524,18 @@ function ChatPageContent() {
   const showSlashAutocomplete = inputValue.startsWith("/") && slashSuggestions.length > 0;
   const acceptSlashSelection = useCallback(
     (item: SlashItem) => {
-      if (item.type === "skill") {
+      if (item.type === "orchestrate") {
+        setOrchestrationMode((v) => !v);
+        const beforeSlash = inputValue.slice(0, inputValue.indexOf("/"));
+        setInputValue(beforeSlash);
+        setCharCount(beforeSlash.length);
+        toast({
+          title: !orchestrationMode ? "Orchestration on" : "Orchestration off",
+          description: !orchestrationMode
+            ? "Multi-agent pipeline will run for your next message"
+            : "Using standard chat mode",
+        });
+      } else if (item.type === "skill") {
         setAdditionalSkillIdsForMessage((ids) =>
           ids.includes(item.id) ? ids : [...ids, item.id]
         );
@@ -513,7 +549,7 @@ function ChatPageContent() {
       }
       setSlashSelectedIndex(0);
     },
-    [inputValue]
+    [inputValue, orchestrationMode, toast]
   );
   const removeSkillFromMessage = useCallback((skillId: string) => {
     setAdditionalSkillIdsForMessage((ids) => ids.filter((id) => id !== skillId));
@@ -821,43 +857,109 @@ function ChatPageContent() {
     streamingMessageRef.current = "";
 
     try {
-      // Stream AI response
       if (!conversationId) {
         throw new Error("Conversation ID is missing");
       }
-      await streamMessage(
-        conversationId,
-        content,
-        modelToUse.id,
-        modelToUse.provider,
-        selectedSources,
-        maxMode && hasPremiumAccess,
-        useMultipleModels && hasPremiumAccess,
-        (chunk: string) => {
-          streamingMessageRef.current += chunk;
-          setMessagesDisplay((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: streamingMessageRef.current }
-                : msg
-            )
-          );
-        },
-        async (fullContent: string) => {
-          setAdditionalSkillIdsForMessage([]);
-          if (currentConversation) {
-            const response = await fetch(
-              `/api/conversations/${conversationId}`,
-              { credentials: "include" }
-            );
-            if (response.ok) {
-              const data = await response.json();
-              setMessages(data.conversation.messages || []);
-            }
+
+      if (orchestrationMode) {
+        // Create user message in DB
+        await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            conversationId,
+            content: content || expandedContent || displayContent,
+            role: "user",
+            metadata: { orchestration: true },
+          }),
+        });
+
+        resetRunState();
+        const { finalOutput, runId } = await streamOrchestration(
+          content || expandedContent || displayContent,
+          {
+            conversationId,
+            spaceId: currentConversation?.spaceId ?? undefined,
+            sources: selectedSources,
+            model: modelToUse.id,
+          },
+          {
+            onChunk: (chunk: string) => {
+              streamingMessageRef.current += chunk;
+              setMessagesDisplay((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: streamingMessageRef.current }
+                    : msg
+                )
+              );
+            },
           }
-        },
-        { workerSlug, expandedContent, additionalSkillIds: additionalSkillIdsForMessage.length > 0 ? additionalSkillIdsForMessage : undefined }
-      );
+        );
+
+        const assistantContent =
+          finalOutput +
+          (runId ? `\n\n[View run details](/orchestration/runs/${runId})` : "");
+
+        await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            conversationId,
+            content: assistantContent,
+            role: "assistant",
+            metadata: runId ? { runId } : {},
+          }),
+        });
+
+        setMessagesDisplay((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: assistantContent }
+              : msg
+          )
+        );
+
+        if (currentConversation) {
+          await loadConversation(conversationId);
+        }
+      } else {
+        await streamMessage(
+          conversationId,
+          content,
+          modelToUse.id,
+          modelToUse.provider,
+          selectedSources,
+          maxMode && hasPremiumAccess,
+          useMultipleModels && hasPremiumAccess,
+          (chunk: string) => {
+            streamingMessageRef.current += chunk;
+            setMessagesDisplay((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: streamingMessageRef.current }
+                  : msg
+              )
+            );
+          },
+          async (fullContent: string) => {
+            setAdditionalSkillIdsForMessage([]);
+            if (currentConversation) {
+              const response = await fetch(
+                `/api/conversations/${conversationId}`,
+                { credentials: "include" }
+              );
+              if (response.ok) {
+                const data = await response.json();
+                setMessages(data.conversation.messages || []);
+              }
+            }
+          },
+          { workerSlug, expandedContent, additionalSkillIds: additionalSkillIdsForMessage.length > 0 ? additionalSkillIdsForMessage : undefined }
+        );
+      }
     } catch (error: any) {
       const errorMessage = error.message || "Failed to send message";
       toast({
@@ -950,17 +1052,30 @@ function ChatPageContent() {
               </div>
             )}
 
-            {/* Debug Mode Toggle */}
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Bug className="h-4 w-4 text-muted-foreground" />
-              <Label htmlFor="debug-mode" className="text-sm font-medium cursor-pointer">
-                Debug Mode
-              </Label>
-              <Switch
-                id="debug-mode"
-                checked={debugMode}
-                onCheckedChange={setDebugMode}
-              />
+            {/* Mode Toggles */}
+            <div className="flex flex-wrap items-center gap-4 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-3">
+                <Bug className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="debug-mode" className="text-sm font-medium cursor-pointer">
+                  Debug Mode
+                </Label>
+                <Switch
+                  id="debug-mode"
+                  checked={debugMode}
+                  onCheckedChange={setDebugMode}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="orchestration-mode" className="text-sm font-medium cursor-pointer">
+                  Orchestration
+                </Label>
+                <Switch
+                  id="orchestration-mode"
+                  checked={orchestrationMode}
+                  onCheckedChange={setOrchestrationMode}
+                />
+              </div>
             </div>
 
             {/* Quick Debug Prompts - Only show in debug mode */}
@@ -1012,6 +1127,34 @@ function ChatPageContent() {
               ))}
             </div>
           </ScrollArea>
+        )}
+
+        {/* Orchestration Run Progress */}
+        {runState.status === "running" && runState.runId && (
+          <Card className="w-full max-w-3xl mx-auto mb-4 p-3 border-primary/30 bg-primary/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <span className="text-sm font-medium">Orchestration run</span>
+              {runState.activeAgentId && (
+                <Badge variant="secondary" className="text-xs">
+                  {runState.activeAgentId}
+                </Badge>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {runState.tasks.map((t) => (
+                <Badge
+                  key={t.taskId || t.agentId}
+                  variant={t.status === "running" ? "default" : t.status === "completed" ? "secondary" : "outline"}
+                  className="text-xs"
+                >
+                  {t.agentId}
+                  {t.status === "running" && "..."}
+                  {t.status === "completed" && " ✓"}
+                </Badge>
+              ))}
+            </div>
+          </Card>
         )}
 
         {/* Chat Messages */}
@@ -1585,7 +1728,7 @@ function ChatPageContent() {
                       )}
                       <Button
                         onClick={() => handleSend()}
-                        disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || !selectedModel}
+                        disabled={(!inputValue.trim() && selectedFiles.length === 0) || streaming || orchestrationStreaming || !selectedModel}
                         className="rounded-full"
                       >
                         <Send className="h-5 w-5" />

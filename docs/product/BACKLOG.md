@@ -434,6 +434,28 @@ Support unauthenticated users: settings toggles work without 401; preferences st
 
 ---
 
+### Agent Orchestration
+
+#### OR-001: Agent Orchestration Layer (Spike Complete) ✅
+**Priority:** P1  
+**Effort:** Medium (3–5 days)  
+**Impact:** High
+
+Runtime agent orchestration: classify user intent, route to Enterprise/UX agents, execute single or multi-step pipelines, persist runs and tasks.
+
+**Tasks:**
+- [x] Prisma: `agent_runs`, `agent_tasks` models + migration
+- [x] `lib/orchestration`: types, agents, schemas, classifier, router, context, executor
+- [x] API: `POST /run`, `POST /run/stream`, `GET /runs`, `GET /runs/[id]` (auth, rate limit)
+- [x] Chat UI: orchestration mode toggle, `/orchestrate` slash, run progress, SSE consumer
+- [x] Activity: Orchestration Runs tab; run detail at `/orchestration/runs/[id]`
+- [x] Conversation message appended on completion
+- [x] Unit tests (classifier, router); API docs with OpenAPI snippet
+
+**Reference:** [docs/spikes/agent-orchestration-spike.md](../../spikes/agent-orchestration-spike.md), [docs/api/orchestration.md](../../api/orchestration.md)
+
+---
+
 ### Cloud Agents (Deferred)
 
 Cloud Agents are **removed from the product UI** as of Feb 2026. Current focus is **in-app only** (conversation-first, streaming responses). This section backlogs the full scope for when Cloud Agents are re-enabled. See [UX_MASTER_FILE.md](./UX_MASTER_FILE.md) — "Future: Cloud Agents (North Star)" for persona-led use cases.
@@ -585,6 +607,8 @@ Enable semantic search over design files.
 ## Completed Items
 
 *Move items here when completed with date*
+
+- **OR-001: Agent Orchestration Layer** (2026-02-19) — Full implementation per spike: API, lib, chat UI, Activity tab, run detail, tests.
 
 ---
 

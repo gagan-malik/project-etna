@@ -28,6 +28,7 @@ import {
   FileCode,
   Plus,
   MessageSquare,
+  GitBranch,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,12 +86,25 @@ interface DisplaySession {
   name: string;
   description: string | null;
   status: "active" | "completed" | "failed";
-  type: "debug" | "conversation";
+  type: "debug" | "conversation" | "orchestration";
   designFile?: { name: string; format: string } | null;
   messageCount?: number;
   createdAt: string;
   updatedAt: string;
   findings?: any;
+  intent?: string;
+  input?: string;
+}
+
+interface OrchestrationRun {
+  id: string;
+  status: string;
+  intent: string;
+  input: string;
+  finalOutput: string | null;
+  createdAt: string;
+  updatedAt: string;
+  agent_tasks?: Array<{ agentId: string; orderIndex: number; status: string }>;
 }
 
 const statusConfig = {
@@ -126,11 +140,36 @@ export default function DebugSessionsPage() {
   const [newSessionName, setNewSessionName] = useState("");
   const [newSessionDescription, setNewSessionDescription] = useState("");
   const [creating, setCreating] = useState(false);
+  const [orchestrationRuns, setOrchestrationRuns] = useState<OrchestrationRun[]>([]);
+  const [orchestrationLoading, setOrchestrationLoading] = useState(false);
 
   // Load sessions from API
   useEffect(() => {
     loadSessions();
   }, []);
+
+  useEffect(() => {
+    if (typeFilter === "orchestration") {
+      loadOrchestrationRuns();
+    }
+  }, [typeFilter]);
+
+  const loadOrchestrationRuns = async () => {
+    setOrchestrationLoading(true);
+    try {
+      const response = await fetch("/api/orchestration/runs", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOrchestrationRuns(data.data?.runs || []);
+      }
+    } catch {
+      setOrchestrationRuns([]);
+    } finally {
+      setOrchestrationLoading(false);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -322,6 +361,7 @@ export default function DebugSessionsPage() {
   };
 
   const filteredSessions = sessions.filter((session) => {
+    if (typeFilter === "orchestration") return false;
     // Status filter
     if (statusFilter !== "all" && session.status !== statusFilter) return false;
     // Type filter
@@ -333,6 +373,17 @@ export default function DebugSessionsPage() {
       const descMatch = session.description?.toLowerCase().includes(query);
       const fileMatch = session.designFile?.name.toLowerCase().includes(query);
       if (!nameMatch && !descMatch && !fileMatch) return false;
+    }
+    return true;
+  });
+
+  const filteredOrchestrationRuns = orchestrationRuns.filter((run) => {
+    if (statusFilter !== "all" && run.status !== statusFilter) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const inputMatch = run.input?.toLowerCase().includes(query);
+      const intentMatch = run.intent?.toLowerCase().includes(query);
+      if (!inputMatch && !intentMatch) return false;
     }
     return true;
   });
@@ -442,17 +493,90 @@ export default function DebugSessionsPage() {
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="debug">Debug Sessions</SelectItem>
             <SelectItem value="conversation">Conversations</SelectItem>
+            <SelectItem value="orchestration">Orchestration Runs</SelectItem>
           </SelectContent>
         </Select>
 
         <div className="text-sm text-muted-foreground">
-          {filteredSessions.length} session{filteredSessions.length !== 1 ? "s" : ""}
+          {typeFilter === "orchestration"
+            ? `${filteredOrchestrationRuns.length} run${filteredOrchestrationRuns.length !== 1 ? "s" : ""}`
+            : `${filteredSessions.length} session${filteredSessions.length !== 1 ? "s" : ""}`}
         </div>
       </div>
 
       {/* Sessions List */}
       <ScrollArea className="h-[calc(100vh-350px)]">
-        {loading ? (
+        {typeFilter === "orchestration" ? (
+          orchestrationLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredOrchestrationRuns.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <GitBranch className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-sm font-medium text-foreground mb-1">
+                No orchestration runs yet
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Enable Orchestration mode in chat to run multi-agent pipelines
+              </p>
+              <Button onClick={() => router.push("/chat")}>
+                Go to Chat
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {filteredOrchestrationRuns.map((run) => {
+                const statusInfo = statusConfig[run.status as keyof typeof statusConfig] ?? statusConfig.completed;
+                const StatusIcon = statusInfo.icon;
+                return (
+                  <Card
+                    key={run.id}
+                    className="p-3 hover:bg-accent transition-colors cursor-pointer"
+                    onClick={() => router.push(`/orchestration/runs/${run.id}`)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <GitBranch className="h-5 w-5 text-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-base font-semibold text-foreground truncate">
+                            {run.intent}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`${statusInfo.color} ${statusInfo.bgColor}`}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusInfo.label}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            Orchestration
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                          {run.input}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatRelativeTime(run.updatedAt)}
+                          </span>
+                          {run.agent_tasks && run.agent_tasks.length > 0 && (
+                            <span>
+                              {run.agent_tasks.length} task{run.agent_tasks.length !== 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )
+        ) : loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>

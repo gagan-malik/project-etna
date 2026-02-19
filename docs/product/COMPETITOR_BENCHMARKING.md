@@ -175,6 +175,12 @@ Project Etna operates in the **AI-powered silicon verification and debugging** m
 | **RCA Agent** | Root cause analysis | Production |
 | **Design Agents** | Design automation | Beta |
 
+#### Agent Architecture vs Etna
+
+ChipAgents offers **separate point products** — each agent (Waveform, Cover, RCA, Design) is a standalone tool. Users select which agent to use for a given task. There is no unified orchestration layer that classifies intent and routes across agents.
+
+**Etna's differentiation:** Etna's agent orchestration (see [agent-orchestration-spike.md](../spikes/agent-orchestration-spike.md)) provides a **unified platform** — one conversational entry point, intent classification, multi-agent pipelines (e.g. Research → Architect → Implement in one run), and persisted runs for observability. Etna orchestrates general-purpose agents (Research, Architect, Implement, Review, Docs, UX) with silicon-specific context; ChipAgents sells specialized domain agents.
+
 #### Key Claims
 - 50x YoY sales growth
 - 50+ semiconductor company deployments
@@ -264,6 +270,9 @@ Project Etna operates in the **AI-powered silicon verification and debugging** m
 | Streaming Responses | 1/5 | 1/5 | 1/5 | 3/5 | **5/5** |
 | Silicon-Specific Prompts | 3/5 | 3/5 | 3/5 | 4/5 | **4/5** |
 | Context Awareness | 4/5 | 4/5 | 4/5 | 4/5 | **3/5** |
+| **Agent Orchestration** | 0/5 | 0/5 | 0/5 | 2/5 | **5/5** |
+
+**Agent Orchestration** = Unified layer that classifies intent, routes to multiple agents, runs multi-step pipelines (e.g. Research → Architect → Implement), and persists runs for observability. ChipAgents has separate point products (Waveform, Cover, RCA, Design agents); Etna has a single conversational entry that orchestrates Research, Architect, Implement, Review, Docs, UX agents in pipelines.
 
 ### User Experience
 
@@ -1119,12 +1128,15 @@ MVP uses Verilator compiled to WASM for instant, free simulation in browser.
 
 | Etna Advantage | Their Limitation |
 |----------------|------------------|
-| Conversational-first | Agent-specific tools |
+| **Unified agent orchestration** | Separate point products (Waveform, Cover, RCA, Design agents) — no single orchestration layer |
+| **Conversational-first** | Agent-specific tools; user picks which agent |
+| **Multi-agent pipelines** | One agent per task; no Research → Architect → Implement chains |
 | Self-service free tier | Sales-required |
 | Consumer-grade UX | Enterprise B2B UX |
 | Transparent pricing | Opaque pricing |
 | BYOK (Bring Your Own Key) | Locked to their AI provider |
 | Cursor-style interaction modes | No mode system |
+| Persisted runs & observability | Unclear if runs are persisted for replay/audit |
 
 **vs. Open Source (GTKWave, Surfer):**
 
@@ -1219,6 +1231,7 @@ Research (e.g., "The Dawn of Agentic EDA" — arXiv 2025) frames a shift from **
 | January 2026 | 1.3 | Added BYOK & multi-model support strategy |
 | January 2026 | 1.4 | Added MCP & tool calling architecture |
 | February 2026 | 1.5 | Added Industry Trends: Python & Blue Ocean Opportunity |
+| February 2026 | 1.6 | Added Agent Orchestration to AI capabilities; ChipAgents vs Etna orchestration comparison; link to agent-orchestration-spike |
 
 ---
 

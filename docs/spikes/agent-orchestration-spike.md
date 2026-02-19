@@ -1,5 +1,7 @@
 # Technical Spike: Agent Orchestration Layer for Etna
 
+**Status: Implemented (2026-02-19)** — See [docs/api/orchestration.md](../api/orchestration.md) for API docs.
+
 ## 1. Objective
 
 Spike a **runtime agent orchestration layer** that receives user intent, classifies it, routes to the right agent(s) (Enterprise or UX), runs multi-step workflows, and persists runs and tasks for observability and replay. Today, the Enterprise Orchestrator is prompt-based; this spike explores a concrete implementation.
@@ -217,6 +219,56 @@ Etna's 4 modes (Ask, Agent, Debug, Manual) map to orchestration intent:
 
 ---
 
+## 10. Competitive Differentiation: Etna vs ChipAgents & Others
+
+This section clarifies how Etna's agent orchestration differs from ChipAgents and other competitors. Source: [COMPETITOR_BENCHMARKING.md](../product/COMPETITOR_BENCHMARKING.md).
+
+### vs. ChipAgents
+
+| Dimension | ChipAgents | Etna Orchestration |
+|------------|------------|---------------------|
+| **Architecture** | Separate point products (Waveform Agents, CoverAgent, RCA Agent, Design Agents) | **Unified orchestration layer** — single entry point, intent classification, multi-agent pipeline |
+| **Entry point** | Agent-specific tools; user picks which agent | **Conversational-first** — one chat; classifier routes to right agent(s) |
+| **Workflow** | One agent per task; no cross-agent pipelines | **Multi-step pipelines** — e.g. Research → Architect → Implement in one run |
+| **Pricing** | Enterprise only; no free tier; sales-required | **Self-service; free tier**; transparent pricing |
+| **AI model** | Locked to their provider | **BYOK; multi-model** (OpenAI, Gemini, DeepSeek, Llama) |
+| **Interaction** | No mode system | **4-mode system** (Ask, Agent, Debug, Manual) — Cursor-inspired |
+| **Context** | Agent-specific context | **Conversation + RAG + sources** — full chat history, documents, integrations |
+| **Observability** | Unclear | **Persisted runs and tasks** — replay, audit, session summary |
+| **Target** | Enterprise teams ($5K–50K/user/year) | **Students, hobbyists, startups** — $0–$49/user/month |
+
+**Key insight:** ChipAgents sells *specialized agents* (waveform, coverage, RCA). Etna builds a *platform* that orchestrates general-purpose agents (Research, Architect, Implement, Review, Docs, UX) with silicon-specific context. Etna's orchestration is the "brain" that routes and chains; ChipAgents' agents are standalone products.
+
+### vs. Enterprise EDA (Cadence, Synopsys, Siemens)
+
+| Dimension | Enterprise EDA | Etna Orchestration |
+|------------|----------------|---------------------|
+| **Orchestration** | None; AI bolted onto legacy tools | **Runtime orchestration** — classify, route, execute, persist |
+| **Chat interface** | Limited or none | **Primary interface** — chat-first |
+| **Agent model** | Single AI per tool | **Multi-agent** — Research, Architect, Implement, Review, Docs |
+| **Streaming** | Batch responses | **Real-time streaming** |
+| **Access** | Weeks procurement | **Instant** — sign up, use |
+
+### vs. Cursor (AI Code Editors)
+
+| Dimension | Cursor | Etna Orchestration |
+|------------|--------|---------------------|
+| **Domain** | General-purpose coding | **Silicon/RTL** — waveform, protocol, testbench |
+| **Agents** | General coding agents | **Silicon-aware** — Research, Architect, Implement, Review, Docs + UX |
+| **Waveform** | None | **Debug mode + waveform MCP** — correlate signals with RTL |
+| **Orchestration** | Implicit (mode-based) | **Explicit** — classifier, router, persisted runs |
+
+### Etna's Unique Position
+
+- **Unified platform** (not point products) with **conversational entry**
+- **Multi-agent pipelines** (Research → Architect → Implement) in one run
+- **Silicon-specific context** (RTL, waveform, protocol) via MCP
+- **Self-service + free tier** — no sales gate
+- **BYOK + multi-model** — user choice
+- **Persisted orchestration runs** — observability, replay, session summary
+
+---
+
 ## Appendix: Architect Design Summary
 
 The Architect proposed:
@@ -235,6 +287,7 @@ The Architect proposed:
 
 - [UX_MASTER_FILE.md](../product/UX_MASTER_FILE.md) — Personas, modes, task flows, UX metrics
 - [VISION.md](../product/VISION.md) — Product mission and target users
+- [COMPETITOR_BENCHMARKING.md](../product/COMPETITOR_BENCHMARKING.md) — ChipAgents, enterprise EDA, competitive differentiation
 - [BACKLOG.md](../product/BACKLOG.md) — CLD-001 Cloud Agents
 - [cloud-agents.md](../api/cloud-agents.md) — Planned Cloud Agents API
 - [.cursor/agents/enterprise-orchestrator.md](../../.cursor/agents/enterprise-orchestrator.md) — Current delegation table

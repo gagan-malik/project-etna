@@ -24,6 +24,8 @@ export interface RateLimitConfig {
 export const defaultRateLimits: Record<string, RateLimitConfig> = {
   // API routes
   "/api/messages/stream": { maxRequests: 10, windowMs: 60000 }, // 10 per minute
+  "/api/orchestration/run/stream": { maxRequests: 10, windowMs: 60000 }, // 10 per minute
+  "/api/orchestration/run": { maxRequests: 10, windowMs: 60000 }, // 10 per minute
   "/api/conversations": { maxRequests: 30, windowMs: 60000 }, // 30 per minute
   "/api/messages": { maxRequests: 60, windowMs: 60000 }, // 60 per minute
   "/api/files/upload": { maxRequests: 20, windowMs: 60000 }, // 20 per minute

@@ -100,6 +100,7 @@ When rate-limited, you'll receive a `429 Too Many Requests` response.
 - [Authentication](/api/authentication) - Sign up, sign in, and session management
 - [Conversations](/api/conversations) - Create and manage chat conversations
 - [Messages](/api/messages) - Send messages and stream AI responses
+- [Orchestration](/api/orchestration) - Agent orchestration: create runs, stream multi-agent pipelines, list and get runs
 - [Spaces](/api/spaces) - Organize work into spaces/workspaces
 - [Documents](/api/documents) - Upload and search documents
 - [Waveforms](/api/waveforms) - Upload and manage waveform files

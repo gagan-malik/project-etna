@@ -90,12 +90,14 @@ project-etna/
 │   │   ├── auth/          # Authentication
 │   │   ├── conversations/ # Chat management
 │   │   ├── messages/      # Message handling
+│   │   ├── orchestration/ # Agent orchestration (runs, stream)
 │   │   ├── documents/     # Document CRUD
 │   │   ├── spaces/        # Workspace management
 │   │   ├── waveforms/     # Waveform uploads
 │   │   └── cron/          # Health checks
 │   ├── chat/              # Main chat interface
 │   ├── activity/          # History page
+│   ├── orchestration/     # Orchestration run detail
 │   ├── settings/          # User settings
 │   ├── waveforms/         # Waveform viewer
 │   ├── login/             # Login page
@@ -108,6 +110,7 @@ project-etna/
 ├── lib/                   # Shared utilities
 │   ├── prisma.ts         # Database client
 │   ├── ai/               # AI provider integrations
+│   ├── orchestration/    # Agent orchestration (classifier, router, executor)
 │   ├── validation.ts     # Zod schemas
 │   └── rate-limit.ts     # Rate limiting
 ├── prisma/               # Database schema
